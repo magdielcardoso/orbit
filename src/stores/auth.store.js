@@ -1,10 +1,12 @@
 import { defineStore } from 'pinia';
+import { jwtDecode } from 'jwt-decode';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
     token: null,
-    isAuthenticated: false
+    isAuthenticated: false,
+    permissions: []
   }),
 
   actions: {
@@ -59,6 +61,18 @@ export const useAuthStore = defineStore('auth', {
       this.token = data.token;
       this.isAuthenticated = true;
       
+      if (data.token) {
+        try {
+          const decoded = jwtDecode(data.token);
+          console.log('Token decodificado:', decoded);
+          this.permissions = decoded.permissions || [];
+          console.log('Permissões carregadas:', this.permissions);
+        } catch (error) {
+          console.error('Erro ao decodificar token:', error);
+          this.permissions = [];
+        }
+      }
+      
       if (rememberMe) {
         localStorage.setItem('auth', JSON.stringify(data));
       } else {
@@ -70,6 +84,7 @@ export const useAuthStore = defineStore('auth', {
       this.user = null;
       this.token = null;
       this.isAuthenticated = false;
+      this.permissions = [];
       localStorage.removeItem('auth');
       sessionStorage.removeItem('auth');
     },
@@ -77,17 +92,21 @@ export const useAuthStore = defineStore('auth', {
     initAuth() {
       const auth = localStorage.getItem('auth') || sessionStorage.getItem('auth');
       if (auth) {
+        console.log('Iniciando autenticação com dados salvos');
         const data = JSON.parse(auth);
         this.setAuth(data);
       }
     },
 
     hasPermission(permissionName) {
-      return this.user?.permissions?.includes(permissionName) ?? false;
+      console.log('Verificando permissão:', permissionName);
+      console.log('Permissões disponíveis:', this.permissions);
+      return this.permissions?.includes(permissionName) ?? false;
     }
   },
 
   getters: {
-    userRole: (state) => state.user?.role
+    userRole: (state) => state.user?.role,
+    userPermissions: (state) => state.permissions
   }
 }); 

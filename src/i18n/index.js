@@ -3,16 +3,16 @@ import ptBR from './pt-BR';
 import enUS from './en-US';
 
 export const LOCALES = [
-  { code: 'pt-BR', name: 'Português' },
-  { code: 'en-US', name: 'English' }
+  { code: 'pt', name: 'Português' },
+  { code: 'en', name: 'English' }
 ];
 
 export const i18n = createI18n({
   legacy: false,
-  locale: localStorage.getItem('locale') || 'pt-BR',
-  fallbackLocale: 'pt-BR',
+  locale: localStorage.getItem('locale') || 'pt',
+  fallbackLocale: 'pt',
   messages: {
-    'pt-BR': ptBR,
-    'en-US': enUS
+    'pt': ptBR,
+    'en': enUS
   }
 }); 
