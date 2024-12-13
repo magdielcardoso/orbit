@@ -101,5 +101,32 @@ export default {
         }
       }
     }
+  },
+  auth: {
+    login: {
+      title: 'Entrar na sua conta',
+      email: 'E-mail',
+      password: 'Senha',
+      rememberMe: 'Lembrar-me',
+      loading: 'Carregando...',
+      submit: 'Entrar',
+      noAccount: 'Não tem uma conta? Cadastre-se',
+      error: 'E-mail ou senha inválidos',
+      hero: {
+        title: 'Bem-vindo ao OrbitChat',
+        feature1: {
+          title: 'Comunicação Simplificada',
+          description: 'Gerencie todas as suas conversas em um só lugar de forma eficiente e organizada.'
+        },
+        feature2: {
+          title: 'Equipes Integradas',
+          description: 'Colabore com sua equipe em tempo real e mantenha todos alinhados.'
+        },
+        feature3: {
+          title: 'Análises Detalhadas',
+          description: 'Acompanhe o desempenho e tome decisões baseadas em dados.'
+        }
+      }
+    }
   }
 } 

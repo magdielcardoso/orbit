@@ -100,5 +100,32 @@ export default {
         }
       }
     }
+  },
+  auth: {
+    login: {
+      title: 'Sign in to your account',
+      email: 'Email',
+      password: 'Password',
+      rememberMe: 'Remember me',
+      loading: 'Loading...',
+      submit: 'Sign in',
+      noAccount: "Don't have an account? Sign up",
+      error: 'Invalid email or password',
+      hero: {
+        title: 'Welcome to OrbitChat',
+        feature1: {
+          title: 'Simplified Communication',
+          description: 'Manage all your conversations in one place efficiently and organized.'
+        },
+        feature2: {
+          title: 'Integrated Teams',
+          description: 'Collaborate with your team in real-time and keep everyone aligned.'
+        },
+        feature3: {
+          title: 'Detailed Analytics',
+          description: 'Track performance and make data-driven decisions.'
+        }
+      }
+    }
   }
 } 
