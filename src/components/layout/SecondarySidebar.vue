@@ -177,7 +177,7 @@ const navigate = (itemId) => {
 </script>
 
 <template>
-  <aside class="w-64 border-r border-base-300 bg-base-100">
+  <aside class="h-full w-64 border-r border-base-300 bg-base-100">
     <div class="flex h-full flex-col">
       <!-- Seções do Menu -->
       <div class="flex-1 space-y-2 overflow-y-auto p-4">
@@ -195,14 +195,14 @@ const navigate = (itemId) => {
               <button
                 @click="navigate(item.id)"
                 :class="[
-                  'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
+                  'flex w-full items-start gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
                   isItemActive(item.id)
                     ? 'bg-primary/10 text-primary'
                     : 'text-base-content hover:bg-base-200'
                 ]"
               >
-                <component :is="item.icon" class="h-4 w-4 shrink-0" />
-                <span class="leading-tight">{{ item.label }}</span>
+                <component :is="item.icon" class="h-4 w-4 shrink-0 mt-0.5" />
+                <span class="leading-tight text-left">{{ item.label }}</span>
               </button>
             </template>
           </div>

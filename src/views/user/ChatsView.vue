@@ -69,7 +69,7 @@ const sidebarSections = computed(() => [
 </script>
 
 <template>
-  <div class="flex">
+  <div class="flex h-full">
     <SecondarySidebar :sections="sidebarSections" />
     <div class="flex-1 p-6">
       <h1 class="text-2xl font-bold mb-8">{{ t('chats.title') }}</h1>
