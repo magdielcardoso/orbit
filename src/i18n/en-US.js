@@ -48,5 +48,26 @@ export default {
         }
       }
     }
+  },
+  settings: {
+    title: 'Settings',
+    language: 'Language',
+    selectLanguage: 'Select language',
+    languageHelp: 'The selected language will be applied throughout the interface'
+  },
+  navigation: {
+    home: 'Home',
+    chats: 'Chats',
+    contacts: 'Contacts',
+    favorites: 'Favorites',
+    settings: 'Settings',
+    notifications: 'Notifications'
+  },
+  userMenu: {
+    availability: 'Availability',
+    profile: 'Profile',
+    theme: 'Theme',
+    help: 'Help',
+    logout: 'Logout'
   }
 } 

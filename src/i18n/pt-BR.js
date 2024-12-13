@@ -48,5 +48,22 @@ export default {
         }
       }
     }
+  },
+  settings: {
+    title: 'Configurações',
+    userSettings: 'Configurações do Usuário',
+    profile: 'Perfil',
+    language: 'Idioma',
+    theme: 'Tema',
+    notifications: 'Notificações',
+    privacy: 'Privacidade',
+    selectLanguage: 'Selecione o idioma',
+    languageHelp: 'O idioma selecionado será aplicado em toda a interface'
+  },
+  navigation: {
+    // ... existing code ...
+  },
+  userMenu: {
+    // ... existing code ...
   }
 } 

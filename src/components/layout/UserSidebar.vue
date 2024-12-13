@@ -90,10 +90,10 @@
         <!-- Settings -->
         <div class="tooltip tooltip-right" :data-tip="t('navigation.settings')">
           <button
-            @click="navigate('settings')"
+            @click="navigate('user-settings')"
             :class="[
               'btn btn-ghost btn-sm h-8 w-8 p-0 antialiased',
-              currentRoute === 'settings' ? 'btn-active' : ''
+              currentRoute === 'user-settings' ? 'btn-active' : ''
             ]"
           >
             <Settings class="h-4 w-4" />
