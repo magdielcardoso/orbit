@@ -24,7 +24,7 @@ export const useAuthStore = defineStore('auth', {
         }
 
         const data = await response.json();
-        this.setAuth(data);
+        this.setAuth(data, credentials.rememberMe);
         return data;
       } catch (error) {
         throw error;
@@ -47,18 +47,23 @@ export const useAuthStore = defineStore('auth', {
         }
 
         const data = await response.json();
-        this.setAuth(data);
+        this.setAuth(data, true);
         return data;
       } catch (error) {
         throw error;
       }
     },
 
-    setAuth(data) {
+    setAuth(data, rememberMe = false) {
       this.user = data.user;
       this.token = data.token;
       this.isAuthenticated = true;
-      localStorage.setItem('auth', JSON.stringify(data));
+      
+      if (rememberMe) {
+        localStorage.setItem('auth', JSON.stringify(data));
+      } else {
+        sessionStorage.setItem('auth', JSON.stringify(data));
+      }
     },
 
     logout() {
@@ -66,10 +71,11 @@ export const useAuthStore = defineStore('auth', {
       this.token = null;
       this.isAuthenticated = false;
       localStorage.removeItem('auth');
+      sessionStorage.removeItem('auth');
     },
 
     initAuth() {
-      const auth = localStorage.getItem('auth');
+      const auth = localStorage.getItem('auth') || sessionStorage.getItem('auth');
       if (auth) {
         const data = JSON.parse(auth);
         this.setAuth(data);
