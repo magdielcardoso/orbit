@@ -1,47 +1,45 @@
-.PHONY: install dev build migrate-dev migrate-deploy db-push db-reset redis-start lint format
+# Variáveis
+NODE = node
+NPM = npm
+PRISMA = npx prisma
+
+# Comandos principais
+.PHONY: install dev build start clean migrate
 
 install:
-	npm install
+	$(NPM) install
 
 dev:
-	npm run dev
+	$(NPM) run dev
 
 build:
-	npm run build
+	$(NPM) run build
+
+start:
+	$(NPM) run preview
+
+clean:
+	rm -rf node_modules
+	rm -rf dist
+
+# Comandos do Prisma
+.PHONY: migrate-dev migrate-deploy studio generate
 
 migrate-dev:
-	npx prisma migrate dev
+	$(PRISMA) migrate dev
 
 migrate-deploy:
-	npx prisma migrate deploy
+	$(PRISMA) migrate deploy
 
-db-push:
-	npx prisma db push
+studio:
+	$(PRISMA) studio
 
-db-reset:
-	npx prisma migrate reset
+generate:
+	$(PRISMA) generate
 
-redis-start:
-	redis-server
+# Comandos compostos
+.PHONY: setup reset
 
-lint:
-	npm run lint
+setup: install migrate-dev generate
 
-format:
-	npm run format
-
-setup: install migrate-dev
-
-help:
-	@echo "Comandos disponíveis:"
-	@echo "  make install         - Instala todas as dependências"
-	@echo "  make dev            - Inicia o servidor de desenvolvimento"
-	@echo "  make build          - Gera build de produção"
-	@echo "  make migrate-dev    - Executa migrações do Prisma em desenvolvimento"
-	@echo "  make migrate-deploy - Executa migrações do Prisma em produção"
-	@echo "  make db-push       - Atualiza o banco de dados sem criar migrações"
-	@echo "  make db-reset      - Reseta o banco de dados"
-	@echo "  make redis-start   - Inicia o servidor Redis"
-	@echo "  make lint          - Executa o linter"
-	@echo "  make format        - Formata o código"
-	@echo "  make setup         - Instala dependências e configura o banco"
+reset: clean setup

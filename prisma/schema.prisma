@@ -13,11 +13,44 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Role {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  description String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  users       User[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  description String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  roleId       String
+  permissionId String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  role         Role       @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@unique([roleId, permissionId])
+}
+
 model User {
   id        String    @id @default(uuid())
   email     String    @unique
   password  String
   name      String
+  roleId    String?
+  role      Role?     @relation(fields: [roleId], references: [id])
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   messages  Message[]

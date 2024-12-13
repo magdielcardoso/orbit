@@ -1,16 +1,15 @@
+import ptCommon from './locales/pt/common'
+import ptViews from './locales/pt/views'
+import enCommon from './locales/en/common'
+import enViews from './locales/en/views'
+
 export default {
   pt: {
-    home: 'Início',
-    chats: 'Conversas',
-    contacts: 'Contatos',
-    favorites: 'Favoritos',
-    settings: 'Configurações'
+    ...ptCommon,
+    ...ptViews
   },
   en: {
-    home: 'Home',
-    chats: 'Chats',
-    contacts: 'Contacts',
-    favorites: 'Favorites',
-    settings: 'Settings'
+    ...enCommon,
+    ...enViews
   }
 } 

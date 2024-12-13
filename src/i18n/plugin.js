@@ -1,72 +1,71 @@
-import { ref, inject } from 'vue'
-import ptCommon from './locales/pt/common'
-import ptViews from './locales/pt/views'
-import enCommon from './locales/en/common'
-import enViews from './locales/en/views'
+import { ref, computed } from 'vue'
+import messages from './messages'
 
-const I18N_INJECTION_KEY = Symbol('i18n')
+// Estado global do idioma
+const currentLocale = ref(
+  localStorage.getItem('locale') || 
+  navigator.language.split('-')[0] || 
+  'pt'
+)
 
-// Combinar traduções
-const messages = {
-  pt: {
-    ...ptCommon,
-    ...ptViews
-  },
-  en: {
-    ...enCommon,
-    ...enViews
-  }
-}
-
+// Plugin Vue
 export function createI18n() {
-  // Estado global do idioma
-  const locale = ref(
-    localStorage.getItem('locale') || 
-    navigator.language.split('-')[0] || 
-    'pt'
-  )
-
-  // Função de tradução
-  const t = (key) => {
-    const keys = key.split('.')
-    let value = messages[locale.value]
-    
-    for (const k of keys) {
-      value = value[k]
-      if (!value) return key
-    }
-    
-    return value
-  }
-
-  // Trocar idioma
-  const setLocale = (newLocale) => {
-    locale.value = newLocale
-    localStorage.setItem('locale', newLocale)
-  }
-
   return {
     install: (app) => {
-      // Disponibilizar globalmente
-      app.config.globalProperties.$t = t
-      app.config.globalProperties.$i18n = {
-        locale,
-        setLocale
+      // Adiciona o método global $t
+      app.config.globalProperties.$t = (key) => {
+        const keys = key.split('.')
+        let value = messages[currentLocale.value]
+        
+        for (const k of keys) {
+          value = value[k]
+          if (!value) return key
+        }
+        
+        return value
       }
 
-      // Disponibilizar via composable
-      app.provide(I18N_INJECTION_KEY, {
-        t,
-        locale,
-        setLocale
+      // Disponibiliza o composable useI18n
+      app.provide('i18n', {
+        currentLocale: computed(() => currentLocale.value),
+        t: (key) => {
+          const keys = key.split('.')
+          let value = messages[currentLocale.value]
+          
+          for (const k of keys) {
+            value = value[k]
+            if (!value) return key
+          }
+          
+          return value
+        },
+        setLocale: (locale) => {
+          currentLocale.value = locale
+          localStorage.setItem('locale', locale)
+        }
       })
     }
   }
 }
 
-// Composable para usar em componentes quando necessário
+// Composable
 export function useI18n() {
-  const i18n = inject(I18N_INJECTION_KEY)
-  if (!i18n) throw new Error('No i18n provided!')
-  return i18n
+  return {
+    t: (key) => {
+      const keys = key.split('.')
+      let value = messages[currentLocale.value]
+      
+      for (const k of keys) {
+        value = value[k]
+        if (!value) return key
+      }
+      
+      return value
+    },
+    setLocale: (locale) => {
+      currentLocale.value = locale
+      localStorage.setItem('locale', locale)
+    },
+    currentLocale: computed(() => currentLocale.value)
+  }
 } 

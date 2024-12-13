@@ -5,32 +5,11 @@ export default {
     "./src/**/*.{vue,js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {
-      fontSmoothing: {
-        'antialiased': {
-          '-webkit-font-smoothing': 'antialiased',
-          '-moz-osx-font-smoothing': 'grayscale',
-        },
-      },
-    },
+    extend: {},
   },
-  plugins: [
-    require("daisyui"),
-    function({ addBase }) {
-      addBase({
-        'html': { 
-          '-webkit-text-size-adjust': '100%',
-          'text-rendering': 'optimizeLegibility',
-        },
-        'svg': {
-          'shape-rendering': 'geometricPrecision',
-          'text-rendering': 'geometricPrecision',
-        }
-      })
-    }
-  ],
+  plugins: [require("daisyui")],
   daisyui: {
-    themes: true,
-  },
+    themes: ["light", "dark"],
+  }
 }
 

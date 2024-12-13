@@ -20,6 +20,13 @@ export default {
   settings: {
     title: 'Settings',
     language: 'Language',
+    selectLanguage: 'Select language',
+    selectTheme: 'Select theme',
+    themes: {
+        light: 'Tema Claro',
+        dark: 'Tema Escuro'
+      },
+    languageHelp: 'The selected language will be applied throughout the application',
     theme: 'Theme',
     notifications: 'Notifications',
     privacy: 'Privacy'
