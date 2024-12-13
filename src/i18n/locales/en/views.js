@@ -7,6 +7,26 @@ export default {
     title: 'Chats',
     noChats: 'No chats yet',
     newChat: 'New chat',
+    searchPlaceholder: 'Search messages in chats',
+    typeMessage: 'Type your message...',
+    send: 'Send',
+    status: {
+      open: 'Open',
+      online: 'Online',
+      offline: 'Offline'
+    },
+    tabs: {
+      mine: 'Mine',
+      unassigned: 'Unassigned',
+      all: 'All'
+    },
+    emptyState: {
+      title: 'Oh no! Looks like there are no customer messages in your inbox.',
+      shortcuts: {
+        command: 'to open command menu',
+        keyboard: 'to view keyboard shortcuts'
+      }
+    },
     sidebar: {
       filters: {
         title: 'Filters',

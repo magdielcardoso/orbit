@@ -177,7 +177,7 @@ const navigate = (itemId) => {
 </script>
 
 <template>
-  <aside class="h-full w-64 border-r border-base-300 bg-base-100">
+  <aside class="h-full w-64 border-r border-base-300 bg-base-100 overflow-x-hidden">
     <div class="flex h-full flex-col">
       <!-- Seções do Menu -->
       <div class="flex-1 space-y-2 overflow-y-auto p-4">

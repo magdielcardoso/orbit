@@ -7,23 +7,44 @@ export default {
     title: 'Conversas',
     noChats: 'Nenhuma conversa ainda',
     newChat: 'Nova conversa',
+    searchPlaceholder: 'Buscar conversas...',
+    messagePlaceholder: 'Digite sua mensagem...',
+    typeMessage: 'Digite sua mensagem...',
+    send: 'Enviar',
+    status: {
+      open: 'Em aberto',
+      closed: 'Fechado',
+      resolved: 'Resolvido'
+    },
+    tabs: {
+      mine: 'Minhas',
+      unassigned: 'Não atribuídas',
+      all: 'Todas'
+    },
+    emptyState: {
+      title: 'Oh não! Parece que não há mensagens de clientes na sua caixa de entrada.',
+      shortcuts: {
+        command: 'para abrir o menu de comando',
+        keyboard: 'para ver os atalhos de teclado'
+      }
+    },
     sidebar: {
       filters: {
         title: 'Filtros',
-        all: 'Todas as Conversas',
-        active: 'Conversas Ativas',
-        archived: 'Conversas Arquivadas'
+        all: 'Todas as conversas',
+        active: 'Conversas ativas',
+        archived: 'Conversas arquivadas'
       },
       labels: {
-        title: 'Rótulos',
-        important: 'Importantes',
-        unread: 'Não Lidas',
+        title: 'Etiquetas',
+        important: 'Importante',
+        unread: 'Não lidas',
         flagged: 'Sinalizadas'
       },
       teams: {
         title: 'Equipes',
-        myTeam: 'Minha Equipe',
-        assignedToMe: 'Atribuídas a Mim'
+        myTeam: 'Minha equipe',
+        assignedToMe: 'Atribuídas a mim'
       }
     }
   },
