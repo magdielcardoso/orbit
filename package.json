@@ -17,6 +17,7 @@
     "daisyui": "^4.12.22",
     "fastify": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "lucide-vue-next": "^0.468.0",
     "pinia": "^2.3.0",
     "redis": "^4.7.0",
     "socket.io-client": "^4.8.1",
