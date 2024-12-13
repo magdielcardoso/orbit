@@ -13,9 +13,38 @@ import {
   Clock,
   Zap,
   FileJson,
-  Timer
+  Timer,
+  Bell,
+  Shield,
+  Key,
+  MessageCircle,
+  Archive,
+  Star,
+  Mail,
+  Flag,
+  UserCheck
 } from 'lucide-vue-next'
 import BetaTag from '../ui/BetaTag.vue'
+
+// Definição das props
+const props = defineProps({
+  sections: {
+    type: Array,
+    default: () => [],
+    validator: (value) => {
+      return value.every(section => {
+        return typeof section.id === 'string' &&
+               typeof section.label === 'string' &&
+               Array.isArray(section.items) &&
+               section.items.every(item => {
+                 return typeof item.id === 'string' &&
+                        typeof item.label === 'string' &&
+                        typeof item.icon === 'string'
+               })
+      })
+    }
+  }
+})
 
 const router = useRouter()
 const route = useRoute()
@@ -23,82 +52,120 @@ const { t } = useI18n()
 
 const currentSection = ref('settings')
 
-const menuItems = computed(() => [
-  {
-    id: 'team-management',
-    label: t('sidebar.teamManagement'),
-    items: [
-      { 
-        id: 'account-settings',
-        label: t('sidebar.accountSettings'),
-        icon: Settings
-      },
-      { 
-        id: 'agents',
-        label: t('sidebar.agents'),
-        icon: Users
-      },
-      { 
-        id: 'teams',
-        label: t('sidebar.teams'),
-        icon: Users
-      }
-    ]
-  },
-  {
-    id: 'workflow',
-    label: t('sidebar.workflow'),
-    items: [
-      {
-        id: 'inbox',
-        label: t('sidebar.inbox'),
-        icon: Inbox
-      },
-      {
-        id: 'tags',
-        label: t('sidebar.tags'),
-        icon: Tags
-      },
-      {
-        id: 'custom-fields',
-        label: t('sidebar.customFields'),
-        icon: Puzzle
-      },
-      {
-        id: 'macros',
-        label: t('sidebar.macros'),
-        icon: Command
-      },
-      {
-        id: 'canned-responses',
-        label: t('sidebar.cannedResponses'),
-        icon: MessageSquare
-      },
-      {
-        id: 'audit-logs',
-        label: t('sidebar.auditLogs'),
-        icon: Clock
-      }
-    ]
-  },
-  {
-    id: 'advanced-features',
-    label: t('sidebar.advancedFeatures'),
-    beta: true,
-    items: [
-      {
-        id: 'custom-functions',
-        label: t('sidebar.customFunctions'),
-        icon: FileJson
-      },
-      {
-        id: 'sla',
-        label: t('sidebar.sla'),
-        icon: Timer
-      }
-    ]
+// Mapeamento de ícones disponíveis
+const iconMap = {
+  Settings,
+  Users,
+  Inbox,
+  Tags,
+  Puzzle,
+  Command,
+  MessageSquare,
+  Clock,
+  Zap,
+  FileJson,
+  Timer,
+  Bell,
+  Shield,
+  Key,
+  MessageCircle,
+  Archive,
+  Star,
+  Mail,
+  Flag,
+  UserCheck
+}
+
+// Computed property que usa as props ou fallback para dados padrão
+const menuItems = computed(() => {
+  if (props.sections && props.sections.length > 0) {
+    return props.sections.map(section => ({
+      ...section,
+      items: section.items.map(item => ({
+        ...item,
+        icon: iconMap[item.icon] || Settings // Fallback para Settings se o ícone não existir
+      }))
+    }))
   }
-])
+  
+  // Dados padrão como fallback
+  return [
+    {
+      id: 'team-management',
+      label: t('sidebar.teamManagement'),
+      items: [
+        { 
+          id: 'account-settings',
+          label: t('sidebar.accountSettings'),
+          icon: Settings
+        },
+        { 
+          id: 'agents',
+          label: t('sidebar.agents'),
+          icon: Users
+        },
+        { 
+          id: 'teams',
+          label: t('sidebar.teams'),
+          icon: Users
+        }
+      ]
+    },
+    {
+      id: 'workflow',
+      label: t('sidebar.workflow'),
+      items: [
+        {
+          id: 'inbox',
+          label: t('sidebar.inbox'),
+          icon: Inbox
+        },
+        {
+          id: 'tags',
+          label: t('sidebar.tags'),
+          icon: Tags
+        },
+        {
+          id: 'custom-fields',
+          label: t('sidebar.customFields'),
+          icon: Puzzle
+        },
+        {
+          id: 'macros',
+          label: t('sidebar.macros'),
+          icon: Command
+        },
+        {
+          id: 'canned-responses',
+          label: t('sidebar.cannedResponses'),
+          icon: MessageSquare
+        },
+        {
+          id: 'audit-logs',
+          label: t('sidebar.auditLogs'),
+          icon: Clock
+        }
+      ]
+    },
+    {
+      id: 'advanced-features',
+      label: t('sidebar.advancedFeatures'),
+      beta: true,
+      items: [
+        {
+          id: 'custom-functions',
+          label: t('sidebar.customFunctions'),
+          icon: FileJson
+        },
+        {
+          id: 'sla',
+          label: t('sidebar.sla'),
+          icon: Timer
+        }
+      ]
+    }
+  ]
+})
 
 const isItemActive = (itemId) => {
   return route.name === itemId

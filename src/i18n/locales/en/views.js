@@ -23,12 +23,43 @@ export default {
     selectLanguage: 'Select language',
     selectTheme: 'Select theme',
     themes: {
-        light: 'Tema Claro',
-        dark: 'Tema Escuro'
-      },
+      light: 'Light Theme',
+      dark: 'Dark Theme'
+    },
     languageHelp: 'The selected language will be applied throughout the application',
     theme: 'Theme',
     notifications: 'Notifications',
-    privacy: 'Privacy'
+    privacy: 'Privacy',
+    sections: {
+      preferences: {
+        title: 'User Preferences',
+        general: {
+          title: 'General Settings',
+          description: 'Configure your basic account settings'
+        },
+        profile: {
+          title: 'Profile Settings',
+          description: 'Manage your profile information'
+        }
+      },
+      notifications: {
+        title: 'Notifications',
+        preferences: {
+          title: 'Notification Preferences',
+          description: 'Configure how you receive notifications'
+        }
+      },
+      security: {
+        title: 'Security',
+        settings: {
+          title: 'Security Settings',
+          description: 'Manage your account security'
+        },
+        apiTokens: {
+          title: 'API Tokens',
+          description: 'Manage your API access tokens'
+        }
+      }
+    }
   }
 } 

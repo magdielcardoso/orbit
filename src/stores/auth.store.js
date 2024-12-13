@@ -64,11 +64,8 @@ export const useAuthStore = defineStore('auth', {
       if (data.token) {
         try {
           const decoded = jwtDecode(data.token);
-          console.log('Token decodificado:', decoded);
           this.permissions = decoded.permissions || [];
-          console.log('Permissões carregadas:', this.permissions);
         } catch (error) {
-          console.error('Erro ao decodificar token:', error);
           this.permissions = [];
         }
       }
@@ -92,15 +89,12 @@ export const useAuthStore = defineStore('auth', {
     initAuth() {
       const auth = localStorage.getItem('auth') || sessionStorage.getItem('auth');
       if (auth) {
-        console.log('Iniciando autenticação com dados salvos');
         const data = JSON.parse(auth);
         this.setAuth(data);
       }
     },
 
     hasPermission(permissionName) {
-      console.log('Verificando permissão:', permissionName);
-      console.log('Permissões disponíveis:', this.permissions);
       return this.permissions?.includes(permissionName) ?? false;
     }
   },

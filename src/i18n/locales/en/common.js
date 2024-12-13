@@ -46,6 +46,13 @@ export default {
     notifications: 'Notifications',
     privacy: 'Privacy',
     selectTheme: 'Select Theme',
+    preferences: 'Preferences',
+    general: 'General Settings',
+    profile: 'Profile Settings',
+    security: 'Security',
+    notificationPreferences: 'Notification Preferences',
+    securitySettings: 'Security Settings',
+    apiTokens: 'API Tokens',
     themes: {
       light: 'Light Theme',
       dark: 'Dark Theme'
@@ -64,5 +71,19 @@ export default {
     title: 'Unread Notifications',
     noUnread: 'You have no unread notifications',
     viewAll: 'View all notifications'
+  },
+  chats: {
+    title: 'Chats',
+    filters: 'Filters',
+    allChats: 'All Chats',
+    activeChats: 'Active Chats',
+    archivedChats: 'Archived Chats',
+    labels: 'Labels',
+    important: 'Important',
+    unread: 'Unread',
+    flagged: 'Flagged',
+    teams: 'Teams',
+    myTeam: 'My Team',
+    assignedToMe: 'Assigned to Me'
   }
 } 

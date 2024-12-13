@@ -108,13 +108,6 @@ router.beforeEach(async (to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
 
-  console.log('Navegando para:', to.path)
-  console.log('Estado de autenticação:', isAuthenticated)
-  console.log('Usuário:', authStore.user)
-  console.log('Permissões:', authStore.permissions)
-  console.log('Rota requer admin:', requiresAdmin)
-  console.log('Rota requer auth:', requiresAuth)
-
   // Se estiver indo para setup, permite continuar
   if (to.path === '/setup') {
     return next()

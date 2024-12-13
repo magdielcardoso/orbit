@@ -46,6 +46,13 @@ export default {
     notifications: 'Notificações',
     privacy: 'Privacidade',
     themeSelect: 'Selecionar Tema',
+    preferences: 'Preferências',
+    general: 'Configurações Gerais',
+    profile: 'Configurações de Perfil',
+    security: 'Segurança',
+    notificationPreferences: 'Preferências de Notificação',
+    securitySettings: 'Configurações de Segurança',
+    apiTokens: 'Tokens de API',
     themes: {
       light: 'Tema Claro',
       dark: 'Tema Escuro'
@@ -63,5 +70,19 @@ export default {
     title: 'Notificações Não Lidas',
     noUnread: 'Você não tem notificações não lidas',
     viewAll: 'Ver todas as notificações'
+  },
+  chats: {
+    title: 'Conversas',
+    filters: 'Filtros',
+    allChats: 'Todas as Conversas',
+    activeChats: 'Conversas Ativas',
+    archivedChats: 'Conversas Arquivadas',
+    labels: 'Rótulos',
+    important: 'Importante',
+    unread: 'Não Lidas',
+    flagged: 'Sinalizadas',
+    teams: 'Equipes',
+    myTeam: 'Minha Equipe',
+    assignedToMe: 'Atribuídas a Mim'
   }
 } 

@@ -29,6 +29,37 @@ export default {
     languageHelp: 'O idioma selecionado será aplicado em toda a aplicação',
     theme: 'Tema',
     notifications: 'Notificações',
-    privacy: 'Privacidade'
+    privacy: 'Privacidade',
+    sections: {
+      preferences: {
+        title: 'Preferências do Usuário',
+        general: {
+          title: 'Configurações Gerais',
+          description: 'Configure as configurações básicas da sua conta'
+        },
+        profile: {
+          title: 'Configurações de Perfil',
+          description: 'Gerencie suas informações de perfil'
+        }
+      },
+      notifications: {
+        title: 'Notificações',
+        preferences: {
+          title: 'Preferências de Notificação',
+          description: 'Configure como você recebe notificações'
+        }
+      },
+      security: {
+        title: 'Segurança',
+        settings: {
+          title: 'Configurações de Segurança',
+          description: 'Gerencie a segurança da sua conta'
+        },
+        apiTokens: {
+          title: 'Tokens de API',
+          description: 'Gerencie seus tokens de acesso à API'
+        }
+      }
+    }
   }
 } 
