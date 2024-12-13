@@ -6,7 +6,26 @@ export default {
   chats: {
     title: 'Conversas',
     noChats: 'Nenhuma conversa ainda',
-    newChat: 'Nova conversa'
+    newChat: 'Nova conversa',
+    sidebar: {
+      filters: {
+        title: 'Filtros',
+        all: 'Todas as Conversas',
+        active: 'Conversas Ativas',
+        archived: 'Conversas Arquivadas'
+      },
+      labels: {
+        title: 'Rótulos',
+        important: 'Importantes',
+        unread: 'Não Lidas',
+        flagged: 'Sinalizadas'
+      },
+      teams: {
+        title: 'Equipes',
+        myTeam: 'Minha Equipe',
+        assignedToMe: 'Atribuídas a Mim'
+      }
+    }
   },
   contacts: {
     title: 'Contatos',
@@ -23,9 +42,9 @@ export default {
     selectLanguage: 'Selecione o idioma',
     selectTheme: 'Selecione o tema',
     themes: {
-        light: 'Tema Claro',
-        dark: 'Tema Escuro'
-      },
+      light: 'Tema Claro',
+      dark: 'Tema Escuro'
+    },
     languageHelp: 'O idioma selecionado será aplicado em toda a aplicação',
     theme: 'Tema',
     notifications: 'Notificações',

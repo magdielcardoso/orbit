@@ -84,6 +84,25 @@ export default {
     flagged: 'Flagged',
     teams: 'Teams',
     myTeam: 'My Team',
-    assignedToMe: 'Assigned to Me'
+    assignedToMe: 'Assigned to Me',
+    sidebar: {
+      filters: {
+        title: 'Filters',
+        all: 'All Chats',
+        active: 'Active Chats',
+        archived: 'Archived'
+      },
+      labels: {
+        title: 'Labels',
+        important: 'Important',
+        unread: 'Unread',
+        flagged: 'Flagged'
+      },
+      teams: {
+        title: 'Teams',
+        myTeam: 'My Team',
+        assignedToMe: 'Assigned to Me'
+      }
+    }
   }
 } 

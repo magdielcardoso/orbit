@@ -6,7 +6,26 @@ export default {
   chats: {
     title: 'Chats',
     noChats: 'No chats yet',
-    newChat: 'New chat'
+    newChat: 'New chat',
+    sidebar: {
+      filters: {
+        title: 'Filters',
+        all: 'All Chats',
+        active: 'Active Chats',
+        archived: 'Archived Chats'
+      },
+      labels: {
+        title: 'Labels',
+        important: 'Important',
+        unread: 'Unread',
+        flagged: 'Flagged'
+      },
+      teams: {
+        title: 'Teams',
+        myTeam: 'My Team',
+        assignedToMe: 'Assigned to Me'
+      }
+    }
   },
   contacts: {
     title: 'Contacts',

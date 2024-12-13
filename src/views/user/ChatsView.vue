@@ -9,58 +9,58 @@ const { t } = useI18n()
 const sidebarSections = computed(() => [
   {
     id: 'chat-filters',
-    label: t('chats.filters'),
+    label: t('chats.sidebar.filters.title'),
     items: [
       {
         id: 'all-chats',
-        label: t('chats.allChats'),
+        label: t('chats.sidebar.filters.all'),
         icon: 'MessageSquare'
       },
       {
         id: 'active-chats',
-        label: t('chats.activeChats'),
+        label: t('chats.sidebar.filters.active'),
         icon: 'MessageCircle'
       },
       {
         id: 'archived-chats',
-        label: t('chats.archivedChats'),
+        label: t('chats.sidebar.filters.archived'),
         icon: 'Archive'
       }
     ]
   },
   {
     id: 'chat-labels',
-    label: t('chats.labels'),
+    label: t('chats.sidebar.labels.title'),
     items: [
       {
         id: 'important',
-        label: t('chats.important'),
+        label: t('chats.sidebar.labels.important'),
         icon: 'Star'
       },
       {
         id: 'unread',
-        label: t('chats.unread'),
+        label: t('chats.sidebar.labels.unread'),
         icon: 'Mail'
       },
       {
         id: 'flagged',
-        label: t('chats.flagged'),
+        label: t('chats.sidebar.labels.flagged'),
         icon: 'Flag'
       }
     ]
   },
   {
     id: 'chat-teams',
-    label: t('chats.teams'),
+    label: t('chats.sidebar.teams.title'),
     items: [
       {
         id: 'my-team',
-        label: t('chats.myTeam'),
+        label: t('chats.sidebar.teams.myTeam'),
         icon: 'Users'
       },
       {
         id: 'assigned-to-me',
-        label: t('chats.assignedToMe'),
+        label: t('chats.sidebar.teams.assignedToMe'),
         icon: 'UserCheck'
       }
     ]

@@ -83,6 +83,25 @@ export default {
     flagged: 'Sinalizadas',
     teams: 'Equipes',
     myTeam: 'Minha Equipe',
-    assignedToMe: 'Atribuídas a Mim'
+    assignedToMe: 'Atribuídas a Mim',
+    sidebar: {
+      filters: {
+        title: 'Filtros',
+        all: 'Todas as Conversas',
+        active: 'Conversas Ativas',
+        archived: 'Arquivadas'
+      },
+      labels: {
+        title: 'Rótulos',
+        important: 'Importantes',
+        unread: 'Não Lidas',
+        flagged: 'Sinalizadas'
+      },
+      teams: {
+        title: 'Equipes',
+        myTeam: 'Minha Equipe',
+        assignedToMe: 'Atribuídas a Mim'
+      }
+    }
   }
 } 
