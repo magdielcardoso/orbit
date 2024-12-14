@@ -115,31 +115,17 @@ export const resolvers = {
           throw new Error('Não autorizado');
         }
 
-        // Busca as últimas atividades do sistema
-        const activities = await prisma.activity.findMany({
-          orderBy: {
-            createdAt: 'desc'
-          },
-          take: 5,
-          include: {
-            user: {
-              select: {
-                name: true
-              }
-            }
+        // Mock de atividades enquanto não há dados reais
+        return [
+          {
+            id: '1',
+            type: 'system_config',
+            description: 'Sistema configurado com sucesso',
+            user: userWithRole.name,
+            timestamp: new Date().toISOString()
           }
-        });
+        ];
 
-        console.log('Recent activities found:', activities.length); // Debug
-
-        // Mapeia os resultados para o formato esperado
-        return activities.map(activity => ({
-          id: activity.id,
-          type: activity.type,
-          description: activity.description,
-          user: activity.user.name,
-          timestamp: activity.createdAt.toISOString() // Garante formato ISO para datas
-        }));
       } catch (error) {
         console.error('Erro ao buscar atividades:', error);
         throw error;
@@ -186,8 +172,6 @@ export const resolvers = {
             }
           })
         ]);
-
-        console.log('Admin stats found:', { users: users.length, roles: roles.length }); // Debug
 
         return {
           totalUsers: users.length,

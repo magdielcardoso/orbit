@@ -69,6 +69,7 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   messages  Message[]
+  activities Activity[]
 }
 
 model Message {
@@ -78,5 +79,15 @@ model Message {
   updatedAt DateTime @updatedAt
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+}
+
+model Activity {
+  id          String   @id @default(uuid())
+  type        String
+  description String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
