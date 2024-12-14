@@ -12,12 +12,19 @@ export async function gqlRequest(query, variables = null, options = {}) {
   try {
     const token = localStorage.getItem('token');
     
+    const headers = {
+      'Content-Type': 'application/json',
+      ...options.headers
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     const response = await fetch(GRAPHQL_URL, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : '',
-        ...options.headers
+        ...headers
       },
       body: JSON.stringify({
         query,

@@ -175,9 +175,13 @@
 import { ref, onMounted } from 'vue';
 import { useI18n } from '@/i18n';
 import { gqlRequest } from '../../utils/graphql';
+import { useAuthStore } from '../../stores/auth.store';
+import { useRouter } from 'vue-router';
 import Modal from '../../components/Modal.vue';
 
 const { t } = useI18n();
+const authStore = useAuthStore();
+const router = useRouter();
 const users = ref([]);
 const roles = ref([]);
 const loading = ref(false);
@@ -193,6 +197,10 @@ const newUser = ref({
 async function fetchData() {
   try {
     loading.value = true;
+    if (!authStore.isAuthenticated) {
+      throw new Error('Não autenticado');
+    }
+
     const query = `
       query {
         users {
@@ -214,12 +222,21 @@ async function fetchData() {
       }
     `;
 
-    const response = await gqlRequest(query);
+    const response = await gqlRequest(query, null, {
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`
+      }
+    });
+
     console.log('Usuários carregados:', response.users); // Debug
     users.value = response.users;
     roles.value = response.roles;
   } catch (error) {
     console.error('Erro ao carregar dados:', error);
+    if (error.message.includes('autoriza') || error.message.includes('autentica')) {
+      authStore.logout();
+      router.push('/login');
+    }
   } finally {
     loading.value = false;
   }
@@ -229,6 +246,10 @@ async function fetchData() {
 async function handleCreateUser() {
   try {
     loading.value = true;
+    if (!newUser.value.roleId) {
+      throw new Error('Selecione um papel para o usuário');
+    }
+
     const mutation = `
       mutation CreateUser($name: String!, $email: String!, $password: String!, $roleId: String) {
         createUser(name: $name, email: $email, password: $password, roleId: $roleId) {
@@ -244,12 +265,19 @@ async function handleCreateUser() {
       }
     `;
 
-    await gqlRequest(mutation, newUser.value);
+    await gqlRequest(mutation, newUser.value, {
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`
+      }
+    });
+
     await fetchData(); // Recarrega os dados
     showNewUserModal.value = false;
     newUser.value = { name: '', email: '', password: '', roleId: '' };
+    alert('Usuário criado com sucesso!');
   } catch (error) {
     console.error('Erro ao criar usuário:', error);
+    alert(error.message);
   } finally {
     loading.value = false;
   }
@@ -262,16 +290,26 @@ async function deleteUser(user) {
   }
 
   try {
+    loading.value = true;
     const mutation = `
       mutation DeleteUser($id: ID!) {
         deleteUser(id: $id)
       }
     `;
 
-    await gqlRequest(mutation, { id: user.id });
+    await gqlRequest(mutation, { id: user.id }, {
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`
+      }
+    });
+
     await fetchData(); // Recarrega os dados
+    alert('Usuário excluído com sucesso!');
   } catch (error) {
     console.error('Erro ao excluir usuário:', error);
+    alert(error.message);
+  } finally {
+    loading.value = false;
   }
 }
 

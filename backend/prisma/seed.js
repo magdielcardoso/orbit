@@ -73,6 +73,25 @@ async function main() {
     }
   })
 
+  // Adiciona permissão manage_users ao superadmin
+  const manageUsers = await prisma.permission.findUnique({
+    where: { name: 'manage_users' }
+  })
+
+  await prisma.rolePermission.upsert({
+    where: {
+      roleId_permissionId: {
+        roleId: adminRole.id,
+        permissionId: manageUsers.id
+      }
+    },
+    update: {},
+    create: {
+      roleId: adminRole.id,
+      permissionId: manageUsers.id
+    }
+  })
+
   // Permissões do usuário
   await prisma.rolePermission.upsert({
     where: {

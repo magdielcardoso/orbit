@@ -44,15 +44,76 @@ export const resolvers = {
       };
     },
     users: async (_, __, { prisma, user }) => {
-      if (!user?.role?.permissions?.includes('manage_users')) {
-        throw new Error('Não autorizado')
-      }
+      try {
+        // Verifica autenticação básica
+        if (!user) throw new Error('Não autorizado');
 
-      return await prisma.user.findMany({
-        include: {
-          role: true
+        // Busca usuário com permissões
+        const userWithRole = await prisma.user.findUnique({
+          where: { id: user.id },
+          include: {
+            role: {
+              include: {
+                permissions: {
+                  include: { permission: true }
+                }
+              }
+            }
+          }
+        });
+
+        // Verifica permissão específica
+        const hasPermission = userWithRole?.role?.permissions?.some(
+          p => p.permission.name === 'manage_users' || p.permission.name === 'manage_system'
+        );
+
+        if (!hasPermission) {
+          throw new Error('Não autorizado');
         }
-      })
+
+        return prisma.user.findMany({
+          include: {
+            role: true
+          }
+        });
+      } catch (error) {
+        console.error('Erro ao buscar usuários:', error);
+        throw error;
+      }
+    },
+    roles: async (_, __, { prisma, user }) => {
+      try {
+        // Verifica autenticação básica
+        if (!user) throw new Error('Não autorizado');
+
+        // Busca usuário com permissões
+        const userWithRole = await prisma.user.findUnique({
+          where: { id: user.id },
+          include: {
+            role: {
+              include: {
+                permissions: {
+                  include: { permission: true }
+                }
+              }
+            }
+          }
+        });
+
+        // Verifica permissão específica
+        const hasPermission = userWithRole?.role?.permissions?.some(
+          p => p.permission.name === 'manage_users' || p.permission.name === 'manage_system'
+        );
+
+        if (!hasPermission) {
+          throw new Error('Não autorizado');
+        }
+
+        return prisma.role.findMany();
+      } catch (error) {
+        console.error('Erro ao buscar papéis:', error);
+        throw error;
+      }
     },
     systemStatus: async (_, __, { prisma }) => {
       try {
@@ -289,6 +350,120 @@ export const resolvers = {
       } catch (error) {
         console.error('Login error:', error) // Debug
         throw error
+      }
+    },
+
+    createUser: async (_, args, { prisma, user }) => {
+      try {
+        // Verifica se o usuário tem permissão
+        const userWithRole = await prisma.user.findUnique({
+          where: { id: user.id },
+          include: {
+            role: {
+              include: {
+                permissions: {
+                  include: { permission: true }
+                }
+              }
+            }
+          }
+        });
+
+        const hasPermission = userWithRole?.role?.permissions?.some(
+          p => p.permission.name === 'manage_users'
+        );
+
+        if (!hasPermission) {
+          throw new Error('Não autorizado');
+        }
+
+        // Cria o usuário
+        const hashedPassword = await bcrypt.hash(args.password, 10);
+        const newUser = await prisma.user.create({
+          data: {
+            name: args.name,
+            email: args.email,
+            password: hashedPassword,
+            roleId: args.roleId,
+            active: true
+          },
+          include: {
+            role: true
+          }
+        });
+
+        // Registra a atividade
+        await prisma.activity.create({
+          data: {
+            type: 'user_created',
+            description: `Usuário ${newUser.name} criado`,
+            userId: user.id
+          }
+        });
+
+        return newUser;
+      } catch (error) {
+        console.error('Erro ao criar usuário:', error);
+        throw error;
+      }
+    },
+
+    deleteUser: async (_, { id }, { prisma, user }) => {
+      try {
+        // Verifica se o usuário tem permissão
+        const userWithRole = await prisma.user.findUnique({
+          where: { id: user.id },
+          include: {
+            role: {
+              include: {
+                permissions: {
+                  include: { permission: true }
+                }
+              }
+            }
+          }
+        });
+
+        const hasPermission = userWithRole?.role?.permissions?.some(
+          p => p.permission.name === 'manage_users'
+        );
+
+        if (!hasPermission) {
+          throw new Error('Não autorizado');
+        }
+
+        // Busca o usuário a ser deletado
+        const userToDelete = await prisma.user.findUnique({
+          where: { id }
+        });
+
+        if (!userToDelete) {
+          throw new Error('Usuário não encontrado');
+        }
+
+        // Não permite deletar o próprio usuário
+        if (userToDelete.id === user.id) {
+          throw new Error('Não é possível deletar o próprio usuário');
+        }
+
+        // Deleta o usuário
+        await prisma.user.delete({
+          where: { id }
+        });
+
+        // Registra a atividade
+        await prisma.activity.create({
+          data: {
+            type: 'user_deleted',
+            description: `Usuário ${userToDelete.name} deletado`,
+            userId: user.id
+          }
+        });
+
+        return true;
+      } catch (error) {
+        console.error('Erro ao deletar usuário:', error);
+        throw error;
       }
     }
   }
