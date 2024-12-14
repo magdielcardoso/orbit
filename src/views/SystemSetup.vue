@@ -21,7 +21,7 @@
 
     <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
       <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 border-2 border-purple-500">
-        <form class="space-y-6" @submit.prevent="handleSetup">
+        <form class="space-y-6" @submit.prevent="handleSubmit">
           <!-- Superadmin Info -->
           <div>
             <h3 class="text-lg font-medium text-gray-900 mb-4">Superadmin</h3>
@@ -137,79 +137,54 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '../stores/auth.store';
-import { Eye, EyeOff } from 'lucide-vue-next';
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth.store'
+import { setupSystem } from '../utils/system'
+import { Eye, EyeOff } from 'lucide-vue-next'
 
-const router = useRouter();
-const authStore = useAuthStore();
+const router = useRouter()
+const authStore = useAuthStore()
+const loading = ref(false)
+const error = ref(null)
+const showSuccessToast = ref(false)
+const showPassword = ref(false)
 
 const form = ref({
   name: '',
   email: '',
-  password: '',
-  systemName: '',
-  timezone: 'America/Sao_Paulo'
-});
+  password: ''
+})
 
-const loading = ref(false);
-const error = ref('');
-const showPassword = ref(false);
-const showSuccessToast = ref(false);
-
-async function handleSetup() {
+async function handleSubmit() {
   try {
-    loading.value = true;
-    error.value = '';
-    showSuccessToast.value = false;
+    loading.value = true
+    error.value = null
+    
+    const response = await setupSystem(form.value)
+    
+    if (response.success) {
+      // Atualiza o estado de autenticação
+      authStore.setAuth({
+        token: response.token,
+        user: response.user
+      })
 
-    const response = await fetch('/api/system/setup', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(form.value)
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Erro ao configurar o sistema');
+      // Define o sistema como configurado
+      localStorage.setItem('systemConfigured', 'true')
+      
+      // Mostra o toast de sucesso
+      showSuccessToast.value = true
+      
+      // Redireciona para o dashboard
+      setTimeout(() => {
+        router.push('/admin')
+      }, 1500)
     }
-    
-    console.log('Setup concluído:', data);
-    
-    // Atualiza o estado de autenticação
-    authStore.setAuth(data, true);
-
-    // Define o sistema como configurado
-    localStorage.setItem('systemConfigured', 'true');
-
-    // Mostra o toast de sucesso
-    showSuccessToast.value = true;
-
-    // Aguarda um pouco para o usuário ver o toast
-    setTimeout(() => {
-      console.log('Redirecionando para o painel admin...');
-      // Redireciona para o painel de admin
-      router.push('/admin').catch(err => {
-        console.error('Erro no redirecionamento:', err);
-        // Tenta redirecionar usando o nome da rota
-        router.push({ name: 'admin-panel' }).catch(err => {
-          console.error('Erro no redirecionamento alternativo:', err);
-        });
-      });
-    }, 1500);
   } catch (err) {
-    console.error('Erro no setup:', err);
-    error.value = err.message;
-    // Remove o erro após 3 segundos
-    setTimeout(() => {
-      error.value = '';
-    }, 3000);
+    error.value = err.message
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 </script>

@@ -61,6 +61,7 @@ model User {
   email     String    @unique
   password  String
   name      String
+  active    Boolean  @default(true)
   roleId    String?
   role      Role?     @relation(fields: [roleId], references: [id])
   createdAt DateTime  @default(now())

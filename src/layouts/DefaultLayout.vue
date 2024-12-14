@@ -1,54 +1,28 @@
 <template>
-  <div class="flex h-screen bg-gray-100">
-    <!-- Sidebar para usuários normais -->
+  <div class="flex h-screen">
+    <!-- Sidebar baseado no tipo de usuário -->
     <UserSidebar v-if="!isAdmin" />
-    
-    <!-- Sidebar para admin -->
-    <SuperAdminSidebar v-if="isAdmin">
-      <template #default>
-        <router-view />
-      </template>
-    </SuperAdminSidebar>
+    <SuperAdminSidebar v-else />
 
-    <!-- Conteúdo principal (apenas para usuários normais, pois o admin já tem slot) -->
-    <div v-if="!isAdmin" class="flex-1 overflow-auto">
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto bg-base-100">
       <router-view />
-    </div>
+    </main>
   </div>
 </template>
 
 <script setup>
-import { computed, watch, onMounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import { useAuthStore } from '../stores/auth.store';
-import UserSidebar from '../components/layout/UserSidebar.vue';
-import SuperAdminSidebar from '../components/layout/SuperAdminSidebar.vue';
+import { computed } from 'vue'
+import { useAuthStore } from '../stores/auth.store'
+import UserSidebar from '../components/layout/UserSidebar.vue'
+import SuperAdminSidebar from '../components/layout/SuperAdminSidebar.vue'
 
-const route = useRoute();
-const router = useRouter();
-const authStore = useAuthStore();
+const authStore = useAuthStore()
 
+// Verifica se o usuário é admin baseado nas permissões
 const isAdmin = computed(() => {
-  return authStore.hasPermission('manage_system');
-});
-
-const redirectBasedOnRole = () => {
-  const currentPath = route.path;
-  
-  if (isAdmin.value && currentPath.startsWith('/dashboard')) {
-    router.push('/admin');
-  }
-  
-  if (!isAdmin.value && currentPath.startsWith('/admin')) {
-    router.push('/dashboard');
-  }
-};
-
-watch(route, redirectBasedOnRole);
-
-onMounted(async () => {
-  // Verifica autenticação ao montar o componente
-  await authStore.checkAuth();
-  redirectBasedOnRole();
-});
+  const hasPermission = authStore.hasPermission('manage_system')
+  console.log('Is Admin?', hasPermission) // Debug
+  return hasPermission
+})
 </script>

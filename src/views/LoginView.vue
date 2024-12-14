@@ -150,13 +150,13 @@ const form = ref({
 });
 
 const loading = ref(false);
-const error = ref('');
+const error = ref(null);
 const showPassword = ref(false);
 
 async function handleLogin() {
   try {
     loading.value = true;
-    error.value = '';
+    error.value = null;
 
     const loginMutation = `
       mutation Login($email: String!, $password: String!) {
@@ -166,8 +166,12 @@ async function handleLogin() {
             id
             name
             email
-            role
-            permissions
+            role {
+              name
+              permissions {
+                name
+              }
+            }
           }
         }
       }
@@ -178,16 +182,21 @@ async function handleLogin() {
       password: form.value.password
     });
 
-    // Atualiza o store com os dados do usuário
-    await authStore.setAuth({
+    // Atualiza o estado de autenticação
+    authStore.setAuth({
       token: response.login.token,
       user: response.login.user
-    }, form.value.rememberMe);
+    });
 
-    router.push({ name: 'dashboard' });
+    // Redireciona baseado no papel do usuário
+    if (authStore.hasPermission('manage_system')) {
+      router.push('/admin');
+    } else {
+      router.push('/dashboard');
+    }
   } catch (err) {
     console.error('Erro no login:', err);
-    error.value = t('auth.login.error');
+    error.value = err.message;
   } finally {
     loading.value = false;
   }

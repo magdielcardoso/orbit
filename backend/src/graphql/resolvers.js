@@ -29,20 +29,26 @@ export const resolvers = {
     },
     systemStatus: async (_, __, { prisma }) => {
       try {
-        const userCount = await prisma.user.count();
+        const systemConfig = await prisma.systemConfig.findFirst({
+          where: {
+            status: 'CONFIGURED'
+          }
+        })
+        
+        console.log('System config found:', systemConfig) // Debug
         
         return {
-          configured: userCount > 0,
+          configured: !!systemConfig,
           version: process.env.APP_VERSION || '1.0.0',
-          status: 'online'
-        };
+          status: systemConfig ? 'online' : 'PENDING_SETUP'
+        }
       } catch (error) {
-        console.error('Erro ao verificar status do sistema:', error);
+        console.error('Erro ao verificar status do sistema:', error)
         return {
           configured: false,
           version: process.env.APP_VERSION || '1.0.0',
           status: 'error'
-        };
+        }
       }
     }
   },
@@ -54,8 +60,15 @@ export const resolvers = {
     },
     
     login: async (_, args, { authService }) => {
-      if (!authService) throw new Error('AuthService não disponível');
-      return await authService.login(args);
+      try {
+        if (!authService) throw new Error('AuthService não disponível')
+        const result = await authService.login(args)
+        console.log('Login result:', result) // Debug
+        return result
+      } catch (error) {
+        console.error('Login error:', error) // Debug
+        throw error
+      }
     }
   }
 } 

@@ -10,6 +10,7 @@ import SuperAdminPanel from '../views/SuperAdminPanel.vue'
 import UsersManagement from '../views/admin/UsersManagement.vue'
 import RolesManagement from '../views/admin/RolesManagement.vue'
 import SystemSettings from '../views/admin/SystemSettings.vue'
+import { checkSystemStatus } from '@/utils/system'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -109,24 +110,26 @@ router.beforeEach(async (to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
 
-  // Se estiver indo para setup, permite continuar
-  if (to.path === '/setup') {
-    return next()
-  }
-
   try {
-    // Verifica o status do sistema
-    const response = await fetch('/api/system/status')
-    const { status } = await response.json()
+    // Verifica o status do sistema usando GraphQL
+    const systemStatus = await checkSystemStatus()
+    console.log('System status:', systemStatus) // Debug
 
     // Se o sistema não estiver configurado e não estiver indo para setup
-    if (status === 'PENDING_SETUP') {
+    if (!systemStatus.configured && to.name !== 'system-setup') {
+      console.log('Sistema não configurado, redirecionando para setup') // Debug
       localStorage.removeItem('systemConfigured')
       return next('/setup')
     }
 
+    // Se o sistema estiver configurado e estiver tentando acessar setup
+    if (systemStatus.configured && to.name === 'system-setup') {
+      console.log('Sistema já configurado, redirecionando para home') // Debug
+      return next('/')
+    }
+
     // Se o sistema estiver configurado, atualiza o localStorage
-    if (status === 'CONFIGURED') {
+    if (systemStatus.configured) {
       localStorage.setItem('systemConfigured', 'true')
     }
 
@@ -155,6 +158,7 @@ router.beforeEach(async (to, from, next) => {
     next()
   } catch (error) {
     console.error('Erro ao verificar status do sistema:', error)
+    // Em caso de erro, permite continuar mas loga o erro
     next()
   }
 })

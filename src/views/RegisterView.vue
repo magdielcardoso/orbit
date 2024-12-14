@@ -121,6 +121,7 @@ import { useAuthStore } from '../stores/auth.store';
 import { useI18n } from '@/i18n/plugin';
 import LocaleSelector from '../components/LocaleSelector.vue';
 import { Eye, EyeOff } from 'lucide-vue-next';
+import { gqlRequest } from '../utils/graphql';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -133,18 +134,49 @@ const form = ref({
 });
 
 const loading = ref(false);
-const error = ref('');
+const error = ref(null);
 const showPassword = ref(false);
 
 async function handleRegister() {
   try {
     loading.value = true;
-    error.value = '';
-    await authStore.register(form.value);
-    router.push({ name: 'dashboard' });
+    error.value = null;
+
+    const registerMutation = `
+      mutation Register($name: String!, $email: String!, $password: String!) {
+        register(name: $name, email: $email, password: $password) {
+          token
+          user {
+            id
+            name
+            email
+            active
+            role {
+              name
+              permissions {
+                name
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const response = await gqlRequest(registerMutation, {
+      name: form.value.name,
+      email: form.value.email,
+      password: form.value.password
+    });
+
+    authStore.setAuth({
+      token: response.register.token,
+      user: response.register.user
+    });
+
+    router.push('/dashboard');
   } catch (err) {
     console.error('Erro no registro:', err);
-    error.value = 'auth.register.error';
+    error.value = err.message;
   } finally {
     loading.value = false;
   }
