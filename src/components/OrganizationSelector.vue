@@ -2,23 +2,35 @@
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { gqlRequest } from '@/utils/graphql'
+import { useI18n } from '@/i18n'
 import { Building } from 'lucide-vue-next'
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 const organizations = ref([])
-const loading = ref(true)
+const loading = ref(false)
 
-async function fetchOrganizations() {
+// Busca organizações do usuário
+async function fetchUserOrganizations() {
   try {
+    loading.value = true
     const query = `
       query GetUserOrganizations {
-        me {
+        users {
+          id
+          name
+          email
+          currentOrgId
           organizations {
             organization {
               id
               name
               slug
+              plan
             }
+            isAdmin
+            isOwner
+            status
           }
         }
       }
@@ -30,25 +42,101 @@ async function fetchOrganizations() {
       }
     })
 
-    organizations.value = response.me.organizations.map(org => org.organization)
-    
-    // Se só tem uma organização, seleciona ela automaticamente
-    if (organizations.value.length === 1 && !authStore.currentOrganization) {
-      authStore.setCurrentOrganization(organizations.value[0])
+    console.log('Resposta completa:', response)
+
+    // Encontra o usuário atual
+    const currentUser = response.users.find(u => u.id === authStore.user.id)
+    if (!currentUser) return
+
+    // Extrai as organizações e marca a atual
+    const userOrgs = currentUser.organizations || []
+    const currentOrgId = currentUser.currentOrgId
+
+    organizations.value = userOrgs.map(org => ({
+      id: org.organization.id,
+      name: org.organization.name,
+      slug: org.organization.slug,
+      plan: org.organization.plan,
+      isAdmin: org.isAdmin,
+      isOwner: org.isOwner,
+      status: org.status,
+      isCurrent: org.organization.id === currentOrgId
+    }))
+
+    // Encontra e atualiza a organização atual
+    const currentOrg = userOrgs.find(org => 
+      org.organization.id === currentOrgId
+    )?.organization
+
+    if (currentOrg) {
+      authStore.setCurrentOrganization({
+        id: currentOrg.id,
+        name: currentOrg.name,
+        slug: currentOrg.slug,
+        plan: currentOrg.plan
+      })
     }
+
+    console.log('Organizações processadas:', organizations.value)
   } catch (error) {
-    console.error('Erro ao buscar organizações:', error)
+    console.error('Erro ao carregar organizações:', error)
   } finally {
     loading.value = false
   }
 }
 
-function handleOrganizationChange(org) {
-  authStore.setCurrentOrganization(org)
-  window.location.reload() // Recarrega para atualizar os dados
+// Função para trocar de organização
+async function switchOrganization(orgId) {
+  try {
+    loading.value = true
+    const mutation = `
+      mutation UpdateUser($id: ID!, $input: UserInput!) {
+        updateUser(id: $id, input: $input) {
+          id
+          currentOrgId
+        }
+      }
+    `
+
+    await gqlRequest(mutation, {
+      id: authStore.user.id,
+      input: {
+        currentOrgId: orgId
+      }
+    }, {
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`
+      }
+    })
+
+    // Atualiza a lista
+    await fetchUserOrganizations()
+
+    // Atualiza o estado global se necessário
+    authStore.setCurrentOrgId(orgId)
+  } catch (error) {
+    console.error('Erro ao trocar organização:', error)
+  } finally {
+    loading.value = false
+  }
 }
 
-onMounted(fetchOrganizations)
+// Função para lidar com a mudança de organização
+async function handleOrganizationChange(org) {
+  if (org.id !== authStore.currentOrganization?.id) {
+    await switchOrganization(org.id)
+  }
+}
+
+onMounted(fetchUserOrganizations)
+
+// Expõe funções e dados necessários
+defineExpose({
+  organizations,
+  loading,
+  switchOrganization,
+  fetchUserOrganizations
+})
 </script>
 
 <template>
