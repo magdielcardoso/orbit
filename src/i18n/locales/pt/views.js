@@ -188,7 +188,8 @@ export default {
       },
       noUsers: 'Nenhum usuário encontrado',
       noRole: 'Sem função atribuída',
-      loading: 'Carregando usuários...'
+      loading: 'Carregando usuários...',
+      agentOf: 'Agente de'
     },
     roles: {
       title: 'Papéis e Permissões',

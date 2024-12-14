@@ -56,6 +56,13 @@
                 <tr v-for="user in users" :key="user.id">
                   <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
                     {{ user.name }}
+                    <span 
+                      v-if="user.role?.name === 'agent' && user.parentUser" 
+                      class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800"
+                    >
+                      <span class="text-blue-600 mr-1">{{ t('admin.users.agentOf') }}:</span>
+                      {{ user.parentUser.name }}
+                    </span>
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                     {{ user.email }}
@@ -282,6 +289,10 @@ async function fetchData() {
           email
           active
           role {
+            id
+            name
+          }
+          parentUser {
             id
             name
           }
