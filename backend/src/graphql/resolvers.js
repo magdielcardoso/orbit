@@ -383,9 +383,33 @@ export const resolvers = {
   },
 
   Mutation: {
-    register: async (_, args, { authService }) => {
-      if (!authService) throw new Error('AuthService não disponível');
-      return await authService.register(args);
+    register: async (_, args, { authService, prisma }) => {
+      try {
+        if (!authService) throw new Error('AuthService não disponível');
+        
+        // Executa o registro
+        const result = await authService.register(args);
+
+        // Registra a atividade
+        await logActivity({
+          type: 'USER_ACTION',
+          level: 'INFO',
+          source: 'FRONTEND',
+          action: 'SELF_REGISTER',
+          description: `Novo usuário ${result.user.name} registrado via formulário de registro`,
+          userId: result.user.id,
+          metadata: {
+            newUserId: result.user.id,
+            email: result.user.email,
+            roleId: result.user.roleId
+          }
+        });
+
+        return result;
+      } catch (error) {
+        console.error('Erro no registro:', error);
+        throw error;
+      }
     },
     
     registerSuperAdmin: async (_, args, { prisma, app }) => {

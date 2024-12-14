@@ -72,36 +72,31 @@ export default class AuthService {
         }
       })
 
-      // Mapeia as permissões para o formato esperado
-      const permissions = user.role.permissions.map(rp => ({
-        name: rp.permission.name
-      }))
-
-      // Retorna o formato esperado pelo frontend
-      return {
-        token: jwt.sign(
-          { 
-            id: user.id,
-            email: user.email,
-            role: user.role.name,
-            permissions: permissions.map(p => p.name)
-          },
-          process.env.JWT_SECRET,
-          { expiresIn: '7d' }
-        ),
-        user: {
+      // Gera o token
+      const token = jwt.sign(
+        {
           id: user.id,
           email: user.email,
-          name: user.name,
-          active: user.active,
+          role: user.role?.name,
+          permissions: user.role?.permissions.map(p => p.permission.name)
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+
+      // Retorna o usuário formatado com suas permissões
+      return {
+        token,
+        user: {
+          ...user,
           role: {
-            name: user.role.name,
-            permissions: permissions
+            ...user.role,
+            permissions: user.role?.permissions.map(p => p.permission)
           }
         }
       }
     } catch (error) {
-      console.error('Register service error:', error)
+      console.error('Erro no registro:', error)
       throw error
     }
   }

@@ -35,13 +35,16 @@
         </nav>
 
         <!-- User Info -->
-        <div class="p-4 mx-4 mb-4 rounded-xl bg-slate-700/30 backdrop-blur-sm">
+        <div class="p-4 mx-4 mb-4 rounded-xl bg-slate-700/30 backdrop-blur-sm relative">
           <div class="flex items-center space-x-3">
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-blue-500 to-blue-400 flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <button 
+              @click="toggleUserMenu"
+              class="w-12 h-12 rounded-xl bg-gradient-to-tr from-blue-500 to-blue-400 flex items-center justify-center shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all duration-200"
+            >
               <span class="text-white font-medium">
                 {{ getUserInitials }}
               </span>
-            </div>
+            </button>
             <div class="flex-1">
               <p class="text-white font-medium text-sm">{{ authStore.user?.name }}</p>
               <p class="text-slate-400 text-xs">{{ authStore.userRole }}</p>
@@ -53,6 +56,54 @@
             >
               <LogOut class="w-5 h-5" />
             </button>
+          </div>
+
+          <!-- Menu de Contexto -->
+          <div 
+            v-if="showUserMenu"
+            class="absolute bottom-full left-0 mb-2 w-56 rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+          >
+            <div class="py-1">
+              <!-- Opção Gestão da Plataforma (apenas para superadmin) -->
+              <router-link
+                v-if="isSuperAdmin"
+                to="/admin/platform"
+                class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
+              >
+                <Settings class="mr-3 h-5 w-5 text-gray-400 group-hover:text-blue-500" />
+                Gestão da Plataforma
+              </router-link>
+
+              <!-- Perfil -->
+              <router-link
+                to="/admin/profile"
+                class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
+              >
+                <User class="mr-3 h-5 w-5 text-gray-400 group-hover:text-blue-500" />
+                Perfil
+              </router-link>
+
+              <!-- Configurações -->
+              <router-link
+                to="/admin/settings"
+                class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
+              >
+                <Settings class="mr-3 h-5 w-5 text-gray-400 group-hover:text-blue-500" />
+                Configurações
+              </router-link>
+
+              <!-- Linha divisória -->
+              <div class="h-px bg-gray-200 my-1"></div>
+
+              <!-- Sair -->
+              <button
+                @click="handleLogout"
+                class="group flex w-full items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+              >
+                <LogOut class="mr-3 h-5 w-5 text-red-400 group-hover:text-red-500" />
+                Sair
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -66,13 +117,48 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/auth.store';
-import { LayoutDashboard, Users, Shield, Settings, LogOut } from 'lucide-vue-next';
+import { 
+  LayoutDashboard, 
+  Users, 
+  Shield, 
+  Settings, 
+  LogOut,
+  User
+} from 'lucide-vue-next';
 
 const router = useRouter();
 const authStore = useAuthStore();
+const showUserMenu = ref(false);
+
+// Verifica se é superadmin
+const isSuperAdmin = computed(() => {
+  return authStore.user?.role?.name === 'superadmin';
+});
+
+// Toggle do menu de usuário
+const toggleUserMenu = () => {
+  showUserMenu.value = !showUserMenu.value;
+};
+
+// Fecha o menu quando clicar fora
+const handleClickOutside = (event) => {
+  const userMenu = document.querySelector('.user-menu');
+  if (userMenu && !userMenu.contains(event.target)) {
+    showUserMenu.value = false;
+  }
+};
+
+// Adiciona e remove event listener para fechar menu ao clicar fora
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
 
 const menuItems = [
   {
@@ -125,5 +211,17 @@ const handleLogout = () => {
   50% {
     opacity: .7;
   }
+}
+
+/* Animação para o menu de contexto */
+.user-menu-enter-active,
+.user-menu-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.user-menu-enter-from,
+.user-menu-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style> 
