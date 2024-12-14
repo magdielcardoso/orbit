@@ -12,6 +12,7 @@ import RolesManagement from '../views/admin/RolesManagement.vue'
 import SystemSettings from '../views/admin/SystemSettings.vue'
 import BrandingSettings from '../views/admin/settings/BrandingSettings.vue'
 import { checkSystemStatus } from '@/utils/system'
+import { formatAccountUrl } from '../utils/string'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -24,11 +25,11 @@ const router = createRouter({
         if (authStore.hasPermission('manage_system')) {
           return '/admin';
         }
-        return '/dashboard';
+        return `/dashboard/${formatAccountUrl(authStore.user?.name)}`;
       }
     },
     {
-      path: '/dashboard',
+      path: '/dashboard/:accountName',
       component: DefaultLayout,
       meta: { requiresAuth: true },
       children: [
@@ -130,7 +131,7 @@ router.beforeEach(async (to, from, next) => {
     const systemStatus = await checkSystemStatus()
     console.log('System status:', systemStatus) // Debug
 
-    // Se o sistema não estiver configurado e não estiver indo para setup
+    // Se o sistema não estiver configurado e n��o estiver indo para setup
     if (!systemStatus.configured && to.name !== 'system-setup') {
       console.log('Sistema não configurado, redirecionando para setup') // Debug
       localStorage.removeItem('systemConfigured')
@@ -162,6 +163,18 @@ router.beforeEach(async (to, from, next) => {
     if (authStore.hasPermission('manage_system') && to.path.startsWith('/dashboard')) {
       console.log('Admin tentando acessar rota de usuário, redirecionando para /admin')
       return next('/admin')
+    }
+
+    // Verifica acesso à conta
+    if (to.path.startsWith('/dashboard/') && isAuthenticated) {
+      const accountName = to.params.accountName
+      const userName = formatAccountUrl(authStore.user?.name)
+      const parentName = formatAccountUrl(authStore.user?.parentUser?.name)
+
+      // Permite acesso se for a própria conta ou se for um agent acessando a conta do pai
+      if (accountName !== userName && accountName !== parentName) {
+        return next(`/dashboard/${userName}`)
+      }
     }
 
     // Se não for admin tentando acessar rotas admin, redireciona para dashboard

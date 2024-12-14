@@ -122,6 +122,7 @@ import { useI18n } from '@/i18n/plugin';
 import LocaleSelector from '../components/LocaleSelector.vue';
 import { Eye, EyeOff } from 'lucide-vue-next';
 import { gqlRequest } from '../utils/graphql';
+import { formatAccountUrl } from '../utils/string';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -173,7 +174,8 @@ async function handleRegister() {
       user: response.register.user
     });
 
-    router.push('/dashboard');
+    const accountUrl = formatAccountUrl(response.register.user.name);
+    router.push(`/dashboard/${accountUrl}`);
   } catch (err) {
     console.error('Erro no registro:', err);
     error.value = err.message;

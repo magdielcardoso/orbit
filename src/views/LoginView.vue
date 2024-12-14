@@ -138,6 +138,7 @@ import { useI18n } from '@/i18n/plugin';
 import LocaleSelector from '../components/LocaleSelector.vue';
 import { Eye, EyeOff } from 'lucide-vue-next';
 import { gqlRequest } from '../utils/graphql';
+import { formatAccountUrl } from '../utils/string';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -192,7 +193,8 @@ async function handleLogin() {
     if (authStore.hasPermission('manage_system')) {
       router.push('/admin');
     } else {
-      router.push('/dashboard');
+      const accountUrl = formatAccountUrl(response.login.user.name);
+      router.push(`/dashboard/${accountUrl}`);
     }
   } catch (err) {
     console.error('Erro no login:', err);
