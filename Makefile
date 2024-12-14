@@ -76,3 +76,29 @@ db-seed:
 	cd backend && DATABASE_URL="postgresql://orbitchat:orbitchat@localhost:5432/orbitchat?schema=public" npx prisma db seed
 
 db-setup: generate db-reset db-seed
+
+# Comandos Docker
+.PHONY: docker docker-push docker-compose-up docker-compose-down docker-compose-logs
+
+docker:
+	docker build -t stacklabdigital/orbitchat:develop .
+
+docker-push:
+	docker push stacklabdigital/orbitchat:develop
+
+docker-compose-up:
+	docker-compose up -d
+
+docker-compose-down:
+	docker-compose down
+
+docker-compose-logs:
+	docker-compose logs -f
+
+docker-compose-build:
+	docker-compose build
+
+docker-compose-setup: docker-compose-build docker-compose-up
+
+# Comando composto para build e push
+docker-publish: docker-build docker-push

@@ -1,4 +1,8 @@
-const GRAPHQL_URL = import.meta.env.VITE_GRAPHQL_URL || 'http://localhost:4000/graphql';
+const GRAPHQL_URL = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/graphql`
+  : window.location.hostname === 'localhost' 
+    ? 'http://localhost:4000/graphql'
+    : 'https://orbit-api.stacklab.digital/graphql';
 
 export function setAuthToken(token) {
   if (token) {
@@ -21,6 +25,8 @@ export async function gqlRequest(query, variables = null, options = {}) {
       headers['Authorization'] = `Bearer ${token}`;
     }
     
+    console.log('Fazendo requisição para:', GRAPHQL_URL); // Debug
+    
     const response = await fetch(GRAPHQL_URL, {
       method: 'POST',
       headers: {
@@ -29,7 +35,8 @@ export async function gqlRequest(query, variables = null, options = {}) {
       body: JSON.stringify({
         query,
         variables
-      })
+      }),
+      credentials: 'include'
     });
 
     const result = await response.json();

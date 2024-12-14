@@ -11,12 +11,21 @@ export default defineConfig({
     },
   },
   server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-        secure: false
-      }
+    host: '0.0.0.0',
+    port: 5173,
+    strictPort: true,
+    watch: {
+      usePolling: true
+    },
+    cors: true,
+    hmr: {
+      clientPort: 443,
+      protocol: 'wss'
     }
+  },
+  preview: {
+    host: '0.0.0.0',
+    port: 5173,
+    strictPort: true
   }
 })

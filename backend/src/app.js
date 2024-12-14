@@ -27,8 +27,16 @@ async function setup() {
   try {
     fastify.log.info('Registrando CORS...')
     await fastify.register(cors, {
-      origin: [process.env.FRONTEND_URL, 'http://localhost:5173'],
-      credentials: true
+      origin: [
+        'https://orbit.stacklab.digital',
+        'https://orbit-api.stacklab.digital',
+        process.env.FRONTEND_URL, 
+        'http://localhost:5173'
+      ],
+      credentials: true,
+      methods: ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      exposedHeaders: ['Content-Range', 'X-Content-Range']
     })
 
     fastify.log.info('Registrando JWT...')
@@ -75,5 +83,12 @@ const start = async () => {
     process.exit(1)
   }
 }
+
+fastify.get('/', async (request, reply) => {
+  return { 
+    status: 'ok',
+    version: process.env.APP_VERSION || '1.0.0'
+  }
+})
 
 start()
