@@ -155,9 +155,13 @@
 import { ref, onMounted } from 'vue';
 import { useI18n } from '@/i18n';
 import { gqlRequest } from '../../utils/graphql';
+import { useAuthStore } from '../../stores/auth.store';
+import { useRouter } from 'vue-router';
 import Modal from '../../components/Modal.vue';
 
 const { t } = useI18n();
+const authStore = useAuthStore();
+const router = useRouter();
 const roles = ref([]);
 const permissions = ref([]);
 const loading = ref(false);
@@ -171,6 +175,10 @@ const newRole = ref({
 // Busca papéis e permissões
 async function fetchData() {
   try {
+    if (!authStore.isAuthenticated) {
+      throw new Error('Não autenticado');
+    }
+
     const query = `
       query {
         roles {
@@ -191,11 +199,20 @@ async function fetchData() {
       }
     `;
 
-    const response = await gqlRequest(query);
+    const response = await gqlRequest(query, null, {
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`
+      }
+    });
+
     roles.value = response.roles;
     permissions.value = response.permissions;
   } catch (error) {
     console.error('Erro ao carregar dados:', error);
+    if (error.message.includes('autoriza') || error.message.includes('autentica')) {
+      authStore.logout();
+      router.push('/login');
+    }
   }
 }
 
@@ -216,6 +233,10 @@ async function handleCreateRole() {
     const response = await gqlRequest(mutation, {
       name: newRole.value.name,
       description: newRole.value.description
+    }, {
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`
+      }
     });
 
     // Adiciona permissões ao papel
@@ -229,14 +250,80 @@ async function handleCreateRole() {
       `, {
         roleId: response.createRole.id,
         permissionId: permId
+      }, {
+        headers: {
+          'Authorization': `Bearer ${authStore.token}`
+        }
       });
     }
 
     await fetchData(); // Recarrega os dados
     showNewRoleModal.value = false;
     newRole.value = { name: '', description: '', permissions: [] };
+    alert('Papel criado com sucesso!');
   } catch (error) {
     console.error('Erro ao criar papel:', error);
+    alert(error.message);
+  } finally {
+    loading.value = false;
+  }
+}
+
+// Exclui papel
+async function deleteRole(role) {
+  if (!confirm(t('admin.roles.confirmDelete', { name: role.name }))) {
+    return;
+  }
+
+  try {
+    loading.value = true;
+    const mutation = `
+      mutation DeleteRole($id: ID!) {
+        deleteRole(id: $id)
+      }
+    `;
+
+    await gqlRequest(mutation, { id: role.id }, {
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`
+      }
+    });
+
+    await fetchData(); // Recarrega os dados
+    alert('Papel excluído com sucesso!');
+  } catch (error) {
+    console.error('Erro ao excluir papel:', error);
+    alert(error.message);
+  } finally {
+    loading.value = false;
+  }
+}
+
+// Toggle permissão
+async function togglePermission(role, permission) {
+  try {
+    loading.value = true;
+    const mutation = permission.enabled ? 'removePermissionFromRole' : 'addPermissionToRole';
+
+    await gqlRequest(`
+      mutation TogglePermission($roleId: ID!, $permissionId: ID!) {
+        ${mutation}(roleId: $roleId, permissionId: $permissionId) {
+          id
+        }
+      }
+    `, {
+      roleId: role.id,
+      permissionId: permission.id
+    }, {
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`
+      }
+    });
+
+    await fetchData(); // Recarrega os dados
+  } catch (error) {
+    console.error('Erro ao alterar permissão:', error);
+    alert(error.message);
   } finally {
     loading.value = false;
   }

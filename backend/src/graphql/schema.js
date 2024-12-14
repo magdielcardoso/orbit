@@ -49,6 +49,7 @@ export const typeDefs = `#graphql
     me: User
     users: [User!]!
     roles: [Role!]!
+    permissions: [Permission!]!
     systemStatus: SystemStatus!
     recentActivities: [Activity!]!
     adminStats: AdminStats!

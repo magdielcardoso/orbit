@@ -102,14 +102,25 @@ export const resolvers = {
 
         // Verifica permissão específica
         const hasPermission = userWithRole?.role?.permissions?.some(
-          p => p.permission.name === 'manage_users' || p.permission.name === 'manage_system'
+          p => p.permission.name === 'manage_roles' || p.permission.name === 'manage_system' || p.permission.name === 'manage_users'
         );
 
         if (!hasPermission) {
           throw new Error('Não autorizado');
         }
 
-        return prisma.role.findMany();
+        return prisma.role.findMany({
+          include: {
+            permissions: {
+              include: {
+                permission: true
+              }
+            }
+          }
+        }).then(roles => roles.map(role => ({
+          ...role,
+          permissions: role.permissions.map(rp => rp.permission)
+        })));
       } catch (error) {
         console.error('Erro ao buscar papéis:', error);
         throw error;
@@ -245,6 +256,40 @@ export const resolvers = {
         };
       } catch (error) {
         console.error('Erro ao buscar estatísticas:', error);
+        throw error;
+      }
+    },
+    permissions: async (_, __, { prisma, user }) => {
+      try {
+        // Verifica autenticação básica
+        if (!user) throw new Error('Não autorizado');
+
+        // Busca usuário com permissões
+        const userWithRole = await prisma.user.findUnique({
+          where: { id: user.id },
+          include: {
+            role: {
+              include: {
+                permissions: {
+                  include: { permission: true }
+                }
+              }
+            }
+          }
+        });
+
+        // Verifica permissão específica
+        const hasPermission = userWithRole?.role?.permissions?.some(
+          p => p.permission.name === 'manage_roles' || p.permission.name === 'manage_system'
+        );
+
+        if (!hasPermission) {
+          throw new Error('Não autorizado');
+        }
+
+        return prisma.permission.findMany();
+      } catch (error) {
+        console.error('Erro ao buscar permissões:', error);
         throw error;
       }
     }
