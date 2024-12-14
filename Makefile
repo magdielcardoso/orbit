@@ -4,7 +4,7 @@ NPM = npm
 PRISMA = npx prisma
 
 # Comandos principais
-.PHONY: install dev build start clean migrate reinstall
+.PHONY: install dev build start clean migrate reinstall test test-watch test-coverage test-ui test-component test-component-watch
 
 install:
 	$(NPM) install
@@ -102,3 +102,37 @@ docker-compose-setup: docker-compose-build docker-compose-up
 
 # Comando composto para build e push
 docker-publish: docker-build docker-push
+
+# Comandos de teste
+test:
+	$(NPM) run test
+
+test-watch:
+	$(NPM) run test -- --watch
+
+test-coverage:
+	$(NPM) run test:coverage
+
+test-ui:
+	$(NPM) run test -- --ui
+
+test-component:
+	@read -p "Digite o nome do componente para testar (ex: LoginView): " component; \
+	$(NPM) run test "src/**/__tests__/$$component.spec.js"
+
+test-component-watch:
+	@read -p "Digite o nome do componente para testar (ex: LoginView): " component; \
+	$(NPM) run test "src/**/__tests__/$$component.spec.js" -- --watch
+
+# Help
+.PHONY: help
+
+help:
+	@echo "Comandos disponíveis:"
+	@echo "  make test              - Executa todos os testes"
+	@echo "  make test-watch        - Executa testes em modo watch"
+	@echo "  make test-coverage     - Gera relatório de cobertura de testes"
+	@echo "  make test-ui           - Abre interface visual do Vitest"
+	@echo "  make test-component    - Testa um componente específico"
+	@echo "  make test-component-watch - Testa um componente específico em modo watch"
+	@echo "  make help              - Mostra esta mensagem de ajuda"

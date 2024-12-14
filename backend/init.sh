@@ -12,7 +12,7 @@ DATABASE_URL="postgresql://postgres:PT99874166@postgres:5432/orbitchat?schema=pu
 
 # Verifica se existem roles no banco
 echo "Verificando roles..."
-ROLES_COUNT=$(DATABASE_URL="postgresql://postgres:PT99874166@postgres:5432/orbitchat?schema=public" npx prisma db execute --stdin <<< "SELECT COUNT(*) FROM role;")
+ROLES_COUNT=$(DATABASE_URL="postgresql://postgres:PT99874166@postgres:5432/orbitchat?schema=public" npx prisma db execute "SELECT COUNT(*) FROM role")
 
 # Executa o seed se não houver roles
 if [ "$ROLES_COUNT" = "0" ]; then
@@ -21,7 +21,7 @@ if [ "$ROLES_COUNT" = "0" ]; then
 else
     echo "Roles já configuradas, verificando integridade..."
     # Verifica se todas as roles necessárias existem
-    REQUIRED_ROLES=$(DATABASE_URL="postgresql://postgres:PT99874166@postgres:5432/orbitchat?schema=public" npx prisma db execute --stdin <<< "SELECT COUNT(*) FROM role WHERE name IN ('superadmin', 'user', 'agent');")
+    REQUIRED_ROLES=$(DATABASE_URL="postgresql://postgres:PT99874166@postgres:5432/orbitchat?schema=public" npx prisma db execute "SELECT COUNT(*) FROM role WHERE name IN ('superadmin', 'user', 'agent')")
     
     if [ "$REQUIRED_ROLES" != "3" ]; then
         echo "Algumas roles necessárias estão faltando, executando seed..."

@@ -9,7 +9,9 @@
     "dev:backend": "cd backend && node --watch src/app.js",
     "build": "vite build",
     "preview": "vite preview",
-    "install:all": "npm install && cd backend && npm install"
+    "install:all": "npm install && cd backend && npm install",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.1",
@@ -33,18 +35,23 @@
   },
   "devDependencies": {
     "@fastify/type-provider-json-schema-to-ts": "^4.0.1",
+    "@pinia/testing": "^0.1.7",
     "@prisma/client": "^6.0.1",
     "@rushstack/eslint-patch": "^1.10.4",
     "@vitejs/plugin-vue": "^5.2.1",
+    "@vitest/coverage-v8": "^2.1.8",
+    "@vue/test-utils": "^2.4.6",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.16.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-vue": "^9.32.0",
+    "jsdom": "^22.1.0",
     "pino-pretty": "^13.0.0",
     "postcss": "^8.4.49",
     "prettier": "^3.4.2",
     "prisma": "^6.0.1",
     "tailwindcss": "^3.4.16",
-    "vite": "^6.0.1"
+    "vite": "^6.0.1",
+    "vitest": "^1.6.0"
   }
 }
