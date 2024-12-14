@@ -37,12 +37,28 @@ export const typeDefs = `#graphql
     status: String!
   }
 
+  type Activity {
+    id: ID!
+    type: String!
+    description: String!
+    user: String!
+    timestamp: String!
+  }
+
   type Query {
     me: User
     users: [User!]!
     roles: [Role!]!
     permissions: [Permission!]!
     systemStatus: SystemStatus!
+    recentActivities: [Activity!]!
+    adminStats: AdminStats!
+  }
+
+  type AdminStats {
+    totalUsers: Int!
+    totalRoles: Int!
+    roles: [Role!]!
   }
 
   type Mutation {

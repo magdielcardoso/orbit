@@ -1,6 +1,6 @@
 const GRAPHQL_URL = import.meta.env.VITE_GRAPHQL_URL || 'http://localhost:4000/graphql';
 
-export async function gqlRequest(query, variables = {}) {
+export async function gqlRequest(query, variables = null, options = {}) {
   try {
     const token = localStorage.getItem('token');
     
@@ -8,7 +8,8 @@ export async function gqlRequest(query, variables = {}) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        'Authorization': token ? `Bearer ${token}` : '',
+        ...options.headers
       },
       body: JSON.stringify({
         query,
@@ -16,19 +17,14 @@ export async function gqlRequest(query, variables = {}) {
       })
     });
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`HTTP error! status: ${response.status}, message: ${error}`);
+    const result = await response.json();
+
+    if (result.errors) {
+      console.log('GraphQL Errors:', result.errors);
+      throw new Error(result.errors[0].message);
     }
 
-    const data = await response.json();
-
-    if (data.errors) {
-      console.error('GraphQL Errors:', data.errors);
-      throw new Error(data.errors[0].message);
-    }
-
-    return data.data;
+    return result.data;
   } catch (error) {
     console.error('Erro na requisição GraphQL:', error);
     throw error;

@@ -154,7 +154,11 @@
 import { ref, onMounted } from 'vue';
 import { Users, Shield, Settings, User, Clock } from 'lucide-vue-next';
 import { useAuthStore } from '../stores/auth.store';
+import { useRouter } from 'vue-router';
+import { gqlRequest } from '../utils/graphql';
+import { checkSystemStatus } from '../utils/system';
 
+const router = useRouter();
 const authStore = useAuthStore();
 const stats = ref({
   totalUsers: 0,
@@ -165,35 +169,73 @@ const systemConfig = ref({
 });
 const recentActivities = ref([]);
 
-onMounted(async () => {
+// Função para buscar dados com verificação de autorização
+async function fetchData() {
   try {
-    // Carrega estatísticas
-    const statsResponse = await fetch('/api/admin/stats', {
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`
-      }
-    });
-    stats.value = await statsResponse.json();
+    if (!authStore.hasPermission('manage_system')) {
+      throw new Error('Sem permissão para acessar o painel administrativo');
+    }
 
-    // Carrega configurações do sistema
-    const configResponse = await fetch('/api/admin/system-config', {
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`
-      }
-    });
-    systemConfig.value = await configResponse.json();
+    // Carrega dados do sistema
+    const systemStatus = await checkSystemStatus();
+    if (systemStatus) {
+      systemConfig.value = {
+        name: `Sistema v${systemStatus.version}`,
+        status: systemStatus.status
+      };
+    }
 
-    // Carrega atividades recentes
-    const activitiesResponse = await fetch('/api/admin/activities', {
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`
+    const query = `
+      query GetAdminPanelData {
+        me {
+          id
+          role {
+            name
+            permissions {
+              name
+            }
+          }
+        }
+        adminStats {
+          totalUsers
+          totalRoles
+          roles {
+            id
+            name
+            createdAt
+          }
+        }
+        recentActivities {
+          id
+          type
+          description
+          user
+          timestamp
+        }
       }
-    });
-    recentActivities.value = await activitiesResponse.json();
+    `;
+
+    const response = await gqlRequest(query);
+    
+    if (response?.me && response?.adminStats) {
+      stats.value = {
+        totalUsers: response.adminStats.totalUsers,
+        totalRoles: response.adminStats.totalRoles
+      };
+
+      // Usa as atividades recentes do backend
+      recentActivities.value = response.recentActivities || [];
+    }
+    
   } catch (error) {
     console.error('Erro ao carregar dados do painel:', error);
+    if (error.message.includes('autoriza')) {
+      router.push('/dashboard');
+    }
   }
-});
+}
+
+onMounted(fetchData);
 
 function getActivityStatusClass(type) {
   const classes = {

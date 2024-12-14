@@ -3,7 +3,9 @@ import { defineStore } from 'pinia';
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: localStorage.getItem('token') || null,
-    user: JSON.parse(localStorage.getItem('user')) || null
+    user: JSON.parse(localStorage.getItem('user')) || null,
+    sessionExpires: null,
+    refreshing: false
   }),
 
   getters: {
@@ -37,6 +39,55 @@ export const useAuthStore = defineStore('auth', {
 
     async logout() {
       this.clearAuth()
+    },
+
+    async checkAndRefreshToken() {
+      if (!this.token || !this.sessionExpires) return;
+      
+      const expiresIn = new Date(this.sessionExpires).getTime() - Date.now();
+      if (expiresIn < 300000) { // 5 minutos
+        await this.refreshToken();
+      }
+    },
+
+    async refreshToken() {
+      if (this.refreshing) return;
+      this.refreshing = true;
+
+      try {
+        const query = `
+          mutation RefreshToken {
+            refreshToken {
+              token
+              user {
+                id
+                name
+                email
+                role {
+                  name
+                  permissions {
+                    name
+                  }
+                }
+                sessionExpires
+              }
+            }
+          }
+        `;
+
+        const response = await gqlRequest(query);
+        if (response?.refreshToken) {
+          this.setAuth({
+            token: response.refreshToken.token,
+            user: response.refreshToken.user
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao atualizar token:', error);
+        this.logout();
+      } finally {
+        this.refreshing = false;
+      }
     }
   }
 }); 

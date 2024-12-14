@@ -7,84 +7,102 @@ export default class AuthService {
   }
 
   async register({ email, password, name }) {
-    // Verifica se o email já existe
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email }
-    })
-
-    if (existingUser) {
-      throw new Error('Email já cadastrado')
-    }
-
-    // Criptografa a senha
-    const hashedPassword = await bcrypt.hash(password, 10)
-
-    // Busca o papel padrão (user) e a permissão use_chat
-    const [defaultRole, useChat] = await Promise.all([
-      this.prisma.role.findUnique({
-        where: { name: 'user' }
-      }),
-      this.prisma.permission.findUnique({
-        where: { name: 'use_chat' }
+    try {
+      // Verifica se usuário já existe
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email }
       })
-    ])
 
-    if (!defaultRole) {
-      throw new Error('Papel padrão não encontrado')
-    }
+      if (existingUser) {
+        throw new Error('Email já cadastrado')
+      }
 
-    if (!useChat) {
-      throw new Error('Permissão use_chat não encontrada')
-    }
+      // Busca ou cria o papel padrão 'user'
+      let userRole = await this.prisma.role.findUnique({
+        where: { name: 'user' }
+      })
 
-    // Cria o usuário e associa a permissão
-    const user = await this.prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name,
-        active: true,
-        role: {
-          connect: { id: defaultRole.id }
+      if (!userRole) {
+        userRole = await this.prisma.role.create({
+          data: {
+            name: 'user',
+            description: 'Usuário padrão do sistema'
+          }
+        })
+
+        // Cria permissão use_chat se não existir
+        const useChat = await this.prisma.permission.upsert({
+          where: { name: 'use_chat' },
+          update: {},
+          create: {
+            name: 'use_chat',
+            description: 'Usar o chat'
+          }
+        })
+
+        // Associa permissão ao papel
+        await this.prisma.rolePermission.create({
+          data: {
+            roleId: userRole.id,
+            permissionId: useChat.id
+          }
+        })
+      }
+
+      // Cria o usuário com o papel padrão
+      const hashedPassword = await bcrypt.hash(password, 10)
+      const user = await this.prisma.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          name,
+          roleId: userRole.id,
+          active: true
+        },
+        include: {
+          role: {
+            include: {
+              permissions: {
+                include: {
+                  permission: true
+                }
+              }
+            }
+          }
         }
-      },
-      include: {
-        role: true
-      }
-    })
+      })
 
-    // Associa a permissão use_chat ao papel do usuário
-    await this.prisma.rolePermission.create({
-      data: {
-        roleId: defaultRole.id,
-        permissionId: useChat.id
-      }
-    })
+      // Mapeia as permissões para o formato esperado
+      const permissions = user.role.permissions.map(rp => ({
+        name: rp.permission.name
+      }))
 
-    // Gera o token
-    const token = jwt.sign(
-      { 
-        id: user.id,
-        email: user.email,
-        role: user.role.name,
-        permissions: ['use_chat']
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    )
-
-    return { 
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        active: user.active,
-        role: {
-          name: user.role.name,
-          permissions: [{ name: 'use_chat' }]
+      // Retorna o formato esperado pelo frontend
+      return {
+        token: jwt.sign(
+          { 
+            id: user.id,
+            email: user.email,
+            role: user.role.name,
+            permissions: permissions.map(p => p.name)
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: '7d' }
+        ),
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          active: user.active,
+          role: {
+            name: user.role.name,
+            permissions: permissions
+          }
         }
       }
+    } catch (error) {
+      console.error('Register service error:', error)
+      throw error
     }
   }
 
