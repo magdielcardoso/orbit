@@ -21,6 +21,8 @@ enum SystemStatus {
 model SystemConfig {
   id              String       @id @default(uuid())
   status          SystemStatus @default(PENDING_SETUP)
+  systemName      String?
+  timezone        String?
   setupCompletedAt DateTime?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt

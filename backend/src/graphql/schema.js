@@ -65,6 +65,12 @@ export const typeDefs = `#graphql
     # Auth
     register(email: String!, password: String!, name: String!): AuthPayload!
     login(email: String!, password: String!): AuthPayload!
+    registerSuperAdmin(
+      name: String!
+      email: String!
+      password: String!
+      systemConfig: SystemConfigInput!
+    ): SuperAdminRegistrationResponse!
     
     # Users
     createUser(email: String!, password: String!, name: String!, roleId: String): User!
@@ -79,5 +85,26 @@ export const typeDefs = `#graphql
     # Role Permissions
     addPermissionToRole(roleId: ID!, permissionId: ID!): Role!
     removePermissionFromRole(roleId: ID!, permissionId: ID!): Role!
+  }
+
+  input SystemConfigInput {
+    systemName: String!
+    timezone: String!
+  }
+
+  type SuperAdminRegistrationResponse {
+    token: String!
+    user: User!
+    systemConfig: SystemConfig!
+  }
+
+  type SystemConfig {
+    id: ID!
+    systemName: String!
+    timezone: String!
+    status: SystemStatus!
+    setupCompletedAt: String
+    createdAt: String!
+    updatedAt: String!
   }
 ` 

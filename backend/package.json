@@ -3,7 +3,7 @@
   "scripts": {
     "dev": "node --watch -r dotenv/config src/app.js dotenv_config_path=../.env",
     "start": "node -r dotenv/config src/app.js dotenv_config_path=../.env",
-    "seed": "node -r dotenv/config prisma/seed.js dotenv_config_path=../.env",
+    "seed": "npx prisma db seed",
     "prisma:migrate": "dotenv -e ../.env -- prisma migrate dev",
     "prisma:generate": "dotenv -e ../.env -- prisma generate",
     "prisma:studio": "dotenv -e ../.env -- prisma studio"
@@ -25,5 +25,8 @@
   },
   "devDependencies": {
     "prisma": "^6.0.1"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   }
 }

@@ -140,8 +140,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth.store'
-import { setupSystem } from '../utils/system'
 import { Eye, EyeOff } from 'lucide-vue-next'
+import { gqlRequest } from '../utils/graphql'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -153,7 +153,9 @@ const showPassword = ref(false)
 const form = ref({
   name: '',
   email: '',
-  password: ''
+  password: '',
+  systemName: '',
+  timezone: 'America/Sao_Paulo'
 })
 
 async function handleSubmit() {
@@ -161,27 +163,72 @@ async function handleSubmit() {
     loading.value = true
     error.value = null
     
-    const response = await setupSystem(form.value)
+    const setupMutation = `
+      mutation RegisterSuperAdmin(
+        $name: String!
+        $email: String!
+        $password: String!
+        $systemName: String!
+        $timezone: String!
+      ) {
+        registerSuperAdmin(
+          name: $name
+          email: $email
+          password: $password
+          systemConfig: {
+            systemName: $systemName
+            timezone: $timezone
+          }
+        ) {
+          token
+          user {
+            id
+            name
+            email
+            active
+            role {
+              name
+              permissions {
+                name
+              }
+            }
+          }
+          systemConfig {
+            id
+            systemName
+            timezone
+          }
+        }
+      }
+    `
     
-    if (response.success) {
-      // Atualiza o estado de autenticação
-      authStore.setAuth({
-        token: response.token,
-        user: response.user
-      })
+    const response = await gqlRequest(setupMutation, {
+      name: form.value.name,
+      email: form.value.email,
+      password: form.value.password,
+      systemName: form.value.systemName,
+      timezone: form.value.timezone
+    })
 
-      // Define o sistema como configurado
-      localStorage.setItem('systemConfigured', 'true')
-      
-      // Mostra o toast de sucesso
-      showSuccessToast.value = true
-      
-      // Redireciona para o dashboard
-      setTimeout(() => {
-        router.push('/admin')
-      }, 1500)
-    }
+    // Atualiza o estado de autenticação
+    authStore.setAuth({
+      token: response.registerSuperAdmin.token,
+      user: response.registerSuperAdmin.user
+    })
+
+    // Define o sistema como configurado
+    localStorage.setItem('systemConfigured', 'true')
+    
+    // Mostra o toast de sucesso
+    showSuccessToast.value = true
+    
+    // Redireciona para o dashboard
+    setTimeout(() => {
+      router.push('/admin')
+    }, 1500)
+    
   } catch (err) {
+    console.error('Erro na configuração:', err)
     error.value = err.message
   } finally {
     loading.value = false

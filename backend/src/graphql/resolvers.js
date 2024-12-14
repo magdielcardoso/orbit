@@ -1,3 +1,5 @@
+import bcrypt from 'bcrypt'
+
 export const resolvers = {
   Query: {
     me: async (_, __, { user, prisma }) => {
@@ -198,6 +200,82 @@ export const resolvers = {
       return await authService.register(args);
     },
     
+    registerSuperAdmin: async (_, args, { prisma, app }) => {
+      try {
+        // Verifica se já existe um superadmin
+        const existingSuperAdmin = await prisma.user.findFirst({
+          where: {
+            role: {
+              name: 'superadmin'
+            }
+          }
+        });
+
+        if (existingSuperAdmin) {
+          throw new Error('Já existe um superadmin registrado');
+        }
+
+        // Busca a role de superadmin
+        const superadminRole = await prisma.role.findUnique({
+          where: { name: 'superadmin' }
+        });
+
+        if (!superadminRole) {
+          throw new Error('Role de superadmin não encontrada');
+        }
+
+        // Cria o usuário superadmin
+        const hashedPassword = await bcrypt.hash(args.password, 10);
+        const user = await prisma.user.create({
+          data: {
+            name: args.name,
+            email: args.email,
+            password: hashedPassword,
+            roleId: superadminRole.id,
+            active: true
+          },
+          include: {
+            role: {
+              include: {
+                permissions: {
+                  include: {
+                    permission: true
+                  }
+                }
+              }
+            }
+          }
+        });
+
+        // Configura o sistema
+        const systemConfig = await prisma.systemConfig.create({
+          data: {
+            systemName: args.systemConfig.systemName,
+            timezone: args.systemConfig.timezone,
+            status: 'CONFIGURED',
+            setupCompletedAt: new Date()
+          }
+        });
+
+        // Gera o token
+        const token = await app.jwt.sign({
+          id: user.id,
+          email: user.email,
+          role: user.role?.name,
+          permissions: user.role?.permissions.map(p => p.permission.name)
+        });
+
+        return {
+          token,
+          user,
+          systemConfig
+        };
+      } catch (error) {
+        console.error('Erro ao registrar superadmin:', error);
+        throw error;
+      }
+    },
+
     login: async (_, args, { authService }) => {
       try {
         if (!authService) throw new Error('AuthService não disponível')

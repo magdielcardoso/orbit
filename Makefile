@@ -34,16 +34,16 @@ clean:
 .PHONY: migrate-dev migrate-deploy studio generate
 
 migrate-dev:
-	cd backend && npm run prisma:migrate
+	cd backend && DATABASE_URL="postgresql://orbitchat:orbitchat@localhost:5432/orbitchat?schema=public" npx prisma migrate dev
 
 migrate-deploy:
-	cd backend && npm run prisma:migrate
+	cd backend && DATABASE_URL="postgresql://orbitchat:orbitchat@localhost:5432/orbitchat?schema=public" npm run prisma:migrate
 
 studio:
-	cd backend && npm run prisma:studio
+	cd backend && DATABASE_URL="postgresql://orbitchat:orbitchat@localhost:5432/orbitchat?schema=public" npm run prisma:studio
 
 generate:
-	cd backend && npm run prisma:generate
+	cd backend && DATABASE_URL="postgresql://orbitchat:orbitchat@localhost:5432/orbitchat?schema=public" npm run prisma:generate
 
 # Comandos compostos
 .PHONY: setup reset reinstall
@@ -59,3 +59,20 @@ reinstall:
 	rm -rf package-lock.json
 	$(NPM) install
 	cd backend && $(NPM) install
+
+seed:
+	cd backend && npx prisma db seed
+
+setup-db:
+	cd backend && npx prisma generate && npx prisma migrate reset --force && npx prisma db seed
+
+# Comandos de banco de dados
+.PHONY: db-reset db-seed db-setup
+
+db-reset:
+	cd backend && DATABASE_URL="postgresql://orbitchat:orbitchat@localhost:5432/orbitchat?schema=public" npx prisma migrate reset --force
+
+db-seed:
+	cd backend && DATABASE_URL="postgresql://orbitchat:orbitchat@localhost:5432/orbitchat?schema=public" npx prisma db seed
+
+db-setup: generate db-reset db-seed

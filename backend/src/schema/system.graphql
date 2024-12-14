@@ -1,0 +1,34 @@
+type SystemMetrics {
+  status: String!
+  cpu: Float!
+  memory: Float!
+  uptime: Float!
+  onlineUsers: Int!
+  userGrowth: Float!
+  messagesPerSecond: Float!
+  errorsPerMinute: Float!
+}
+
+type SystemLog {
+  timestamp: String!
+  level: String!
+  message: String!
+}
+
+type SystemActionResponse {
+  success: Boolean!
+  message: String!
+  status: String
+}
+
+type Query {
+  systemMetrics: SystemMetrics!
+  systemLogs: [SystemLog!]!
+  exportSystemLogs: String!
+}
+
+type Mutation {
+  initiateBackup: SystemActionResponse!
+  restartSystem: SystemActionResponse!
+  toggleSystemAccess: SystemActionResponse!
+} 
