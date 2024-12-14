@@ -10,6 +10,7 @@ import SuperAdminPanel from '../views/SuperAdminPanel.vue'
 import UsersManagement from '../views/admin/UsersManagement.vue'
 import RolesManagement from '../views/admin/RolesManagement.vue'
 import SystemSettings from '../views/admin/SystemSettings.vue'
+import BrandingSettings from '../views/admin/settings/BrandingSettings.vue'
 import { checkSystemStatus } from '@/utils/system'
 
 const router = createRouter({
@@ -96,8 +97,22 @@ const router = createRouter({
         },
         {
           path: 'settings',
-          name: 'system-settings',
-          component: SystemSettings
+          children: [
+            {
+              path: '',
+              component: () => import('../views/admin/SystemSettings.vue'),
+              meta: { requiresAuth: true, requiresAdmin: true }
+            },
+            {
+              path: 'branding',
+              component: BrandingSettings,
+              meta: { 
+                requiresAuth: true, 
+                requiresAdmin: true,
+                title: 'Configurações de Marca'
+              }
+            },
+          ]
         }
       ]
     }

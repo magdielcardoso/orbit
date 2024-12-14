@@ -111,38 +111,35 @@
           <h2 class="text-lg leading-6 font-medium text-gray-900 mb-4">
             Atividades Recentes
           </h2>
-          <div class="bg-white shadow overflow-hidden sm:rounded-md">
-            <ul role="list" class="divide-y divide-gray-200">
-              <li v-for="activity in recentActivities" :key="activity.id">
-                <div class="px-4 py-4 sm:px-6">
-                  <div class="flex items-center justify-between">
-                    <p class="text-sm font-medium text-purple-600 truncate">
-                      {{ activity.description }}
-                    </p>
-                    <div class="ml-2 flex-shrink-0 flex">
-                      <p class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                         :class="getActivityStatusClass(activity.type)">
-                        {{ activity.type }}
-                      </p>
-                    </div>
-                  </div>
-                  <div class="mt-2 sm:flex sm:justify-between">
-                    <div class="sm:flex">
-                      <p class="flex items-center text-sm text-gray-500">
-                        <User class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" />
-                        {{ activity.user }}
-                      </p>
-                    </div>
-                    <div class="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                      <Clock class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" />
-                      <p>
-                        {{ formatDate(activity.timestamp) }}
-                      </p>
-                    </div>
-                  </div>
+          <div class="space-y-4">
+            <div
+              v-for="activity in recentActivities"
+              :key="activity.id"
+              class="bg-white shadow overflow-hidden sm:rounded-lg p-4"
+            >
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <span
+                    class="px-2 py-1 text-xs font-medium rounded-full"
+                    :class="getActivityStatusClass(activity.type)"
+                  >
+                    {{ formatActivityType(activity.type) }}
+                  </span>
+                  <span class="text-sm text-gray-500">
+                    {{ activity.user.name }}
+                  </span>
                 </div>
-              </li>
-            </ul>
+                <span class="text-sm text-gray-500">
+                  {{ formatDate(activity.createdAt) }}
+                </span>
+              </div>
+              <p class="mt-2 text-sm text-gray-600">
+                {{ activity.description }}
+              </p>
+              <div class="mt-1 text-xs text-gray-500">
+                {{ activity.action }} | {{ activity.source }}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -208,9 +205,20 @@ async function fetchData() {
         recentActivities {
           id
           type
+          level
+          source
+          action
           description
-          user
-          timestamp
+          user {
+            id
+            name
+            email
+            role {
+              name
+            }
+          }
+          createdAt
+          metadata
         }
       }
     `;
@@ -239,21 +247,51 @@ onMounted(fetchData);
 
 function getActivityStatusClass(type) {
   const classes = {
-    'user_created': 'bg-green-100 text-green-800',
-    'role_updated': 'bg-yellow-100 text-yellow-800',
-    'system_config': 'bg-blue-100 text-blue-800',
-    'security_alert': 'bg-red-100 text-red-800'
+    'USER_ACTION': 'bg-green-100 text-green-800',
+    'SYSTEM_EVENT': 'bg-blue-100 text-blue-800',
+    'ERROR': 'bg-red-100 text-red-800',
+    'AUTH': 'bg-purple-100 text-purple-800',
+    'API_CALL': 'bg-yellow-100 text-yellow-800'
   };
   return classes[type] || 'bg-gray-100 text-gray-800';
 }
 
+function formatActivityType(type) {
+  const types = {
+    'USER_ACTION': 'Ação do Usuário',
+    'SYSTEM_EVENT': 'Evento do Sistema',
+    'ERROR': 'Erro',
+    'AUTH': 'Autenticação',
+    'API_CALL': 'Chamada API'
+  };
+  return types[type] || type;
+}
+
 function formatDate(timestamp) {
-  return new Date(timestamp).toLocaleString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  try {
+    if (!timestamp) return '';
+    
+    // Converte a string ISO para objeto Date
+    const date = new Date(timestamp);
+    
+    // Verifica se a data é válida
+    if (isNaN(date.getTime())) {
+      console.error('Data inválida:', timestamp);
+      return 'Data inválida';
+    }
+    
+    // Formata a data
+    return date.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'America/Sao_Paulo' // Ajusta para o timezone do Brasil
+    });
+  } catch (error) {
+    console.error('Erro ao formatar data:', error);
+    return 'Data inválida';
+  }
 }
 </script> 

@@ -1,6 +1,30 @@
 import bcrypt from 'bcrypt'
+import { Kind } from 'graphql'
+import { logActivity } from '../utils/activity.js'
 
 export const resolvers = {
+  JSON: {
+    __parseValue(value) {
+      return JSON.parse(value);
+    },
+    __serialize(value) {
+      return JSON.stringify(value);
+    },
+    __parseLiteral(ast) {
+      switch (ast.kind) {
+        case Kind.STRING:
+          return JSON.parse(ast.value);
+        case Kind.OBJECT:
+          return ast.fields.reduce((acc, field) => {
+            acc[field.name.value] = this.__parseLiteral(field.value);
+            return acc;
+          }, {});
+        default:
+          return null;
+      }
+    }
+  },
+
   Query: {
     me: async (_, __, { user, prisma }) => {
       if (!user) return null;
@@ -20,6 +44,16 @@ export const resolvers = {
                   }
                 }
               }
+            }
+          },
+          agents: {
+            include: {
+              role: true
+            }
+          },
+          parentUser: {
+            include: {
+              role: true
             }
           }
         }
@@ -73,7 +107,9 @@ export const resolvers = {
 
         return prisma.user.findMany({
           include: {
-            role: true
+            role: true,
+            parentUser: true,
+            agents: true
           }
         });
       } catch (error) {
@@ -187,16 +223,23 @@ export const resolvers = {
           throw new Error('Não autorizado');
         }
 
-        // Mock de atividades enquanto não há dados reais
-        return [
-          {
-            id: '1',
-            type: 'system_config',
-            description: 'Sistema configurado com sucesso',
-            user: userWithRole.name,
-            timestamp: new Date().toISOString()
+        // Busca as últimas 5 atividades
+        const activities = await prisma.activity.findMany({
+          take: 5,
+          orderBy: {
+            createdAt: 'desc'
+          },
+          include: {
+            user: true
           }
-        ];
+        });
+
+        // Formata as datas para ISO string
+        return activities.map(activity => ({
+          ...activity,
+          createdAt: activity.createdAt.toISOString(),
+          updatedAt: activity.updatedAt.toISOString()
+        }));
 
       } catch (error) {
         console.error('Erro ao buscar atividades:', error);
@@ -292,6 +335,50 @@ export const resolvers = {
         console.error('Erro ao buscar permissões:', error);
         throw error;
       }
+    },
+    activities: async (_, args, { prisma, user }) => {
+      try {
+        // Verifica permissão
+        const userWithRole = await prisma.user.findUnique({
+          where: { id: user.id },
+          include: {
+            role: {
+              include: {
+                permissions: true
+              }
+            }
+          }
+        });
+
+        const hasPermission = userWithRole?.role?.permissions?.some(
+          p => p.permission.name === 'manage_system'
+        );
+
+        if (!hasPermission) {
+          throw new Error('Não autorizado');
+        }
+
+        // Constrói o where baseado nos filtros
+        const where = {};
+        if (args.type) where.type = args.type;
+        if (args.level) where.level = args.level;
+        if (args.source) where.source = args.source;
+
+        return await prisma.activity.findMany({
+          where,
+          take: args.limit || 50,
+          skip: args.offset || 0,
+          orderBy: {
+            createdAt: 'desc'
+          },
+          include: {
+            user: true
+          }
+        });
+      } catch (error) {
+        console.error('Erro ao buscar atividades:', error);
+        throw error;
+      }
     }
   },
 
@@ -367,6 +454,20 @@ export const resolvers = {
           }
         });
 
+        // Registra a atividade
+        await logActivity({
+          type: 'SYSTEM_EVENT',
+          level: 'INFO',
+          source: 'SYSTEM',
+          action: 'SYSTEM_SETUP',
+          description: 'Sistema configurado com sucesso',
+          userId: user.id,
+          metadata: {
+            systemName: args.systemConfig.systemName,
+            timezone: args.systemConfig.timezone
+          }
+        });
+
         // Gera o token
         const token = await app.jwt.sign({
           id: user.id,
@@ -422,6 +523,37 @@ export const resolvers = {
           throw new Error('Não autorizado');
         }
 
+        // Se for um agent, verifica se o parentUserId é válido
+        if (args.parentUserId) {
+          const parentUser = await prisma.user.findUnique({
+            where: { id: args.parentUserId },
+            include: {
+              role: true
+            }
+          });
+
+          if (!parentUser) {
+            throw new Error('Usuário pai não encontrado');
+          }
+
+          if (parentUser.role?.name !== 'user') {
+            throw new Error('O usuário pai deve ter a role "user"');
+          }
+        }
+
+        // Verifica se a role é agent e se tem parentUserId
+        const role = await prisma.role.findUnique({
+          where: { id: args.roleId }
+        });
+
+        if (role?.name === 'agent' && !args.parentUserId) {
+          throw new Error('Um agent precisa ter um usuário pai');
+        }
+
+        if (role?.name !== 'agent' && args.parentUserId) {
+          throw new Error('Apenas agents podem ter um usuário pai');
+        }
+
         // Cria o usuário
         const hashedPassword = await bcrypt.hash(args.password, 10);
         const newUser = await prisma.user.create({
@@ -429,20 +561,33 @@ export const resolvers = {
             name: args.name,
             email: args.email,
             password: hashedPassword,
-            roleId: args.roleId,
+            role: {
+              connect: { id: args.roleId }
+            },
+            parentUser: args.parentUserId ? {
+              connect: { id: args.parentUserId }
+            } : undefined,
             active: true
           },
           include: {
-            role: true
+            role: true,
+            parentUser: true,
+            agents: true
           }
         });
 
         // Registra a atividade
-        await prisma.activity.create({
-          data: {
-            type: 'user_created',
-            description: `Usuário ${newUser.name} criado`,
-            userId: user.id
+        await logActivity({
+          type: 'USER_ACTION',
+          level: 'INFO',
+          source: 'BACKEND',
+          action: 'CREATE_USER',
+          description: `Usuário ${newUser.name} criado${args.parentUserId ? ' como agent' : ''}`,
+          userId: user.id,
+          metadata: { 
+            newUserId: newUser.id,
+            isAgent: !!args.parentUserId,
+            parentUserId: args.parentUserId
           }
         });
 
@@ -499,9 +644,13 @@ export const resolvers = {
         // Registra a atividade
         await prisma.activity.create({
           data: {
-            type: 'user_deleted',
+            type: 'USER_ACTION',
+            level: 'INFO',
+            source: 'BACKEND',
+            action: 'DELETE_USER',
             description: `Usuário ${userToDelete.name} deletado`,
-            userId: user.id
+            userId: user.id,
+            metadata: { deletedUserId: userToDelete.id }
           }
         });
 

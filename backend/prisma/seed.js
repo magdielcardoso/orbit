@@ -21,6 +21,16 @@ async function main() {
     }
   })
 
+  // Adiciona role agent
+  const agentRole = await prisma.role.upsert({
+    where: { name: 'agent' },
+    update: {},
+    create: {
+      name: 'agent',
+      description: 'Agente de atendimento'
+    }
+  })
+
   // Cria permissões padrão
   const permissions = [
     {
@@ -38,6 +48,10 @@ async function main() {
     {
       name: 'use_chat',
       description: 'Usar o chat'
+    },
+    {
+      name: 'manage_chats',
+      description: 'Gerenciar conversas e atendimentos'
     }
   ]
 
@@ -123,6 +137,39 @@ async function main() {
     create: {
       roleId: userRole.id,
       permissionId: useChat.id
+    }
+  })
+
+  // Permissões do agent
+  const manageChats = await prisma.permission.findUnique({
+    where: { name: 'manage_chats' }
+  })
+
+  await prisma.rolePermission.upsert({
+    where: {
+      roleId_permissionId: {
+        roleId: agentRole.id,
+        permissionId: useChat.id
+      }
+    },
+    update: {},
+    create: {
+      roleId: agentRole.id,
+      permissionId: useChat.id
+    }
+  })
+
+  await prisma.rolePermission.upsert({
+    where: {
+      roleId_permissionId: {
+        roleId: agentRole.id,
+        permissionId: manageChats.id
+      }
+    },
+    update: {},
+    create: {
+      roleId: agentRole.id,
+      permissionId: manageChats.id
     }
   })
 

@@ -141,10 +141,42 @@
             <select
               v-model="newUser.roleId"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
+              @change="checkIfAgentRole(newUser.roleId)"
             >
               <option value="">{{ t('admin.users.form.selectRole') }}</option>
               <option v-for="role in roles" :key="role.id" :value="role.id">
                 {{ role.name }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Mensagem informativa sobre agents -->
+          <div v-if="isAgentRole" class="mt-2 p-4 bg-blue-50 rounded-md">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-blue-700">
+                  {{ t('admin.users.form.agentInfo') }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="isAgentRole">
+            <label class="block text-sm font-medium text-gray-700">
+              {{ t('admin.users.form.parentUser') }}
+            </label>
+            <select
+              v-model="newUser.parentUserId"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
+            >
+              <option value="">{{ t('admin.users.form.selectParentUser') }}</option>
+              <option v-for="user in potentialParentUsers" :key="user.id" :value="user.id">
+                {{ user.name }}
               </option>
             </select>
           </div>
@@ -190,10 +222,51 @@ const newUser = ref({
   name: '',
   email: '',
   password: '',
-  roleId: ''
+  roleId: '',
+  parentUserId: ''
 });
+const potentialParentUsers = ref([]);
+const isAgentRole = ref(false);
 
-// Busca usuários e papéis
+// Função para verificar se a role selecionada é agent
+function checkIfAgentRole(roleId) {
+  const selectedRole = roles.value.find(r => r.id === roleId);
+  isAgentRole.value = selectedRole?.name === 'agent';
+  if (!isAgentRole.value) {
+    newUser.value.parentUserId = ''; // Limpa o parentUserId se não for agent
+  }
+}
+
+// Função para carregar usuários que podem ser pais (users normais)
+async function loadPotentialParentUsers() {
+  try {
+    const query = `
+      query {
+        users {
+          id
+          name
+          email
+          role {
+            name
+          }
+        }
+      }
+    `;
+
+    const response = await gqlRequest(query, null, {
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`
+      }
+    });
+
+    // Filtra apenas usuários com role 'user'
+    potentialParentUsers.value = response.users.filter(u => u.role?.name === 'user');
+  } catch (error) {
+    console.error('Erro ao carregar usuários:', error);
+  }
+}
+
+// Modifica a função fetchData para incluir parentUser e agents
 async function fetchData() {
   try {
     loading.value = true;
@@ -228,9 +301,10 @@ async function fetchData() {
       }
     });
 
-    console.log('Usuários carregados:', response.users); // Debug
+    console.log('Usuários carregados:', response.users);
     users.value = response.users;
     roles.value = response.roles;
+    await loadPotentialParentUsers();
   } catch (error) {
     console.error('Erro ao carregar dados:', error);
     if (error.message.includes('autoriza') || error.message.includes('autentica')) {
@@ -242,7 +316,7 @@ async function fetchData() {
   }
 }
 
-// Cria novo usuário
+// Modifica a função handleCreateUser para incluir parentUser na resposta
 async function handleCreateUser() {
   try {
     loading.value = true;
@@ -250,9 +324,21 @@ async function handleCreateUser() {
       throw new Error('Selecione um papel para o usuário');
     }
 
+    // Verifica se é um agent e se tem parentUserId selecionado
+    const selectedRole = roles.value.find(r => r.id === newUser.value.roleId);
+    if (selectedRole?.name === 'agent' && !newUser.value.parentUserId) {
+      throw new Error('Selecione um usuário pai para o agent');
+    }
+
     const mutation = `
-      mutation CreateUser($name: String!, $email: String!, $password: String!, $roleId: String) {
-        createUser(name: $name, email: $email, password: $password, roleId: $roleId) {
+      mutation CreateUser($name: String!, $email: String!, $password: String!, $roleId: String!, $parentUserId: String) {
+        createUser(
+          name: $name, 
+          email: $email, 
+          password: $password, 
+          roleId: $roleId, 
+          parentUserId: $parentUserId
+        ) {
           id
           name
           email
@@ -265,7 +351,15 @@ async function handleCreateUser() {
       }
     `;
 
-    await gqlRequest(mutation, newUser.value, {
+    const variables = {
+      name: newUser.value.name,
+      email: newUser.value.email,
+      password: newUser.value.password,
+      roleId: newUser.value.roleId,
+      parentUserId: selectedRole?.name === 'agent' ? newUser.value.parentUserId : null
+    };
+
+    await gqlRequest(mutation, variables, {
       headers: {
         'Authorization': `Bearer ${authStore.token}`
       }
@@ -273,7 +367,7 @@ async function handleCreateUser() {
 
     await fetchData(); // Recarrega os dados
     showNewUserModal.value = false;
-    newUser.value = { name: '', email: '', password: '', roleId: '' };
+    newUser.value = { name: '', email: '', password: '', roleId: '', parentUserId: '' };
     alert('Usuário criado com sucesso!');
   } catch (error) {
     console.error('Erro ao criar usuário:', error);

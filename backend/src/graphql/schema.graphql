@@ -7,6 +7,9 @@ export const typeDefs = `#graphql
     active: Boolean!
     createdAt: String!
     updatedAt: String!
+    parentUser: User
+    parentUserId: String
+    agents: [User!]
   }
 
   type Role {
@@ -51,7 +54,13 @@ export const typeDefs = `#graphql
     login(email: String!, password: String!): AuthPayload!
     
     # Users
-    createUser(email: String!, password: String!, name: String!, roleId: String): User!
+    createUser(
+      email: String!, 
+      password: String!, 
+      name: String!, 
+      roleId: String!, 
+      parentUserId: String
+    ): User!
     updateUser(id: ID!, email: String, name: String, roleId: String, active: Boolean): User!
     deleteUser(id: ID!): Boolean!
     

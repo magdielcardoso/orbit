@@ -180,7 +180,10 @@ export default {
         email: 'Email',
         password: 'Password',
         role: 'Role',
-        selectRole: 'Select a role'
+        selectRole: 'Select a role',
+        parentUser: 'Parent User',
+        selectParentUser: 'Select parent user',
+        agentInfo: 'An agent is a user who acts on behalf of a normal user. Agents can handle chats and interact with customers on behalf of the parent user. Each agent must be linked to a normal user.'
       },
       noUsers: 'No users found',
       noRole: 'No role assigned',

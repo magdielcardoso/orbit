@@ -1,4 +1,6 @@
 export const typeDefs = `#graphql
+  scalar JSON
+
   type User {
     id: ID!
     email: String!
@@ -7,6 +9,9 @@ export const typeDefs = `#graphql
     active: Boolean!
     createdAt: String!
     updatedAt: String!
+    parentUser: User
+    parentUserId: String
+    agents: [User!]
   }
 
   type Role {
@@ -37,12 +42,31 @@ export const typeDefs = `#graphql
     status: String!
   }
 
+  enum ActivityType {
+    USER_ACTION
+    SYSTEM_EVENT
+    ERROR
+    AUTH
+    API_CALL
+  }
+
+  enum ActivityLevel {
+    INFO
+    WARNING
+    ERROR
+    DEBUG
+  }
+
   type Activity {
     id: ID!
-    type: String!
+    type: ActivityType!
+    level: ActivityLevel!
+    source: String!
+    action: String!
     description: String!
-    user: String!
-    timestamp: String!
+    user: User!
+    metadata: JSON
+    createdAt: String!
   }
 
   type Query {
@@ -53,6 +77,13 @@ export const typeDefs = `#graphql
     systemStatus: SystemStatus!
     recentActivities: [Activity!]!
     adminStats: AdminStats!
+    activities(
+      limit: Int
+      offset: Int
+      type: ActivityType
+      level: ActivityLevel
+      source: String
+    ): [Activity!]!
   }
 
   type AdminStats {
@@ -73,7 +104,13 @@ export const typeDefs = `#graphql
     ): SuperAdminRegistrationResponse!
     
     # Users
-    createUser(email: String!, password: String!, name: String!, roleId: String): User!
+    createUser(
+      email: String!, 
+      password: String!, 
+      name: String!, 
+      roleId: String!, 
+      parentUserId: String
+    ): User!
     updateUser(id: ID!, email: String, name: String, roleId: String, active: Boolean): User!
     deleteUser(id: ID!): Boolean!
     

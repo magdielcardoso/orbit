@@ -23,6 +23,47 @@ model SystemConfig {
   status          SystemStatus @default(PENDING_SETUP)
   systemName      String?
   timezone        String?
+  theme           String?      @default("light")
+  language        String?      @default("pt-BR")
+  
+  // Configurações de Branding
+  brandConfig     BrandConfig? @relation(fields: [brandConfigId], references: [id])
+  brandConfigId   String?      @unique
+  
+  // Configurações de Chat
+  chatConfig      ChatConfig?  @relation(fields: [chatConfigId], references: [id])
+  chatConfigId    String?      @unique
+  
+  // Configurações de Email
+  smtpHost        String?
+  smtpPort        Int?
+  smtpUser        String?
+  smtpPassword    String?
+  smtpFromEmail   String?
+  smtpFromName    String?
+  
+  // Configurações de Notificação
+  pushEnabled     Boolean      @default(false)
+  webPushEnabled  Boolean      @default(false)
+  pushVapidPublic String?
+  pushVapidPrivate String?
+  
+  // Limites e Quotas
+  maxUsersPerChat Int?        @default(50)
+  maxFileSize     Int?        @default(5242880) // 5MB em bytes
+  allowedFileTypes String[]   @default(["image/jpeg", "image/png", "application/pdf"])
+  
+  // Integrações
+  whatsappEnabled Boolean     @default(false)
+  whatsappToken   String?
+  telegramEnabled Boolean     @default(false)
+  telegramToken   String?
+  
+  // Retenção de Dados
+  messageRetentionDays Int?   @default(90)
+  autoDeleteInactiveUsers Boolean @default(false)
+  inactiveUserDays Int?       @default(365)
+  
   setupCompletedAt DateTime?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
@@ -70,6 +111,11 @@ model User {
   updatedAt DateTime  @updatedAt
   messages  Message[]
   activities Activity[]
+  
+  // Relações de agent
+  parentUser   User?    @relation("UserAgents", fields: [parentUserId], references: [id])
+  parentUserId String?
+  agents       User[]   @relation("UserAgents")
 }
 
 model Message {
@@ -83,11 +129,103 @@ model Message {
 
 model Activity {
   id          String   @id @default(uuid())
-  type        String
+  type        ActivityType @default(USER_ACTION)
+  level       ActivityLevel @default(INFO)
+  source      String  @default("SYSTEM") // 'FRONTEND' ou 'BACKEND'
+  action      String  @default("LEGACY") // ação específica realizada
   description String
   userId      String
   user        User     @relation(fields: [userId], references: [id])
+  metadata    Json?   // dados adicionais em formato JSON
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+enum ActivityType {
+  USER_ACTION
+  SYSTEM_EVENT
+  ERROR
+  AUTH
+  API_CALL
+}
+
+enum ActivityLevel {
+  INFO
+  WARNING
+  ERROR
+  DEBUG
+}
+
+model ChatConfig {
+  id                String        @id @default(uuid())
+  systemConfig      SystemConfig?
+  
+  // Aparência do Chat
+  primaryColor      String?       @default("#9333EA") // Cor roxa padrão
+  secondaryColor    String?       @default("#22C55E")
+  fontFamily        String?       @default("Inter")
+  customCSS         String?       // CSS personalizado
+  
+  // Comportamento
+  welcomeMessage    String?
+  offlineMessage    String?
+  operatingHours    OperatingHours[]
+  autoReply         Boolean       @default(true)
+  autoReplyDelay    Int?         @default(60) // segundos
+  
+  // Recursos
+  enableFileSharing Boolean      @default(true)
+  enableEmojis      Boolean      @default(true)
+  enableTypingIndicator Boolean  @default(true)
+  enableReadReceipts Boolean     @default(true)
+  enableUserProfile  Boolean     @default(true)
+  
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+}
+
+model OperatingHours {
+  id            String      @id @default(uuid())
+  chatConfig    ChatConfig  @relation(fields: [chatConfigId], references: [id])
+  chatConfigId  String
+  dayOfWeek     Int        // 0-6 (Domingo-Sábado)
+  startTime     String     // formato "HH:mm"
+  endTime       String     // formato "HH:mm"
+  isEnabled     Boolean    @default(true)
+}
+
+model BrandConfig {
+  id                String        @id @default(uuid())
+  systemConfig      SystemConfig?
+  
+  // Identidade Visual
+  logo              String?       // URL do logo
+  favicon           String?       // URL do favicon
+  primaryColor      String        @default("#9333EA")
+  secondaryColor    String        @default("#22C55E")
+  accentColor       String        @default("#F59E0B")
+  
+  // Fontes
+  primaryFont       String        @default("Inter")
+  secondaryFont     String?
+  
+  // Elementos de Marca
+  companyName       String?
+  slogan            String?
+  description       String?       @db.Text
+  
+  // Redes Sociais
+  socialLinks       Json?         // { facebook, twitter, instagram, linkedin }
+  
+  // Personalização
+  customCss        String?       @db.Text
+  customJs         String?       @db.Text
+  
+  // Imagens
+  loginBackground  String?       // URL da imagem de fundo do login
+  emailLogo        String?       // URL do logo para emails
+  
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 }
 
