@@ -62,9 +62,10 @@
                     :id="`permission-${role.id}-${permission.id}`"
                     :name="`permission-${role.id}-${permission.id}`"
                     type="checkbox"
-                    :checked="permission.enabled"
+                    :checked="hasPermission(role, permission)"
+                    disabled
                     @change="togglePermission(role, permission)"
-                    class="focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300 rounded"
+                    class="focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300 rounded appearance-none checked:bg-purple-600 checked:border-transparent"
                   />
                 </div>
                 <div class="ml-3 text-sm">
@@ -329,5 +330,71 @@ async function togglePermission(role, permission) {
   }
 }
 
+// Computed para verificar se a permissão está associada ao papel
+function hasPermission(role, permission) {
+  // Se for superadmin, todas as permissões estão marcadas
+  if (role.name === 'superadmin') {
+    return true;
+  }
+  
+  // Se for user, apenas use_chat está marcada
+  if (role.name === 'user') {
+    return permission.name === 'use_chat';
+  }
+  
+  // Para outros papéis, verifica se a permissão está na lista
+  return role.permissions.some(p => p.id === permission.id);
+}
+
 onMounted(fetchData);
-</script> 
+</script>
+
+<style scoped>
+input[type="checkbox"] {
+  position: relative;
+  cursor: not-allowed; /* Mudando o cursor para indicar que está desabilitado */
+  appearance: none;
+  background-color: #fff;
+  border: 2px solid #d1d5db;
+  border-radius: 0.25rem;
+  width: 1rem;
+  height: 1rem;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #22c55e;
+  border-color: #22c55e;
+  opacity: 0.8; /* Adicionando uma leve opacidade para indicar que está desabilitado */
+}
+
+input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 52%;
+  top: 45%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+}
+
+input[type="checkbox"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+input[type="checkbox"]:hover:not(:checked) {
+  border-color: #22c55e;
+}
+
+/* Estilo específico para checkbox desabilitado */
+input[type="checkbox"]:disabled {
+  background-color: #f3f4f6;
+}
+
+input[type="checkbox"]:disabled:checked {
+  background-color: #22c55e;
+  opacity: 0.7;
+}
+</style> 
