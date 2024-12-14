@@ -1,5 +1,13 @@
 const GRAPHQL_URL = import.meta.env.VITE_GRAPHQL_URL || 'http://localhost:4000/graphql';
 
+export function setAuthToken(token) {
+  if (token) {
+    localStorage.setItem('token', token)
+  } else {
+    localStorage.removeItem('token')
+  }
+}
+
 export async function gqlRequest(query, variables = null, options = {}) {
   try {
     const token = localStorage.getItem('token');

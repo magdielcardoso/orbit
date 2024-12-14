@@ -25,6 +25,15 @@ export const resolvers = {
         }
       });
 
+      if (!userWithRole) return null;
+      
+      if (!userWithRole.role) {
+        return {
+          ...userWithRole,
+          role: null
+        };
+      }
+
       // Formata as permissões corretamente
       return {
         ...userWithRole,
@@ -70,6 +79,8 @@ export const resolvers = {
       }
     },
     recentActivities: async (_, __, { prisma, user }) => {
+      if (!user) return [];
+
       try {
         // Verifica autenticação básica
         if (!user) throw new Error('Não autorizado');
@@ -247,6 +258,15 @@ export const resolvers = {
           }
         });
 
+        // Formata o usuário para retornar as permissões corretamente
+        const formattedUser = {
+          ...user,
+          role: {
+            ...user.role,
+            permissions: user.role.permissions.map(p => p.permission)
+          }
+        };
+
         // Configura o sistema
         const systemConfig = await prisma.systemConfig.create({
           data: {
@@ -267,7 +287,7 @@ export const resolvers = {
 
         return {
           token,
-          user,
+          user: formattedUser,
           systemConfig
         };
       } catch (error) {

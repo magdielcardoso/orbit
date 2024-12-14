@@ -13,7 +13,7 @@ export const typeDefs = `#graphql
     id: ID!
     name: String!
     description: String
-    permissions: [Permission!]!
+    permissions: [Permission!]
     createdAt: String!
     updatedAt: String!
   }

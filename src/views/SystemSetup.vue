@@ -142,6 +142,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth.store'
 import { Eye, EyeOff } from 'lucide-vue-next'
 import { gqlRequest } from '../utils/graphql'
+import { setAuthToken } from '../utils/graphql'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -221,6 +222,9 @@ async function handleSubmit() {
     
     // Mostra o toast de sucesso
     showSuccessToast.value = true
+    
+    // Atualiza o token nos headers das requisições
+    setAuthToken(response.registerSuperAdmin.token)
     
     // Redireciona para o dashboard
     setTimeout(() => {
