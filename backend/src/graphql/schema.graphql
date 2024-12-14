@@ -10,6 +10,8 @@ export const typeDefs = `#graphql
     parentUser: User
     parentUserId: String
     agents: [User!]
+    currentOrgId: String
+    organizations: [OrganizationUser!]
   }
 
   type Role {
@@ -72,6 +74,19 @@ export const typeDefs = `#graphql
     # Role Permissions
     addPermissionToRole(roleId: ID!, permissionId: ID!): Role!
     removePermissionFromRole(roleId: ID!, permissionId: ID!): Role!
+  }
+
+  type Organization {
+    id: ID!
+    name: String!
+    slug: String!
+  }
+
+  type OrganizationUser {
+    organization: Organization!
+    isAdmin: Boolean!
+    isOwner: Boolean!
+    status: String!
   }
 ` 
 

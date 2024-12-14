@@ -84,6 +84,11 @@ const router = createRouter({
           component: SuperAdminPanel
         },
         {
+          path: 'organizations',
+          name: 'organizations-management',
+          component: () => import('../views/admin/OrganizationsManagement.vue')
+        },
+        {
           path: 'users',
           name: 'users-management',
           component: UsersManagement

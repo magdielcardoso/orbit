@@ -77,45 +77,18 @@ export const resolvers = {
         }
       };
     },
-    users: async (_, __, { prisma, user }) => {
-      try {
-        // Verifica autenticação básica
-        if (!user) throw new Error('Não autorizado');
-
-        // Busca usuário com permissões
-        const userWithRole = await prisma.user.findUnique({
-          where: { id: user.id },
-          include: {
-            role: {
-              include: {
-                permissions: {
-                  include: { permission: true }
-                }
-              }
+    users: async (_, __, { prisma }) => {
+      return prisma.user.findMany({
+        include: {
+          role: true,
+          parentUser: true,
+          organizations: {
+            include: {
+              organization: true
             }
           }
-        });
-
-        // Verifica permissão específica
-        const hasPermission = userWithRole?.role?.permissions?.some(
-          p => p.permission.name === 'manage_users' || p.permission.name === 'manage_system'
-        );
-
-        if (!hasPermission) {
-          throw new Error('Não autorizado');
         }
-
-        return prisma.user.findMany({
-          include: {
-            role: true,
-            parentUser: true,
-            agents: true
-          }
-        });
-      } catch (error) {
-        console.error('Erro ao buscar usuários:', error);
-        throw error;
-      }
+      });
     },
     roles: async (_, __, { prisma, user }) => {
       try {
@@ -378,6 +351,30 @@ export const resolvers = {
       } catch (error) {
         console.error('Erro ao buscar atividades:', error);
         throw error;
+      }
+    },
+    organizations: async (_, __, { prisma, user }) => {
+      try {
+        // Verifica se é superadmin
+        const userWithRole = await prisma.user.findUnique({
+          where: { id: user.id },
+          include: {
+            role: true
+          }
+        })
+
+        if (userWithRole?.role?.name !== 'superadmin') {
+          throw new Error('Não autorizado: apenas superadmin pode listar todas as organizações')
+        }
+
+        return prisma.organization.findMany({
+          include: {
+            users: true
+          }
+        })
+      } catch (error) {
+        console.error('Erro ao buscar organizações:', error)
+        throw error
       }
     }
   },
@@ -682,6 +679,159 @@ export const resolvers = {
       } catch (error) {
         console.error('Erro ao deletar usuário:', error);
         throw error;
+      }
+    },
+
+    createContact: async (_, { input }, { prisma, user }) => {
+      // Verifica se o usuário tem acesso à organização
+      const orgUser = await prisma.organizationUser.findFirst({
+        where: {
+          userId: user.id,
+          organizationId: input.organizationId
+        }
+      })
+
+      if (!orgUser) {
+        throw new Error('Não autorizado: usuário não pertence a esta organização')
+      }
+
+      return prisma.contact.create({
+        data: {
+          ...input,
+          organizationId: input.organizationId
+        }
+      })
+    },
+
+    updateUser: async (_, { id, input }, { prisma, user }) => {
+      try {
+        // Verifica permissão
+        const userWithRole = await prisma.user.findUnique({
+          where: { id: user.id },
+          include: {
+            role: {
+              include: {
+                permissions: {
+                  include: { permission: true }
+                }
+              }
+            }
+          }
+        });
+
+        const hasPermission = userWithRole?.role?.permissions?.some(
+          p => p.permission.name === 'manage_users'
+        );
+
+        if (!hasPermission) {
+          throw new Error('Não autorizado');
+        }
+
+        // Atualiza o usuário
+        const updatedUser = await prisma.user.update({
+          where: { id },
+          data: {
+            name: input.name,
+            email: input.email,
+            role: input.roleId ? {
+              connect: { id: input.roleId }
+            } : undefined,
+            parentUser: input.parentUserId ? {
+              connect: { id: input.parentUserId }
+            } : undefined,
+            active: input.active,
+            currentOrg: input.currentOrgId ? {
+              connect: { id: input.currentOrgId }
+            } : undefined
+          },
+          include: {
+            role: true,
+            parentUser: true,
+            currentOrg: true,
+            organizations: {
+              include: {
+                organization: true
+              }
+            }
+          }
+        });
+
+        // Se tiver uma nova organização, cria/atualiza a relação OrganizationUser
+        if (input.currentOrgId) {
+          await prisma.organizationUser.upsert({
+            where: {
+              organizationId_userId: {
+                organizationId: input.currentOrgId,
+                userId: id
+              }
+            },
+            create: {
+              organizationId: input.currentOrgId,
+              userId: id,
+              isAdmin: input.isAdmin || false,
+              isOwner: input.isOwner || false,
+              status: 'active'
+            },
+            update: {
+              isAdmin: input.isAdmin || false,
+              isOwner: input.isOwner || false
+            }
+          });
+        }
+
+        return updatedUser;
+      } catch (error) {
+        console.error('Erro ao atualizar usuário:', error);
+        throw error;
+      }
+    },
+
+    createOrganization: async (_, { input }, { prisma, user }) => {
+      try {
+        // Verifica se é superadmin
+        const userWithRole = await prisma.user.findUnique({
+          where: { id: user.id },
+          include: {
+            role: true
+          }
+        })
+
+        if (userWithRole?.role?.name !== 'superadmin') {
+          throw new Error('Não autorizado: apenas superadmin pode criar organizações')
+        }
+
+        // Cria a organização
+        const organization = await prisma.organization.create({
+          data: {
+            name: input.name,
+            slug: input.slug,
+            plan: input.plan,
+            domain: input.domain,
+            timezone: input.timezone || 'UTC',
+            locale: input.locale || 'pt-BR',
+            features: input.features || {},
+            paymentStatus: 'ACTIVE',
+            maxUsers: 5,
+            maxTeams: 1,
+            maxInboxes: 2
+          }
+        })
+
+        // Cria a relação com o usuário que criou
+        await prisma.organizationUser.create({
+          data: {
+            organizationId: organization.id,
+            userId: user.id,
+            isAdmin: true,
+            isOwner: true,
+            status: 'active'
+          }
+        })
+
+        return organization
+      } catch (error) {
+        console.error('Erro ao criar organização:', error)
+        throw error
       }
     }
   }

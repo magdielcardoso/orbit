@@ -115,6 +115,32 @@ export default {
     actions: 'Ações',
     parentUser: 'Usuário Responsável',
     selectParentUser: 'Selecione o usuário responsável',
-    agentInfo: 'Um agente é um usuário que atua em nome de um usuário normal. Agentes podem atender chats e interagir com clientes em nome do usuário responsável. Cada agente deve estar vinculado a um usuário normal.'
+    agentInfo: 'Um agente é um usuário que atua em nome de um usuário normal. Agentes podem atender chats e interagir com clientes em nome do usuário responsável. Cada agente deve estar vinculado a um usuário normal.',
+    status: {
+      active: 'Ativo',
+      inactive: 'Inativo'
+    },
+    organization: {
+      select: 'Selecione uma organização',
+      notFound: 'Organização não encontrada',
+      status: {
+        active: 'Ativa',
+        suspended: 'Suspensa',
+        pending: 'Pendente',
+        overdue: 'Em atraso',
+        cancelled: 'Cancelada'
+      },
+      permissions: {
+        admin: 'Administrador',
+        owner: 'Proprietário',
+        member: 'Membro'
+      }
+    },
+    form: {
+      required: 'Campo obrigatório',
+      save: 'Salvar',
+      cancel: 'Cancelar',
+      loading: 'Carregando...'
+    }
   }
 } 

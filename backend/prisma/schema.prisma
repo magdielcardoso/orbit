@@ -116,6 +116,25 @@ model User {
   parentUser   User?    @relation("UserAgents", fields: [parentUserId], references: [id])
   parentUserId String?
   agents       User[]   @relation("UserAgents")
+  
+  // Novas relações
+  assignedConversations Conversation[] @relation("AssignedConversations")
+  teams                 TeamMember[]
+  
+  // Campos adicionais
+  avatar               String?
+  status              String?         @default("online") // online, offline, away
+  lastActivityAt      DateTime?
+  
+  // Novas relações
+  organizations    OrganizationUser[]
+  currentOrgId     String?           // Organização atual selecionada
+  preferences      Json?             // Preferências do usuário (tema, notificações, etc)
+  lastSeenAt       DateTime?
+  deviceTokens     Json?             // Tokens para push notification
+  twoFactorEnabled Boolean           @default(false)
+  twoFactorSecret  String?
+  currentOrg   Organization? @relation("CurrentOrg", fields: [currentOrgId], references: [id])
 }
 
 model Message {
@@ -125,6 +144,14 @@ model Message {
   updatedAt DateTime @updatedAt
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+  
+  // Novos campos
+  conversationId      String
+  conversation        Conversation    @relation(fields: [conversationId], references: [id])
+  type               String          @default("text") // text, image, file, etc
+  metadata           Json?           // Para dados adicionais como status de entrega
+  private            Boolean         @default(false)  // Para notas internas
+  attachments        Json?           // URLs de arquivos anexados
 }
 
 model Activity {
@@ -227,5 +254,291 @@ model BrandConfig {
   
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
+}
+
+// Nova enum para status de conversas
+enum ConversationStatus {
+  OPEN
+  PENDING
+  RESOLVED
+  CLOSED
+}
+
+// Nova enum para prioridade
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// Nova enum para origem da conversa
+enum ChannelSource {
+  WEBCHAT
+  WHATSAPP
+  TELEGRAM
+  EMAIL
+  API
+}
+
+// Nova model para Inbox (caixas de entrada)
+model Inbox {
+  id          String        @id @default(uuid())
+  name        String
+  description String?
+  isEnabled   Boolean       @default(true)
+  channelType ChannelSource
+  
+  // Configurações específicas do canal
+  channelConfig Json?       // Configurações específicas de cada canal
+  
+  // Relações
+  conversations Conversation[]
+  teams        InboxTeam[]
+  
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  
+  organizationId   String
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  workingHours     Json?            // Horário de funcionamento específico
+  autoAssignment   Boolean          @default(true)
+  assignmentRules  Json?            // Regras de distribuição de conversas
+  welcomeMessage   String?          // Mensagem de boas-vindas específica
+  awayMessage      String?          // Mensagem de ausência
+}
+
+// Nova model para Times
+model Team {
+  id          String      @id @default(uuid())
+  name        String
+  description String?
+  isEnabled   Boolean     @default(true)
+  
+  // Relações
+  members     TeamMember[]
+  inboxes     InboxTeam[]
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  organizationId   String
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  color           String            @default("#666666")
+  icon            String?           // URL do ícone do time
+  settings        Json?             // Configurações específicas do time
+}
+
+// Relação entre Time e Usuário
+model TeamMember {
+  id        String   @id @default(uuid())
+  teamId    String
+  userId    String
+  isLeader  Boolean  @default(false)
+  
+  team      Team     @relation(fields: [teamId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([teamId, userId])
+}
+
+// Relação entre Time e Inbox
+model InboxTeam {
+  id        String   @id @default(uuid())
+  inboxId   String
+  teamId    String
+  
+  inbox     Inbox    @relation(fields: [inboxId], references: [id])
+  team      Team     @relation(fields: [teamId], references: [id])
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([inboxId, teamId])
+}
+
+// Nova model para Conversas
+model Conversation {
+  id            String            @id @default(uuid())
+  status        ConversationStatus @default(OPEN)
+  priority      Priority          @default(MEDIUM)
+  subject       String?
+  
+  // Relações
+  inboxId       String
+  inbox         Inbox             @relation(fields: [inboxId], references: [id])
+  messages      Message[]
+  assigneeId    String?
+  assignee      User?             @relation("AssignedConversations", fields: [assigneeId], references: [id])
+  labels        ConversationLabel[]
+  
+  // Metadados
+  channelData   Json?            // Dados específicos do canal
+  customFields  Json?            // Campos personalizados
+  
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  
+  organizationId   String
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  contactId        String?          // Referência ao contato
+  contact          Contact?         @relation(fields: [contactId], references: [id])
+  firstResponseAt  DateTime?        // Tempo primeira resposta
+  resolvedAt       DateTime?        // Quando foi resolvido
+  reopenedAt       DateTime?        // Quando foi reaberto
+  closedAt         DateTime?        // Quando foi fechado
+  slaStatus        String?          // Status do SLA
+  rating           Int?             // Avaliação do atendimento
+  ratingComment    String?          // Comentário da avaliação
+}
+
+// Nova model para Etiquetas
+model Label {
+  id            String              @id @default(uuid())
+  name          String              @unique
+  color         String              @default("#666666")
+  description   String?
+  conversations ConversationLabel[]
+  
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+}
+
+// Relação entre Conversa e Etiqueta
+model ConversationLabel {
+  id              String        @id @default(uuid())
+  conversationId  String
+  labelId         String
+  
+  conversation    Conversation  @relation(fields: [conversationId], references: [id])
+  label          Label         @relation(fields: [labelId], references: [id])
+  
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@unique([conversationId, labelId])
+}
+
+// Nova enum para planos
+enum SubscriptionPlan {
+  FREE
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+// Nova enum para status de pagamento
+enum PaymentStatus {
+  ACTIVE
+  PENDING
+  OVERDUE
+  CANCELLED
+}
+
+// Nova model para Organizações (Tenants)
+model Organization {
+  id            String           @id @default(uuid())
+  name          String
+  slug          String          @unique
+  domain        String?         // Domínio personalizado
+  plan          SubscriptionPlan @default(FREE)
+  paymentStatus PaymentStatus   @default(ACTIVE)
+  
+  // Limites do plano
+  maxUsers      Int             @default(5)    // Limite de usuários
+  maxTeams      Int             @default(1)    // Limite de times
+  maxInboxes    Int             @default(2)    // Limite de caixas de entrada
+  
+  // Configurações específicas
+  timezone      String          @default("UTC")
+  locale        String          @default("pt-BR")
+  features      Json?           // Features habilitadas/desabilitadas
+  
+  // Dados de faturamento
+  billingEmail  String?
+  billingName   String?
+  billingAddress Json?
+  taxId         String?         // CNPJ/CPF
+  
+  // Relações
+  users         OrganizationUser[]
+  teams         Team[]
+  inboxes       Inbox[]
+  conversations Conversation[]
+  contacts      Contact[]        // Adicionando relação inversa para Contact
+  automations   Automation[]     // Adicionando relação inversa para Automation
+  currentUsers User[] @relation("CurrentOrg") // Adiciona relação inversa
+  
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  deletedAt     DateTime?       // Soft delete
+}
+
+// Relação entre Usuário e Organização
+model OrganizationUser {
+  id             String       @id @default(uuid())
+  organizationId String
+  userId         String
+  isAdmin        Boolean      @default(false)
+  isOwner        Boolean      @default(false)
+  status         String       @default("active") // active, invited, suspended
+  
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  user           User        @relation(fields: [userId], references: [id])
+  
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@unique([organizationId, userId])
+}
+
+// Nova model para Contatos
+model Contact {
+  id              String         @id @default(uuid())
+  organizationId  String
+  organization    Organization   @relation(fields: [organizationId], references: [id])
+  
+  // Dados básicos
+  name            String
+  email           String?
+  phone           String?
+  avatar          String?
+  
+  // Dados adicionais
+  customFields    Json?          // Campos personalizados
+  tags           String[]       // Tags do contato
+  notes          String?        // Notas internas
+  
+  // Metadados
+  lastContactedAt DateTime?
+  conversations   Conversation[]
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([organizationId, email])
+  @@unique([organizationId, phone])
+}
+
+// Nova model para Automações
+model Automation {
+  id              String       @id @default(uuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  
+  name            String
+  description     String?
+  isActive        Boolean      @default(true)
+  
+  // Configuração da automação
+  trigger         Json         // Evento que dispara a automação
+  conditions      Json         // Condições para executar
+  actions         Json         // Ações a serem executadas
+  
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 }
 

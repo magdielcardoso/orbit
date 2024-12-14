@@ -85,7 +85,8 @@ import {
   Settings, 
   LogOut,
   User,
-  ArrowLeft
+  ArrowLeft,
+  Building
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -124,6 +125,11 @@ const menuItems = [
     path: '/admin',
     icon: LayoutDashboard,
     label: 'Dashboard'
+  },
+  {
+    path: '/admin/organizations',
+    icon: Building,
+    label: 'Organizações'
   },
   {
     path: '/admin/users',

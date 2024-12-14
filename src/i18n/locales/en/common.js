@@ -115,6 +115,32 @@ export default {
     actions: 'Actions',
     parentUser: 'Parent User',
     selectParentUser: 'Select parent user',
-    agentInfo: 'An agent is a user who acts on behalf of a normal user. Agents can handle chats and interact with customers on behalf of the parent user. Each agent must be linked to a normal user.'
+    agentInfo: 'An agent is a user who acts on behalf of a normal user. Agents can handle chats and interact with customers on behalf of the parent user. Each agent must be linked to a normal user.',
+    status: {
+      active: 'Active',
+      inactive: 'Inactive'
+    },
+    organization: {
+      select: 'Select an organization',
+      notFound: 'Organization not found',
+      status: {
+        active: 'Active',
+        suspended: 'Suspended',
+        pending: 'Pending',
+        overdue: 'Overdue',
+        cancelled: 'Cancelled'
+      },
+      permissions: {
+        admin: 'Administrator',
+        owner: 'Owner',
+        member: 'Member'
+      }
+    },
+    form: {
+      required: 'Required field',
+      save: 'Save',
+      cancel: 'Cancel',
+      loading: 'Loading...'
+    }
   }
 } 

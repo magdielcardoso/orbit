@@ -184,12 +184,43 @@ export default {
         selectRole: 'Selecione uma função',
         parentUser: 'Usuário Responsável',
         selectParentUser: 'Selecione o usuário responsável',
-        agentInfo: 'Um agente é um usuário que atua em nome de um usuário normal. Agentes podem atender chats e interagir com clientes em nome do usuário responsável. Cada agente deve estar vinculado a um usuário normal.'
+        agentInfo: 'Um agente é um usuário que atua em nome de um usuário normal. Agentes podem atender chats e interagir com clientes em nome do usuário responsável. Cada agente deve estar vinculado a um usuário normal.',
+        status: {
+          title: 'Status',
+          active: 'Ativo',
+          inactive: 'Inativo',
+          toggleActive: 'Clique para ativar/desativar o usuário'
+        },
+        organization: {
+          title: 'Organização',
+          select: 'Selecione uma organização',
+          permissions: 'Permissões na organização',
+          isAdmin: 'Administrador da organização',
+          isOwner: 'Proprietário da organização',
+          noOrganization: 'Sem organização'
+        },
+        organization: 'Organização',
+        selectOrganization: 'Selecione uma organização',
+        isAdmin: 'Administrador da organização',
+        isOwner: 'Proprietário da organização'
       },
       noUsers: 'Nenhum usuário encontrado',
       noRole: 'Sem função atribuída',
       loading: 'Carregando usuários...',
-      agentOf: 'Agente de'
+      agentOf: 'Agente de',
+      editUser: 'Editar Usuário',
+      updateSuccess: 'Usuário atualizado com sucesso!',
+      errors: {
+        userNotFound: 'Usuário não encontrado',
+        organizationRequired: 'Selecione uma organização',
+        loadingFailed: 'Erro ao carregar usuário',
+        updateFailed: 'Erro ao atualizar usuário',
+        createError: 'Erro ao criar usuário',
+        updateError: 'Erro ao atualizar usuário',
+        deleteError: 'Erro ao excluir usuário'
+      },
+      createSuccess: 'Usuário criado com sucesso!',
+      deleteSuccess: 'Usuário excluído com sucesso!'
     },
     roles: {
       title: 'Papéis e Permissões',
@@ -204,6 +235,53 @@ export default {
       actions: {
         edit: 'Editar',
         delete: 'Excluir'
+      }
+    },
+    organizations: {
+      title: 'Organizações',
+      description: 'Gerencie as organizações do sistema.',
+      addOrganization: 'Adicionar Organização',
+      newOrganization: 'Nova Organização',
+      editOrganization: 'Editar Organização',
+      createSuccess: 'Organização criada com sucesso!',
+      updateSuccess: 'Organização atualizada com sucesso!',
+      deleteSuccess: 'Organização excluída com sucesso!',
+      confirmDelete: 'Tem certeza que deseja excluir a organização {name}?',
+      table: {
+        name: 'Nome',
+        slug: 'Slug',
+        plan: 'Plano',
+        users: 'Usuários',
+        status: 'Status',
+        actions: 'Ações'
+      },
+      status: {
+        active: 'Ativa',
+        suspended: 'Suspensa',
+        pending: 'Pendente',
+        overdue: 'Em atraso',
+        cancelled: 'Cancelada'
+      },
+      form: {
+        name: 'Nome',
+        namePlaceholder: 'Nome da organização',
+        slug: 'Slug',
+        slugPlaceholder: 'identificador-unico',
+        domain: 'Domínio',
+        domainPlaceholder: 'empresa.com.br',
+        plan: 'Plano',
+        selectPlan: 'Selecione um plano',
+        maxUsers: 'Limite de usuários',
+        maxTeams: 'Limite de times',
+        maxInboxes: 'Limite de caixas de entrada',
+        timezone: 'Fuso horário',
+        locale: 'Idioma padrão'
+      },
+      plans: {
+        free: 'Gratuito',
+        starter: 'Iniciante',
+        professional: 'Profissional',
+        enterprise: 'Empresarial'
       }
     }
   }

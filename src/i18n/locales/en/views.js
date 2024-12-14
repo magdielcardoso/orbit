@@ -183,11 +183,52 @@ export default {
         selectRole: 'Select a role',
         parentUser: 'Parent User',
         selectParentUser: 'Select parent user',
-        agentInfo: 'An agent is a user who acts on behalf of a normal user. Agents can handle chats and interact with customers on behalf of the parent user. Each agent must be linked to a normal user.'
+        agentInfo: 'An agent is a user who acts on behalf of a normal user. Agents can handle chats and interact with customers on behalf of the parent user. Each agent must be linked to a normal user.',
+        status: {
+          title: 'Status',
+          active: 'Active',
+          inactive: 'Inactive',
+          toggleActive: 'Click to activate/deactivate user'
+        },
+        organization: {
+          title: 'Organization',
+          select: 'Select an organization',
+          permissions: 'Organization permissions',
+          isAdmin: 'Organization administrator',
+          isOwner: 'Organization owner',
+          noOrganization: 'No organization'
+        },
+        noUsers: 'No users found',
+        noRole: 'No role assigned',
+        loading: 'Loading users...',
+        editUser: 'Edit User',
+        updateSuccess: 'User updated successfully!',
+        errors: {
+          userNotFound: 'User not found',
+          organizationRequired: 'Select an organization',
+          loadingFailed: 'Error loading user',
+          updateFailed: 'Error updating user'
+        }
       },
       noUsers: 'No users found',
       noRole: 'No role assigned',
-      loading: 'Loading users...'
+      loading: 'Loading users...',
+      editUser: 'Edit User',
+      updateSuccess: 'User updated successfully!',
+      errors: {
+        userNotFound: 'User not found',
+        organizationRequired: 'Select an organization',
+        loadingFailed: 'Error loading user',
+        updateFailed: 'Error updating user'
+      },
+      createSuccess: 'User created successfully!',
+      updateSuccess: 'User updated successfully!',
+      deleteSuccess: 'User deleted successfully!',
+      errors: {
+        createError: 'Error creating user',
+        updateError: 'Error updating user',
+        deleteError: 'Error deleting user'
+      }
     },
     roles: {
       title: 'Roles and Permissions',
@@ -202,6 +243,53 @@ export default {
       actions: {
         edit: 'Edit',
         delete: 'Delete'
+      }
+    },
+    organizations: {
+      title: 'Organizations',
+      description: 'Manage system organizations.',
+      addOrganization: 'Add Organization',
+      newOrganization: 'New Organization',
+      editOrganization: 'Edit Organization',
+      createSuccess: 'Organization created successfully!',
+      updateSuccess: 'Organization updated successfully!',
+      deleteSuccess: 'Organization deleted successfully!',
+      confirmDelete: 'Are you sure you want to delete organization {name}?',
+      table: {
+        name: 'Name',
+        slug: 'Slug',
+        plan: 'Plan',
+        users: 'Users',
+        status: 'Status',
+        actions: 'Actions'
+      },
+      status: {
+        active: 'Active',
+        suspended: 'Suspended',
+        pending: 'Pending',
+        overdue: 'Overdue',
+        cancelled: 'Cancelled'
+      },
+      form: {
+        name: 'Name',
+        namePlaceholder: 'Organization name',
+        slug: 'Slug',
+        slugPlaceholder: 'unique-identifier',
+        domain: 'Domain',
+        domainPlaceholder: 'company.com',
+        plan: 'Plan',
+        selectPlan: 'Select a plan',
+        maxUsers: 'User limit',
+        maxTeams: 'Team limit',
+        maxInboxes: 'Inbox limit',
+        timezone: 'Timezone',
+        locale: 'Default language'
+      },
+      plans: {
+        free: 'Free',
+        starter: 'Starter',
+        professional: 'Professional',
+        enterprise: 'Enterprise'
       }
     }
   }

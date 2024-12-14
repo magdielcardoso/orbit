@@ -207,6 +207,117 @@
         </button>
       </template>
     </Modal>
+
+    <!-- Modal de Edição -->
+    <Modal
+      v-if="showEditModal"
+      @close="showEditModal = false"
+    >
+      <template #title>
+        {{ t('admin.users.editUser') }}
+      </template>
+
+      <template #content>
+        <form id="editUserForm" @submit.prevent="handleUpdateUser" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              {{ t('admin.users.form.name') }}
+            </label>
+            <input
+              v-model="editingUser.name"
+              type="text"
+              required
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              {{ t('admin.users.form.email') }}
+            </label>
+            <input
+              v-model="editingUser.email"
+              type="email"
+              required
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              {{ t('admin.users.form.role') }}
+            </label>
+            <select
+              v-model="editingUser.role.id"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
+            >
+              <option value="">{{ t('admin.users.form.selectRole') }}</option>
+              <option v-for="role in roles" :key="role.id" :value="role.id">
+                {{ role.name }}
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              {{ t('admin.users.form.status.title') }}
+            </label>
+            <div class="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox"
+                v-model="editingUser.active"
+                class="sr-only peer"
+                :title="t('admin.users.form.status.toggleActive')"
+              >
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600">
+              </div>
+              <span class="ml-3 text-sm font-medium text-gray-700">
+                {{ editingUser.active ? t('admin.users.form.status.active') : t('admin.users.form.status.inactive') }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Organização -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">{{ t('admin.users.form.organization') }}</span>
+            </label>
+            <select
+              v-model="editingUser.organizationId"
+              class="select select-bordered w-full"
+            >
+              <option value="">{{ t('admin.users.form.selectOrganization') }}</option>
+              <option 
+                v-for="org in organizations" 
+                :key="org.id" 
+                :value="org.id"
+              >
+                {{ org.name }}
+              </option>
+            </select>
+          </div>
+        </form>
+      </template>
+
+      <template #footer>
+        <button 
+          type="button" 
+          class="btn"
+          @click="showEditModal = false"
+        >
+          {{ t('common.cancel') }}
+        </button>
+        <button 
+          type="submit"
+          form="editUserForm"
+          class="btn btn-primary ml-3"
+          :disabled="loading"
+        >
+          <span v-if="loading" class="loading loading-spinner"></span>
+          {{ loading ? t('common.loading') : t('common.save') }}
+        </button>
+      </template>
+    </Modal>
   </div>
 </template>
 
@@ -234,6 +345,9 @@ const newUser = ref({
 });
 const potentialParentUsers = ref([]);
 const isAgentRole = ref(false);
+const showEditModal = ref(false)
+const editingUser = ref(null)
+const organizations = ref([])
 
 // Função para verificar se a role selecionada é agent
 function checkIfAgentRole(roleId) {
@@ -273,7 +387,7 @@ async function loadPotentialParentUsers() {
   }
 }
 
-// Modifica a função fetchData para incluir parentUser e agents
+// Modifica a função fetchData para usar a query correta
 async function fetchData() {
   try {
     loading.value = true;
@@ -296,12 +410,22 @@ async function fetchData() {
             id
             name
           }
+          currentOrgId
           createdAt
           updatedAt
         }
         roles {
           id
           name
+        }
+        me {
+          organizations {
+            organization {
+              id
+              name
+              slug
+            }
+          }
         }
       }
     `;
@@ -315,6 +439,8 @@ async function fetchData() {
     console.log('Usuários carregados:', response.users);
     users.value = response.users;
     roles.value = response.roles;
+    // Extrai as organizações do usuário atual
+    organizations.value = response.me?.organizations?.map(org => org.organization) || [];
     await loadPotentialParentUsers();
   } catch (error) {
     console.error('Erro ao carregar dados:', error);
@@ -325,6 +451,48 @@ async function fetchData() {
   } finally {
     loading.value = false;
   }
+}
+
+// Função para mostrar toast
+function showToast(message, type = 'success') {
+  // Remove toasts anteriores
+  const existingToasts = document.querySelectorAll('.toast')
+  existingToasts.forEach(toast => toast.remove())
+
+  // Cria o elemento toast
+  const toast = document.createElement('div')
+  toast.className = `toast toast-top toast-end z-50`
+
+  // Cria o alerta dentro do toast
+  const alert = document.createElement('div')
+  alert.className = `alert ${type === 'success' ? 'alert-success' : 'alert-error'} shadow-lg`
+
+  // Cria o conteúdo do alerta
+  const content = document.createElement('div')
+  content.className = 'flex items-center gap-2'
+
+  // Ícone
+  const icon = document.createElement('span')
+  icon.className = 'text-lg'
+  icon.textContent = type === 'success' ? '✓' : '✕'
+  
+  // Texto
+  const text = document.createElement('span')
+  text.textContent = message
+
+  // Monta a estrutura
+  content.appendChild(icon)
+  content.appendChild(text)
+  alert.appendChild(content)
+  toast.appendChild(alert)
+
+  // Adiciona o toast ao body
+  document.body.appendChild(toast)
+
+  // Remove após 3 segundos
+  setTimeout(() => {
+    toast.remove()
+  }, 3000)
 }
 
 // Modifica a função handleCreateUser para incluir parentUser na resposta
@@ -379,42 +547,48 @@ async function handleCreateUser() {
     await fetchData(); // Recarrega os dados
     showNewUserModal.value = false;
     newUser.value = { name: '', email: '', password: '', roleId: '', parentUserId: '' };
-    alert('Usuário criado com sucesso!');
+    
+    // Toast de sucesso
+    showToast(t('admin.users.createSuccess'))
   } catch (error) {
-    console.error('Erro ao criar usuário:', error);
-    alert(error.message);
+    console.error('Erro ao criar usuário:', error)
+    // Toast de erro
+    showToast(error.message, 'error')
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
 // Exclui usuário
 async function deleteUser(user) {
   if (!confirm(t('admin.users.confirmDelete', { name: user.name }))) {
-    return;
+    return
   }
 
   try {
-    loading.value = true;
+    loading.value = true
     const mutation = `
       mutation DeleteUser($id: ID!) {
         deleteUser(id: $id)
       }
-    `;
+    `
 
     await gqlRequest(mutation, { id: user.id }, {
       headers: {
         'Authorization': `Bearer ${authStore.token}`
       }
-    });
+    })
 
-    await fetchData(); // Recarrega os dados
-    alert('Usuário excluído com sucesso!');
+    await fetchData()
+    
+    // Toast de sucesso
+    showToast(t('admin.users.deleteSuccess'))
   } catch (error) {
-    console.error('Erro ao excluir usuário:', error);
-    alert(error.message);
+    console.error('Erro ao excluir usuário:', error)
+    // Toast de erro
+    showToast(error.message, 'error')
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
@@ -424,4 +598,182 @@ async function init() {
 }
 
 onMounted(init);
+
+// Função para buscar organizações
+async function fetchOrganizations() {
+  try {
+    const query = `
+      query GetOrganizations {
+        organizations {
+          id
+          name
+          slug
+        }
+      }
+    `
+
+    const response = await gqlRequest(query, null, {
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`
+      }
+    })
+
+    organizations.value = response.organizations || []
+  } catch (error) {
+    console.error('Erro ao carregar organizações:', error)
+  }
+}
+
+// Função para editar usuário
+async function editUser(user) {
+  try {
+    // Busca os dados completos do usuário incluindo organizações
+    const query = `
+      query GetUserDetails {
+        users {
+          id
+          name
+          email
+          active
+          role {
+            id
+            name
+          }
+          parentUser {
+            id
+            name
+          }
+          currentOrgId
+          organizations {
+            organization {
+              id
+              name
+            }
+            isAdmin
+            isOwner
+            status
+          }
+        }
+      }
+    `
+
+    const response = await gqlRequest(query, null, {
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`
+      }
+    })
+
+    console.log('Resposta completa:', response)
+
+    // Encontra o usuário específico no array
+    const userDetails = response.users.find(u => u.id === user.id)
+    console.log('Detalhes do usuário:', userDetails)
+
+    if (!userDetails) {
+      throw new Error(t('admin.users.errors.userNotFound'))
+    }
+
+    // Encontra a organização atual nas organizações do usuário
+    const currentOrg = userDetails.organizations?.find(org => 
+      org.organization.id === userDetails.currentOrgId
+    )?.organization
+    console.log('Organização atual:', currentOrg)
+
+    // Se não tiver organização atual, pega a primeira da lista
+    const defaultOrg = currentOrg || userDetails.organizations?.[0]?.organization
+    console.log('Organização default:', defaultOrg)
+
+    const orgRelation = userDetails.organizations?.find(org => 
+      org.organization.id === defaultOrg?.id
+    )
+    console.log('Relação com a organização:', orgRelation)
+
+    editingUser.value = {
+      id: userDetails.id,
+      name: userDetails.name,
+      email: userDetails.email,
+      active: userDetails.active,
+      role: {
+        id: userDetails.role?.id,
+        name: userDetails.role?.name
+      },
+      parentUser: userDetails.parentUser ? {
+        id: userDetails.parentUser.id,
+        name: userDetails.parentUser.name
+      } : null,
+      organizationId: defaultOrg?.id || '',
+      isAdmin: orgRelation?.isAdmin || false,
+      isOwner: orgRelation?.isOwner || false
+    }
+
+    // Carrega a lista de organizações disponíveis
+    await fetchOrganizations()
+
+    showEditModal.value = true
+  } catch (error) {
+    console.error('Erro ao carregar detalhes do usuário:', error)
+    alert(error.message)
+  }
+}
+
+// Função para atualizar usuário
+async function handleUpdateUser() {
+  try {
+    loading.value = true
+    const mutation = `
+      mutation UpdateUser($id: ID!, $input: UserInput!) {
+        updateUser(id: $id, input: $input) {
+          id
+          name
+          email
+          active
+          role {
+            id
+            name
+          }
+          parentUser {
+            id
+            name
+          }
+          currentOrgId
+          organizations {
+            organization {
+              id
+              name
+            }
+          }
+        }
+      }
+    `
+
+    await gqlRequest(mutation, {
+      id: editingUser.value.id,
+      input: {
+        name: editingUser.value.name,
+        email: editingUser.value.email,
+        roleId: editingUser.value.role?.id,
+        active: editingUser.value.active,
+        parentUserId: editingUser.value.parentUser?.id,
+        currentOrgId: editingUser.value.organizationId || null
+      }
+    }, {
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`
+      }
+    })
+
+    await fetchData() // Recarrega os dados
+    showEditModal.value = false
+    editingUser.value = null
+    
+    // Substitui o alert pelo toast
+    showToast(t('admin.users.updateSuccess'))
+  } catch (error) {
+    console.error('Erro ao atualizar usuário:', error)
+    // Toast de erro
+    showToast(error.message, 'error')
+  } finally {
+    loading.value = false
+  }
+}
 </script> 
