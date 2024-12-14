@@ -1,117 +1,74 @@
 <template>
-  <div class="flex h-screen bg-slate-50">
-    <!-- Sidebar -->
-    <div class="flex-none w-72 bg-gradient-to-b from-slate-900 to-slate-800 shadow-xl">
-      <div class="flex flex-col h-full">
-        <!-- Logo -->
-        <div class="flex items-center justify-center h-20 border-b border-slate-700/50">
-          <router-link to="/admin" class="flex items-center space-x-3 px-4 py-2 rounded-xl">
-            <div class="w-10 h-10 bg-gradient-to-tr from-blue-500 to-blue-400 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <span class="text-white font-bold text-xl">O</span>
-            </div>
-            <div class="flex flex-col">
-              <span class="text-white text-lg font-bold">OrbitChat</span>
-              <span class="text-slate-400 text-xs">Painel Admin</span>
-            </div>
-          </router-link>
-        </div>
-
-        <!-- Menu -->
-        <nav class="flex-1 px-4 py-8 space-y-2">
-          <router-link
-            v-for="(item, index) in menuItems"
-            :key="index"
-            :to="item.path"
-            class="flex items-center px-4 py-3 text-slate-300 hover:bg-slate-700/50 rounded-xl transition-all duration-200 group"
-            :class="{ 'bg-gradient-to-r from-blue-500 to-blue-400 text-white shadow-lg shadow-blue-500/20': $route.path === item.path }"
-          >
-            <component 
-              :is="item.icon" 
-              class="w-5 h-5 mr-3 transition-transform duration-200 group-hover:scale-110"
-              :class="$route.path === item.path ? 'animate-pulse' : ''" 
-            />
-            <span class="font-medium">{{ item.label }}</span>
-          </router-link>
-        </nav>
-
-        <!-- User Info -->
-        <div class="p-4 mx-4 mb-4 rounded-xl bg-slate-700/30 backdrop-blur-sm relative">
-          <div class="flex items-center space-x-3">
-            <button 
-              @click="toggleUserMenu"
-              class="w-12 h-12 rounded-xl bg-gradient-to-tr from-blue-500 to-blue-400 flex items-center justify-center shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all duration-200"
-            >
-              <span class="text-white font-medium">
-                {{ getUserInitials }}
-              </span>
-            </button>
-            <div class="flex-1">
-              <p class="text-white font-medium text-sm">{{ authStore.user?.name }}</p>
-              <p class="text-slate-400 text-xs">{{ authStore.userRole }}</p>
-            </div>
-            <button
-              @click="handleLogout"
-              class="p-2.5 text-slate-400 hover:text-white hover:bg-slate-600/50 rounded-xl transition-all duration-200 hover:shadow-lg"
-              title="Sair"
-            >
-              <LogOut class="w-5 h-5" />
-            </button>
+  <div class="flex-none w-72 bg-gradient-to-b from-slate-900 to-slate-800 shadow-xl">
+    <div class="flex flex-col h-full">
+      <!-- Logo -->
+      <div class="flex items-center justify-center h-20 border-b border-slate-700/50">
+        <router-link to="/admin" class="flex items-center space-x-3 px-4 py-2 rounded-xl">
+          <div class="w-10 h-10 bg-gradient-to-tr from-blue-500 to-blue-400 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <span class="text-white font-bold text-xl">O</span>
           </div>
+          <div class="flex flex-col">
+            <span class="text-white text-lg font-bold">OrbitChat</span>
+            <span class="text-slate-400 text-xs">Painel Admin</span>
+          </div>
+        </router-link>
+      </div>
 
-          <!-- Menu de Contexto -->
-          <div 
-            v-if="showUserMenu"
-            class="absolute bottom-full left-0 mb-2 w-56 rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
-          >
-            <div class="py-1">
-              <!-- Opção Gestão da Plataforma (apenas para superadmin) -->
-              <router-link
-                v-if="isSuperAdmin"
-                to="/admin/platform"
-                class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
-              >
-                <Settings class="mr-3 h-5 w-5 text-gray-400 group-hover:text-blue-500" />
-                Gestão da Plataforma
-              </router-link>
+      <!-- Menu -->
+      <nav class="flex-1 px-4 py-8 space-y-2">
+        <router-link
+          v-for="(item, index) in menuItems"
+          :key="index"
+          :to="item.path"
+          class="flex items-center px-4 py-3 text-slate-300 hover:bg-slate-700/50 rounded-xl transition-all duration-200 group"
+          :class="{ 'bg-gradient-to-r from-blue-500 to-blue-400 text-white shadow-lg shadow-blue-500/20': $route.path === item.path }"
+        >
+          <component 
+            :is="item.icon" 
+            class="w-5 h-5 mr-3 transition-transform duration-200 group-hover:scale-110"
+            :class="$route.path === item.path ? 'animate-pulse' : ''" 
+          />
+          <span class="font-medium">{{ item.label }}</span>
+        </router-link>
+      </nav>
 
-              <!-- Perfil -->
-              <router-link
-                to="/admin/profile"
-                class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
-              >
-                <User class="mr-3 h-5 w-5 text-gray-400 group-hover:text-blue-500" />
-                Perfil
-              </router-link>
-
-              <!-- Configurações -->
-              <router-link
-                to="/admin/settings"
-                class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50"
-              >
-                <Settings class="mr-3 h-5 w-5 text-gray-400 group-hover:text-blue-500" />
-                Configurações
-              </router-link>
-
-              <!-- Linha divisória -->
-              <div class="h-px bg-gray-200 my-1"></div>
-
-              <!-- Sair -->
-              <button
-                @click="handleLogout"
-                class="group flex w-full items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50"
-              >
-                <LogOut class="mr-3 h-5 w-5 text-red-400 group-hover:text-red-500" />
-                Sair
-              </button>
+      <!-- Voltar ao Painel de Usuário -->
+      <div class="px-4 mb-4">
+        <button
+          @click="backToUserDashboard"
+          class="w-full flex items-center px-4 py-3.5 text-blue-300 bg-blue-500/5 hover:bg-blue-500/10 border border-blue-500/20 rounded-xl transition-all duration-200 group"
+        >
+          <div class="flex items-center">
+            <ArrowLeft class="w-5 h-5 mr-3 transition-transform duration-200 group-hover:-translate-x-1" />
+            <div class="flex flex-col items-start">
+              <span class="text-xs text-blue-400/80">Voltar para</span>
+              <span class="font-medium text-sm">Painel de Usuário</span>
             </div>
           </div>
+        </button>
+      </div>
+
+      <!-- User Info -->
+      <div class="p-4 mx-4 mb-4 rounded-xl bg-slate-700/30 backdrop-blur-sm">
+        <div class="flex items-center space-x-3">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-blue-500 to-blue-400 flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <span class="text-white font-medium">
+              {{ getUserInitials }}
+            </span>
+          </div>
+          <div class="flex-1">
+            <p class="text-white font-medium text-sm">{{ authStore.user?.name }}</p>
+            <p class="text-slate-400 text-xs">{{ authStore.userRole }}</p>
+          </div>
+          <button
+            @click="handleLogout"
+            class="p-2.5 text-slate-400 hover:text-white hover:bg-slate-600/50 rounded-xl transition-all duration-200 hover:shadow-lg"
+            title="Sair"
+          >
+            <LogOut class="w-5 h-5" />
+          </button>
         </div>
       </div>
-    </div>
-
-    <!-- Content -->
-    <div class="flex-1 overflow-auto">
-      <slot></slot>
     </div>
   </div>
 </template>
@@ -120,13 +77,15 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../../stores/auth.store';
+import { formatAccountUrl } from '../../utils/string';
 import { 
   LayoutDashboard, 
   Users, 
   Shield, 
   Settings, 
   LogOut,
-  User
+  User,
+  ArrowLeft
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -196,6 +155,13 @@ const getUserInitials = computed(() => {
 const handleLogout = () => {
   authStore.logout();
   router.push('/login');
+};
+
+// Função para voltar ao dashboard do usuário
+const backToUserDashboard = () => {
+  const accountUrl = formatAccountUrl(authStore.user?.name);
+  router.push(`/dashboard/${accountUrl}`);
+  showUserMenu.value = false;
 };
 </script>
 

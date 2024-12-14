@@ -22,9 +22,6 @@ const router = createRouter({
       name: 'home',
       redirect: to => {
         const authStore = useAuthStore();
-        if (authStore.hasPermission('manage_system')) {
-          return '/admin';
-        }
         return `/dashboard/${formatAccountUrl(authStore.user?.name)}`;
       }
     },
@@ -131,7 +128,7 @@ router.beforeEach(async (to, from, next) => {
     const systemStatus = await checkSystemStatus()
     console.log('System status:', systemStatus) // Debug
 
-    // Se o sistema não estiver configurado e n��o estiver indo para setup
+    // Se o sistema não estiver configurado e não estiver indo para setup
     if (!systemStatus.configured && to.name !== 'system-setup') {
       console.log('Sistema não configurado, redirecionando para setup') // Debug
       localStorage.removeItem('systemConfigured')
@@ -149,20 +146,9 @@ router.beforeEach(async (to, from, next) => {
       localStorage.setItem('systemConfigured', 'true')
     }
 
-    // Redireciona para login se não estiver autenticado
-    if (requiresAuth && !isAuthenticated) {
-      return next('/login')
-    }
-
-    // Se estiver autenticado e tentar acessar login/register, redireciona para home
+    // Remove o redirecionamento automático de admin para /admin
     if ((to.path === '/login' || to.path === '/register') && isAuthenticated) {
       return next('/')
-    }
-
-    // Se for admin tentando acessar rotas de usuário normal, redireciona para painel admin
-    if (authStore.hasPermission('manage_system') && to.path.startsWith('/dashboard')) {
-      console.log('Admin tentando acessar rota de usuário, redirecionando para /admin')
-      return next('/admin')
     }
 
     // Verifica acesso à conta
@@ -171,13 +157,12 @@ router.beforeEach(async (to, from, next) => {
       const userName = formatAccountUrl(authStore.user?.name)
       const parentName = formatAccountUrl(authStore.user?.parentUser?.name)
 
-      // Permite acesso se for a própria conta ou se for um agent acessando a conta do pai
       if (accountName !== userName && accountName !== parentName) {
         return next(`/dashboard/${userName}`)
       }
     }
 
-    // Se não for admin tentando acessar rotas admin, redireciona para dashboard
+    // Apenas verifica permissão para rotas admin, sem redirecionamento automático
     if (requiresAdmin && !authStore.hasPermission('manage_system')) {
       console.log('Acesso negado: requer permissão manage_system')
       return next('/dashboard')
@@ -186,7 +171,6 @@ router.beforeEach(async (to, from, next) => {
     next()
   } catch (error) {
     console.error('Erro ao verificar status do sistema:', error)
-    // Em caso de erro, permite continuar mas loga o erro
     next()
   }
 })

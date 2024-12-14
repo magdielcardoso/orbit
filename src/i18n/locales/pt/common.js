@@ -35,7 +35,8 @@ export default {
     profile: 'Meu Perfil',
     theme: 'Tema',
     help: 'Ajuda',
-    logout: 'Sair'
+    logout: 'Sair',
+    platformManagement: 'Gestão da Plataforma'
   },
   settings: {
     title: 'Configurações',

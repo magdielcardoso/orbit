@@ -189,13 +189,10 @@ async function handleLogin() {
       user: response.login.user
     });
 
-    // Redireciona baseado no papel do usuário
-    if (authStore.hasPermission('manage_system')) {
-      router.push('/admin');
-    } else {
-      const accountUrl = formatAccountUrl(response.login.user.name);
-      router.push(`/dashboard/${accountUrl}`);
-    }
+    // Sempre redireciona para o dashboard do usuário, independente da role
+    const accountUrl = formatAccountUrl(response.login.user.name);
+    router.push(`/dashboard/${accountUrl}`);
+    
   } catch (err) {
     console.error('Erro no login:', err);
     error.value = err.message;

@@ -120,8 +120,8 @@
             <!-- User Info -->
             <div class="mb-2 border-b border-base-300 pb-2">
               <div class="px-2 py-1">
-                <p class="font-medium">John Doe</p>
-                <p class="text-xs text-base-content/70">john.doe@example.com</p>
+                <p class="font-medium">{{ authStore.user?.name }}</p>
+                <p class="text-xs text-base-content/70">{{ authStore.user?.email }}</p>
               </div>
             </div>
   
@@ -143,6 +143,21 @@
   
             <!-- Menu Items -->
             <div class="space-y-1 border-t border-base-300 pt-2">
+              <!-- Gestão da Plataforma (apenas para superadmin) -->
+              <button 
+                v-if="isSuperAdmin"
+                @click="navigateToAdmin"
+                class="flex w-full items-center justify-between px-3 py-2.5 mb-2 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-lg transition-all duration-200 group hover:from-purple-500/20 hover:to-blue-500/20"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="p-1.5 rounded-lg bg-gradient-to-r from-purple-500 to-blue-500 shadow-lg shadow-purple-500/20">
+                    <Settings class="h-4 w-4 text-white" />
+                  </div>
+                  <span class="font-medium text-sm text-purple-500 text-left">Gestão da Plataforma</span>
+                </div>
+                <ArrowRight class="h-4 w-4 text-purple-400 transition-transform duration-200 group-hover:translate-x-1" />
+              </button>
+  
               <!-- Profile -->
               <button 
                 @click="navigate('profile')"
@@ -212,7 +227,8 @@
     User,
     Moon,
     Sun,
-    HelpCircle
+    HelpCircle,
+    ArrowRight
   } from 'lucide-vue-next'
   import ThemeModal from '../ui/ThemeModal.vue'
   import NotificationsMenu from '../ui/NotificationsMenu.vue'
@@ -272,6 +288,17 @@
   onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside)
   })
+  
+  // Verifica se é superadmin
+  const isSuperAdmin = computed(() => {
+    return authStore.user?.role?.name === 'superadmin';
+  });
+  
+  // Função para navegar para o painel admin
+  const navigateToAdmin = () => {
+    router.push('/admin');
+    showUserMenu.value = false;
+  };
   </script>
   <style scoped>
   .tooltip {
