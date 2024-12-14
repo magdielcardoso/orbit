@@ -9,6 +9,9 @@
           <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
             {{ t('auth.register.title') }}
           </h2>
+          <p class="mt-2 text-center text-sm text-gray-600">
+            {{ t('auth.register.subtitle') }}
+          </p>
         </div>
         <form class="mt-8 space-y-6" @submit.prevent="handleRegister">
           <div class="rounded-md shadow-sm -space-y-px">
@@ -21,7 +24,7 @@
                 type="text"
                 required
                 class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
-                :placeholder="t('auth.register.name')"
+                :placeholder="t('auth.register.namePlaceholder')"
               />
             </div>
             <div>
@@ -33,7 +36,7 @@
                 type="email"
                 required
                 class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
-                :placeholder="t('auth.register.email')"
+                :placeholder="t('auth.register.emailPlaceholder')"
               />
             </div>
             <div class="relative">
@@ -45,7 +48,7 @@
                 name="password"
                 required
                 class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm pr-10"
-                :placeholder="t('auth.register.password')"
+                :placeholder="t('auth.register.passwordPlaceholder')"
               />
               <button
                 type="button"
@@ -70,7 +73,7 @@
           </div>
 
           <div v-if="error" class="text-red-500 text-sm text-center">
-            {{ error }}
+            {{ t(error) }}
           </div>
 
           <div class="text-sm text-center">
@@ -92,33 +95,17 @@
           {{ t('auth.register.hero.title') }}
         </h1>
         <div class="space-y-6">
-          <div class="flex items-start space-x-4">
+          <div v-for="(feature, index) in 3" :key="index" class="flex items-start space-x-4">
             <svg class="w-6 h-6 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
             <div>
-              <h3 class="text-xl font-semibold mb-2">{{ t('auth.register.hero.feature1.title') }}</h3>
-              <p class="text-purple-100">{{ t('auth.register.hero.feature1.description') }}</p>
-            </div>
-          </div>
-          
-          <div class="flex items-start space-x-4">
-            <svg class="w-6 h-6 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-            <div>
-              <h3 class="text-xl font-semibold mb-2">{{ t('auth.register.hero.feature2.title') }}</h3>
-              <p class="text-purple-100">{{ t('auth.register.hero.feature2.description') }}</p>
-            </div>
-          </div>
-          
-          <div class="flex items-start space-x-4">
-            <svg class="w-6 h-6 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-            <div>
-              <h3 class="text-xl font-semibold mb-2">{{ t('auth.register.hero.feature3.title') }}</h3>
-              <p class="text-purple-100">{{ t('auth.register.hero.feature3.description') }}</p>
+              <h3 class="text-xl font-semibold mb-2">
+                {{ t(`auth.register.hero.feature${index + 1}.title`) }}
+              </h3>
+              <p class="text-purple-100">
+                {{ t(`auth.register.hero.feature${index + 1}.description`) }}
+              </p>
             </div>
           </div>
         </div>
@@ -156,7 +143,8 @@ async function handleRegister() {
     await authStore.register(form.value);
     router.push({ name: 'dashboard' });
   } catch (err) {
-    error.value = err.message;
+    console.error('Erro no registro:', err);
+    error.value = 'auth.register.error';
   } finally {
     loading.value = false;
   }

@@ -103,5 +103,14 @@ export default {
         assignedToMe: 'Atribuídas a Mim'
       }
     }
+  },
+  common: {
+    edit: 'Editar',
+    delete: 'Excluir',
+    cancel: 'Cancelar',
+    save: 'Salvar',
+    close: 'Fechar',
+    loading: 'Carregando...',
+    actions: 'Ações'
   }
 } 

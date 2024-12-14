@@ -56,7 +56,6 @@ model RolePermission {
 
   @@unique([roleId, permissionId])
 }
-
 model User {
   id        String    @id @default(uuid())
   email     String    @unique
@@ -77,3 +76,4 @@ model Message {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
 }
+

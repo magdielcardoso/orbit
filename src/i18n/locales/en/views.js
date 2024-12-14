@@ -126,6 +126,80 @@ export default {
           description: 'Track performance and make data-driven decisions.'
         }
       }
+    },
+    register: {
+      title: 'Create your account',
+      subtitle: 'Start your journey with us',
+      name: 'Name',
+      namePlaceholder: 'Enter your full name',
+      email: 'Email',
+      emailPlaceholder: 'Enter your email',
+      password: 'Password',
+      passwordPlaceholder: 'Enter your password',
+      submit: 'Create account',
+      loading: 'Creating...',
+      error: 'Error creating account. Please try again.',
+      hasAccount: 'Already have an account? Sign in',
+      hero: {
+        title: 'Welcome to OrbitChat',
+        feature1: {
+          title: 'Real-Time Communication',
+          description: 'Instant chat with colleagues and teams'
+        },
+        feature2: {
+          title: 'Advanced Security',
+          description: 'Your conversations protected with encryption'
+        },
+        feature3: {
+          title: 'Complete Integration',
+          description: 'Connect with your favorite tools'
+        }
+      }
+    }
+  },
+  admin: {
+    users: {
+      title: 'Users',
+      description: 'Manage system users.',
+      addUser: 'Add User',
+      newUser: 'New User',
+      confirmDelete: 'Are you sure you want to delete user {name}?',
+      table: {
+        name: 'Name',
+        email: 'Email',
+        role: 'Role',
+        status: 'Status',
+        actions: 'Actions'
+      },
+      status: {
+        active: 'Active',
+        inactive: 'Inactive'
+      },
+      form: {
+        name: 'Name',
+        email: 'Email',
+        password: 'Password',
+        role: 'Role',
+        selectRole: 'Select a role'
+      },
+      noUsers: 'No users found',
+      noRole: 'No role assigned',
+      loading: 'Loading users...'
+    },
+    roles: {
+      title: 'Roles and Permissions',
+      description: 'Manage system roles and their permissions.',
+      addRole: 'Add Role',
+      newRole: 'New Role',
+      editRole: 'Edit Role',
+      name: 'Role Name',
+      description: 'Description',
+      permissions: 'Permissions',
+      confirmDelete: 'Are you sure you want to delete role {name}?',
+      actions: {
+        edit: 'Edit',
+        delete: 'Delete'
+      }
     }
   }
 } 

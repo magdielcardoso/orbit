@@ -104,5 +104,14 @@ export default {
         assignedToMe: 'Assigned to Me'
       }
     }
+  },
+  common: {
+    edit: 'Edit',
+    delete: 'Delete',
+    cancel: 'Cancel',
+    save: 'Save',
+    close: 'Close',
+    loading: 'Loading...',
+    actions: 'Actions'
   }
 } 

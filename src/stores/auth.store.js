@@ -1,106 +1,125 @@
 import { defineStore } from 'pinia';
-import { jwtDecode } from 'jwt-decode';
+import { ref, computed } from 'vue';
+import { gqlRequest } from '../utils/graphql';
 
-export const useAuthStore = defineStore('auth', {
-  state: () => ({
-    user: null,
-    token: null,
-    isAuthenticated: false,
-    permissions: []
-  }),
+export const useAuthStore = defineStore('auth', () => {
+  const token = ref(localStorage.getItem('token') || '');
+  const user = ref(JSON.parse(localStorage.getItem('user') || 'null'));
 
-  actions: {
-    async login(credentials) {
-      try {
-        const response = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(credentials)
-        });
+  const isAuthenticated = computed(() => !!token.value);
+  const userRole = computed(() => user.value?.role || null);
 
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.message);
-        }
-
-        const data = await response.json();
-        this.setAuth(data, credentials.rememberMe);
-        return data;
-      } catch (error) {
-        throw error;
-      }
-    },
-
-    async register(userData) {
-      try {
-        const response = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(userData)
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.message);
-        }
-
-        const data = await response.json();
-        this.setAuth(data, true);
-        return data;
-      } catch (error) {
-        throw error;
-      }
-    },
-
-    setAuth(data, rememberMe = false) {
-      this.user = data.user;
-      this.token = data.token;
-      this.isAuthenticated = true;
-      
-      if (data.token) {
-        try {
-          const decoded = jwtDecode(data.token);
-          this.permissions = decoded.permissions || [];
-        } catch (error) {
-          this.permissions = [];
+  async function login(credentials) {
+    const loginMutation = `
+      mutation Login($email: String!, $password: String!) {
+        login(email: $email, password: $password) {
+          token
+          user {
+            id
+            name
+            email
+            role
+            permissions
+          }
         }
       }
-      
-      if (rememberMe) {
-        localStorage.setItem('auth', JSON.stringify(data));
-      } else {
-        sessionStorage.setItem('auth', JSON.stringify(data));
-      }
-    },
+    `;
 
-    logout() {
-      this.user = null;
-      this.token = null;
-      this.isAuthenticated = false;
-      this.permissions = [];
-      localStorage.removeItem('auth');
-      sessionStorage.removeItem('auth');
-    },
-
-    initAuth() {
-      const auth = localStorage.getItem('auth') || sessionStorage.getItem('auth');
-      if (auth) {
-        const data = JSON.parse(auth);
-        this.setAuth(data);
-      }
-    },
-
-    hasPermission(permissionName) {
-      return this.permissions?.includes(permissionName) ?? false;
-    }
-  },
-
-  getters: {
-    userRole: (state) => state.user?.role,
-    userPermissions: (state) => state.permissions
+    const response = await gqlRequest(loginMutation, credentials);
+    await setAuth(response.login, credentials.rememberMe);
+    return response.login;
   }
+
+  async function register(userData) {
+    const registerMutation = `
+      mutation Register($email: String!, $password: String!, $name: String!) {
+        register(email: $email, password: $password, name: $name) {
+          token
+          user {
+            id
+            name
+            email
+            role
+            permissions
+          }
+        }
+      }
+    `;
+
+    const response = await gqlRequest(registerMutation, userData);
+    await setAuth(response.register, true);
+    return response.register;
+  }
+
+  function hasPermission(permission) {
+    return user.value?.permissions?.includes(permission) || false;
+  }
+
+  function setAuth(authData, remember = false) {
+    if (!authData) {
+      console.error('Dados de autenticação inválidos');
+      return;
+    }
+
+    token.value = authData.token;
+    user.value = authData.user;
+
+    localStorage.setItem('token', authData.token);
+    localStorage.setItem('user', JSON.stringify(authData.user));
+  }
+
+  function logout() {
+    token.value = '';
+    user.value = null;
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  }
+
+  async function checkAuth() {
+    if (!token.value) return false;
+
+    try {
+      const query = `
+        query Me {
+          me {
+            id
+            name
+            email
+            role
+            permissions
+          }
+        }
+      `;
+
+      const response = await gqlRequest(query);
+      
+      if (response.me) {
+        setAuth({
+          token: token.value,
+          user: response.me
+        });
+        return true;
+      } else {
+        logout();
+        return false;
+      }
+    } catch (error) {
+      console.error('Erro ao verificar autenticação:', error);
+      logout();
+      return false;
+    }
+  }
+
+  return {
+    token,
+    user,
+    isAuthenticated,
+    userRole,
+    login,
+    register,
+    setAuth,
+    logout,
+    hasPermission,
+    checkAuth
+  };
 }); 

@@ -69,8 +69,9 @@ const router = createRouter({
     },
     {
       path: '/setup',
-      name: 'setup',
-      component: SystemSetup
+      name: 'system-setup',
+      component: SystemSetup,
+      meta: { requiresAuth: false }
     },
     {
       path: '/admin',

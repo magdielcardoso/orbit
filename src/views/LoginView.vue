@@ -137,6 +137,7 @@ import { useAuthStore } from '../stores/auth.store';
 import { useI18n } from '@/i18n/plugin';
 import LocaleSelector from '../components/LocaleSelector.vue';
 import { Eye, EyeOff } from 'lucide-vue-next';
+import { gqlRequest } from '../utils/graphql';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -156,10 +157,37 @@ async function handleLogin() {
   try {
     loading.value = true;
     error.value = '';
-    await authStore.login({ ...form.value });
+
+    const loginMutation = `
+      mutation Login($email: String!, $password: String!) {
+        login(email: $email, password: $password) {
+          token
+          user {
+            id
+            name
+            email
+            role
+            permissions
+          }
+        }
+      }
+    `;
+
+    const response = await gqlRequest(loginMutation, {
+      email: form.value.email,
+      password: form.value.password
+    });
+
+    // Atualiza o store com os dados do usuário
+    await authStore.setAuth({
+      token: response.login.token,
+      user: response.login.user
+    }, form.value.rememberMe);
+
     router.push({ name: 'dashboard' });
   } catch (err) {
-    error.value = err.message;
+    console.error('Erro no login:', err);
+    error.value = t('auth.login.error');
   } finally {
     loading.value = false;
   }

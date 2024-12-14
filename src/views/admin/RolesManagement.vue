@@ -1,18 +1,19 @@
 <template>
   <div class="p-6">
+    <!-- Cabeçalho -->
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
-        <h1 class="text-2xl font-semibold text-gray-900">Papéis e Permissões</h1>
+        <h1 class="text-2xl font-semibold text-gray-900">{{ t('admin.roles.title') }}</h1>
         <p class="mt-2 text-sm text-gray-700">
-          Gerencie os papéis e suas permissões no sistema.
+          {{ t('admin.roles.description') }}
         </p>
       </div>
       <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
         <button
-          @click="openNewRoleModal"
+          @click="showNewRoleModal = true"
           class="inline-flex items-center justify-center rounded-md border border-transparent bg-purple-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 sm:w-auto"
         >
-          Adicionar Papel
+          {{ t('admin.roles.addRole') }}
         </button>
       </div>
     </div>
@@ -81,85 +82,165 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal Novo Papel -->
+    <Modal v-if="showNewRoleModal" @close="showNewRoleModal = false">
+      <template #title>{{ t('admin.roles.newRole') }}</template>
+      <template #content>
+        <form @submit.prevent="handleCreateRole" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              {{ t('admin.roles.name') }}
+            </label>
+            <input
+              v-model="newRole.name"
+              type="text"
+              required
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
+            />
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              {{ t('admin.roles.description') }}
+            </label>
+            <textarea
+              v-model="newRole.description"
+              rows="3"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
+            />
+          </div>
+
+          <div class="mt-4 space-y-2">
+            <h4 class="text-sm font-medium text-gray-900">{{ t('admin.roles.permissions') }}</h4>
+            <div class="grid grid-cols-2 gap-4">
+              <div v-for="perm in permissions" :key="perm.id" class="flex items-center">
+                <input
+                  :id="`perm-${perm.id}`"
+                  type="checkbox"
+                  v-model="newRole.permissions"
+                  :value="perm.id"
+                  class="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                />
+                <label :for="`perm-${perm.id}`" class="ml-2 text-sm text-gray-700">
+                  {{ perm.name }}
+                </label>
+              </div>
+            </div>
+          </div>
+        </form>
+      </template>
+      <template #footer>
+        <button
+          type="button"
+          @click="showNewRoleModal = false"
+          class="mr-3 inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+        >
+          {{ t('common.cancel') }}
+        </button>
+        <button
+          type="submit"
+          :disabled="loading"
+          @click="handleCreateRole"
+          class="inline-flex justify-center rounded-md border border-transparent bg-purple-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+        >
+          {{ loading ? t('common.loading') : t('common.save') }}
+        </button>
+      </template>
+    </Modal>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useAuthStore } from '../../stores/auth.store';
+import { useI18n } from '@/i18n';
+import { gqlRequest } from '../../utils/graphql';
+import Modal from '../../components/Modal.vue';
 
-const authStore = useAuthStore();
+const { t } = useI18n();
 const roles = ref([]);
-
-onMounted(async () => {
-  try {
-    const response = await fetch('/api/admin/roles', {
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error('Erro ao carregar papéis');
-    }
-    
-    roles.value = await response.json();
-  } catch (error) {
-    console.error('Erro:', error);
-  }
+const permissions = ref([]);
+const loading = ref(false);
+const showNewRoleModal = ref(false);
+const newRole = ref({
+  name: '',
+  description: '',
+  permissions: []
 });
 
-function openNewRoleModal() {
-  // Implementar lógica do modal de novo papel
-}
-
-function editRole(role) {
-  // Implementar lógica de edição
-}
-
-async function deleteRole(role) {
-  if (!confirm(`Tem certeza que deseja excluir o papel ${role.name}?`)) {
-    return;
-  }
-
+// Busca papéis e permissões
+async function fetchData() {
   try {
-    const response = await fetch(`/api/admin/roles/${role.id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`
+    const query = `
+      query {
+        roles {
+          id
+          name
+          description
+          permissions {
+            id
+            name
+            description
+          }
+        }
+        permissions {
+          id
+          name
+          description
+        }
       }
+    `;
+
+    const response = await gqlRequest(query);
+    roles.value = response.roles;
+    permissions.value = response.permissions;
+  } catch (error) {
+    console.error('Erro ao carregar dados:', error);
+  }
+}
+
+// Cria novo papel
+async function handleCreateRole() {
+  try {
+    loading.value = true;
+    const mutation = `
+      mutation CreateRole($name: String!, $description: String) {
+        createRole(name: $name, description: $description) {
+          id
+          name
+          description
+        }
+      }
+    `;
+
+    const response = await gqlRequest(mutation, {
+      name: newRole.value.name,
+      description: newRole.value.description
     });
 
-    if (!response.ok) {
-      throw new Error('Erro ao excluir papel');
+    // Adiciona permissões ao papel
+    for (const permId of newRole.value.permissions) {
+      await gqlRequest(`
+        mutation AddPermission($roleId: ID!, $permissionId: ID!) {
+          addPermissionToRole(roleId: $roleId, permissionId: $permissionId) {
+            id
+          }
+        }
+      `, {
+        roleId: response.createRole.id,
+        permissionId: permId
+      });
     }
 
-    // Remove o papel da lista
-    roles.value = roles.value.filter(r => r.id !== role.id);
+    await fetchData(); // Recarrega os dados
+    showNewRoleModal.value = false;
+    newRole.value = { name: '', description: '', permissions: [] };
   } catch (error) {
-    console.error('Erro:', error);
+    console.error('Erro ao criar papel:', error);
+  } finally {
+    loading.value = false;
   }
 }
 
-async function togglePermission(role, permission) {
-  try {
-    const response = await fetch(`/api/admin/roles/${role.id}/permissions/${permission.id}`, {
-      method: permission.enabled ? 'DELETE' : 'POST',
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error('Erro ao atualizar permissão');
-    }
-
-    // Atualiza o estado da permissão localmente
-    permission.enabled = !permission.enabled;
-  } catch (error) {
-    console.error('Erro:', error);
-    // Reverte a mudança no checkbox em caso de erro
-    permission.enabled = !permission.enabled;
-  }
-}
+onMounted(fetchData);
 </script> 

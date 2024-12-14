@@ -127,6 +127,80 @@ export default {
           description: 'Acompanhe o desempenho e tome decisões baseadas em dados.'
         }
       }
+    },
+    register: {
+      title: 'Criar sua conta',
+      subtitle: 'Comece sua jornada conosco',
+      name: 'Nome',
+      namePlaceholder: 'Digite seu nome completo',
+      email: 'E-mail',
+      emailPlaceholder: 'Digite seu e-mail',
+      password: 'Senha',
+      passwordPlaceholder: 'Digite sua senha',
+      submit: 'Criar conta',
+      loading: 'Criando...',
+      error: 'Erro ao criar conta. Tente novamente.',
+      hasAccount: 'Já tem uma conta? Faça login',
+      hero: {
+        title: 'Bem-vindo ao OrbitChat',
+        feature1: {
+          title: 'Comunicação em Tempo Real',
+          description: 'Chat instantâneo com colegas e equipes'
+        },
+        feature2: {
+          title: 'Segurança Avançada',
+          description: 'Suas conversas protegidas com criptografia'
+        },
+        feature3: {
+          title: 'Integração Completa',
+          description: 'Conecte-se com suas ferramentas favoritas'
+        }
+      }
+    }
+  },
+  admin: {
+    users: {
+      title: 'Usuários',
+      description: 'Gerencie os usuários do sistema.',
+      addUser: 'Adicionar Usuário',
+      newUser: 'Novo Usuário',
+      confirmDelete: 'Tem certeza que deseja excluir o usuário {name}?',
+      table: {
+        name: 'Nome',
+        email: 'E-mail',
+        role: 'Função',
+        status: 'Status',
+        actions: 'Ações'
+      },
+      status: {
+        active: 'Ativo',
+        inactive: 'Inativo'
+      },
+      form: {
+        name: 'Nome',
+        email: 'E-mail',
+        password: 'Senha',
+        role: 'Função',
+        selectRole: 'Selecione uma função'
+      },
+      noUsers: 'Nenhum usuário encontrado',
+      noRole: 'Sem função atribuída',
+      loading: 'Carregando usuários...'
+    },
+    roles: {
+      title: 'Papéis e Permissões',
+      description: 'Gerencie os papéis e suas permissões no sistema.',
+      addRole: 'Adicionar Papel',
+      newRole: 'Novo Papel',
+      editRole: 'Editar Papel',
+      name: 'Nome do Papel',
+      description: 'Descrição',
+      permissions: 'Permissões',
+      confirmDelete: 'Tem certeza que deseja excluir o papel {name}?',
+      actions: {
+        edit: 'Editar',
+        delete: 'Excluir'
+      }
     }
   }
 } 
