@@ -3,6 +3,10 @@
     <!-- Sidebar baseado no tipo de usuário -->
     <UserSidebar v-if="!isAdmin" />
     <SuperAdminSidebar v-else />
+    <div class="hidden">
+      Debug: {{ authStore.user?.permissions }}
+      IsAdmin: {{ isAdmin }}
+    </div>
 
     <!-- Main Content -->
     <main class="flex-1 overflow-y-auto bg-base-100">
