@@ -4,9 +4,9 @@ export default async function authRoutes(fastify) {
       const result = await fastify.auth.register(request.body)
       return result
     } catch (error) {
-      reply.status(400).send({ 
+      reply.status(400).send({
         error: 'Registration Error',
-        message: error.message 
+        message: error.message
       })
     }
   })
@@ -16,10 +16,10 @@ export default async function authRoutes(fastify) {
       const result = await fastify.auth.login(request.body)
       return result
     } catch (error) {
-      reply.status(401).send({ 
+      reply.status(401).send({
         error: 'Authentication Error',
-        message: error.message 
+        message: error.message
       })
     }
   })
-} 
+}

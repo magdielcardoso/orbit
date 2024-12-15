@@ -1,10 +1,9 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import Logger from './logger.controller.js'
-import * as UserModel from '../models/user.model.js';
+import * as UserModel from '../models/user.model.js'
 export default class Auth {
-
-  async register({ email, password,  }) {
+  async register({ email, password }) {
     try {
       const existingUser = await UserModel.findUserIfExists(email)
 
@@ -12,7 +11,7 @@ export default class Auth {
         throw new Error('Email já cadastrado')
       }
 
-      let userRole = await UserModel.findRole('user');
+      let userRole = await UserModel.findRole('user')
 
       if (!userRole) {
         userRole = await UserModel.createRole('user')
@@ -34,7 +33,7 @@ export default class Auth {
         },
         process.env.JWT_SECRET,
         { expiresIn: '7d' }
-      );
+      )
 
       return {
         token,
@@ -76,11 +75,11 @@ export default class Auth {
         action: 'login',
         userId: user.id,
         email: user.email
-      });
+      })
 
-      return { 
+      return {
         token: jwt.sign(
-          { 
+          {
             id: user.id,
             email: user.email,
             role: user.role.name,
@@ -106,8 +105,8 @@ export default class Auth {
         action: 'login',
         error: error.message,
         stack: error.stack
-      });
+      })
       throw error
     }
   }
-} 
+}

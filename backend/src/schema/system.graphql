@@ -31,4 +31,4 @@ type Mutation {
   initiateBackup: SystemActionResponse!
   restartSystem: SystemActionResponse!
   toggleSystemAccess: SystemActionResponse!
-} 
+}

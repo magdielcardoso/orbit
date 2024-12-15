@@ -32,4 +32,4 @@ class MessageService {
   }
 }
 
-export default MessageService 
+export default MessageService

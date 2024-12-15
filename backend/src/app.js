@@ -4,7 +4,7 @@ import jwt from '@fastify/jwt'
 import sensible from '@fastify/sensible'
 import prismaPlugin from './plugins/prisma.plugin.js'
 import loadControllers from './plugins/controllers.plugin.js'
-import graphqlPlugin from './plugins/graphql.js'
+import graphqlPlugin from './plugins/graphql.plugin.js'
 import Auth from './controllers/auth.controller.js'
 import dotenv from 'dotenv'
 import path from 'path'
@@ -33,7 +33,7 @@ async function setup() {
       origin: [
         'https://orbit.stacklab.digital',
         'https://orbit-api.stacklab.digital',
-        process.env.FRONTEND_URL, 
+        process.env.FRONTEND_URL,
         'http://localhost:5173'
       ],
       credentials: true,
@@ -48,7 +48,7 @@ async function setup() {
     })
 
     fastify.log.info('Registrando controladores...')
-    await loadControllers(fastify);
+    await loadControllers(fastify)
     await fastify.register(prismaPlugin)
     const auth = new Auth(fastify.prisma)
     fastify.decorate('auth', auth)
@@ -64,7 +64,6 @@ async function setup() {
       service: 'app',
       action: 'startup'
     })
-
   } catch (err) {
     fastify.log.error('Erro durante o setup:', err)
     throw err
@@ -76,16 +75,16 @@ const start = async () => {
   try {
     await setup()
     const port = process.env.PORT || 4000
-    await fastify.listen({ 
-      port, 
-      host: '0.0.0.0' 
+    await fastify.listen({
+      port,
+      host: '0.0.0.0'
     })
-    
+
     const baseUrl = `http://localhost:${port}`
     fastify.log.info(`Servidor rodando em ${baseUrl}`)
     fastify.log.info(`GraphQL endpoint: ${baseUrl}/graphql`)
     fastify.log.info(`GraphiQL interface: ${baseUrl}/graphql`)
-    
+
     // Lista todas as rotas registradas
     fastify.log.info('Rotas disponíveis:')
     fastify.printRoutes()
@@ -96,7 +95,7 @@ const start = async () => {
 }
 
 fastify.get('/', async (request, reply) => {
-  return { 
+  return {
     status: 'ok',
     version: process.env.APP_VERSION || '1.0.0'
   }

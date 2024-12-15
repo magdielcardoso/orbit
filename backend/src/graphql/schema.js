@@ -566,4 +566,4 @@ export const typeDefs = `#graphql
     domain: String
     hash_id: String
   }
-` 
+`

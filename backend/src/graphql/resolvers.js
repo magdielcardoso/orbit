@@ -5,30 +5,30 @@ import { logActivity } from '../utils/activity.js'
 export const resolvers = {
   JSON: {
     __parseValue(value) {
-      return JSON.parse(value);
+      return JSON.parse(value)
     },
     __serialize(value) {
-      return JSON.stringify(value);
+      return JSON.stringify(value)
     },
     __parseLiteral(ast) {
       switch (ast.kind) {
         case Kind.STRING:
-          return JSON.parse(ast.value);
+          return JSON.parse(ast.value)
         case Kind.OBJECT:
           return ast.fields.reduce((acc, field) => {
-            acc[field.name.value] = this.__parseLiteral(field.value);
-            return acc;
-          }, {});
+            acc[field.name.value] = this.__parseLiteral(field.value)
+            return acc
+          }, {})
         default:
-          return null;
+          return null
       }
     }
   },
 
   Query: {
     me: async (_, __, { user, prisma }) => {
-      if (!user) return null;
-      
+      if (!user) return null
+
       const userWithRole = await prisma.user.findUnique({
         where: { id: user.id },
         include: {
@@ -57,15 +57,15 @@ export const resolvers = {
             }
           }
         }
-      });
+      })
 
-      if (!userWithRole) return null;
-      
+      if (!userWithRole) return null
+
       if (!userWithRole.role) {
         return {
           ...userWithRole,
           role: null
-        };
+        }
       }
 
       // Formata as permissões corretamente
@@ -75,7 +75,7 @@ export const resolvers = {
           ...userWithRole.role,
           permissions: userWithRole.role.permissions.map(p => p.permission)
         }
-      };
+      }
     },
     users: async (_, __, { prisma }) => {
       return prisma.user.findMany({
@@ -88,12 +88,12 @@ export const resolvers = {
             }
           }
         }
-      });
+      })
     },
     roles: async (_, __, { prisma, user }) => {
       try {
         // Verifica autenticação básica
-        if (!user) throw new Error('Não autorizado');
+        if (!user) throw new Error('Não autorizado')
 
         // Busca usuário com permissões
         const userWithRole = await prisma.user.findUnique({
@@ -107,32 +107,39 @@ export const resolvers = {
               }
             }
           }
-        });
+        })
 
         // Verifica permissão específica
         const hasPermission = userWithRole?.role?.permissions?.some(
-          p => p.permission.name === 'manage_roles' || p.permission.name === 'manage_system' || p.permission.name === 'manage_users'
-        );
+          p =>
+            p.permission.name === 'manage_roles' ||
+            p.permission.name === 'manage_system' ||
+            p.permission.name === 'manage_users'
+        )
 
         if (!hasPermission) {
-          throw new Error('Não autorizado');
+          throw new Error('Não autorizado')
         }
 
-        return prisma.role.findMany({
-          include: {
-            permissions: {
-              include: {
-                permission: true
+        return prisma.role
+          .findMany({
+            include: {
+              permissions: {
+                include: {
+                  permission: true
+                }
               }
             }
-          }
-        }).then(roles => roles.map(role => ({
-          ...role,
-          permissions: role.permissions.map(rp => rp.permission)
-        })));
+          })
+          .then(roles =>
+            roles.map(role => ({
+              ...role,
+              permissions: role.permissions.map(rp => rp.permission)
+            }))
+          )
       } catch (error) {
-        console.error('Erro ao buscar papéis:', error);
-        throw error;
+        console.error('Erro ao buscar papéis:', error)
+        throw error
       }
     },
     systemStatus: async (_, __, { prisma }) => {
@@ -142,9 +149,9 @@ export const resolvers = {
             status: 'CONFIGURED'
           }
         })
-        
+
         console.log('System config found:', systemConfig) // Debug
-        
+
         return {
           configured: !!systemConfig,
           version: process.env.APP_VERSION || '1.0.0',
@@ -160,11 +167,11 @@ export const resolvers = {
       }
     },
     recentActivities: async (_, __, { prisma, user }) => {
-      if (!user) return [];
+      if (!user) return []
 
       try {
         // Verifica autenticação básica
-        if (!user) throw new Error('Não autorizado');
+        if (!user) throw new Error('Não autorizado')
 
         // Busca usuário com permissões
         const userWithRole = await prisma.user.findUnique({
@@ -185,15 +192,15 @@ export const resolvers = {
               }
             }
           }
-        });
+        })
 
         // Verifica permissão específica
         const hasPermission = userWithRole?.role?.permissions?.some(
           p => p.permission.name === 'manage_system'
-        );
+        )
 
         if (!hasPermission) {
-          throw new Error('Não autorizado');
+          throw new Error('Não autorizado')
         }
 
         // Busca as últimas 5 atividades
@@ -205,24 +212,23 @@ export const resolvers = {
           include: {
             user: true
           }
-        });
+        })
 
         // Formata as datas para ISO string
         return activities.map(activity => ({
           ...activity,
           createdAt: activity.createdAt.toISOString(),
           updatedAt: activity.updatedAt.toISOString()
-        }));
-
+        }))
       } catch (error) {
-        console.error('Erro ao buscar atividades:', error);
-        throw error;
+        console.error('Erro ao buscar atividades:', error)
+        throw error
       }
     },
     adminStats: async (_, __, { prisma, user }) => {
       try {
         // Verifica autenticação básica
-        if (!user) throw new Error('Não autorizado');
+        if (!user) throw new Error('Não autorizado')
 
         // Busca usuário com permissões
         const userWithRole = await prisma.user.findUnique({
@@ -236,15 +242,15 @@ export const resolvers = {
               }
             }
           }
-        });
+        })
 
         // Verifica permissão específica
         const hasPermission = userWithRole?.role?.permissions?.some(
           p => p.permission.name === 'manage_system'
-        );
+        )
 
         if (!hasPermission) {
-          throw new Error('Não autorizado');
+          throw new Error('Não autorizado')
         }
 
         // Busca estatísticas usando prisma
@@ -259,7 +265,7 @@ export const resolvers = {
               }
             }
           })
-        ]);
+        ])
 
         return {
           totalUsers: users.length,
@@ -269,16 +275,16 @@ export const resolvers = {
             name: role.name,
             createdAt: role.createdAt
           }))
-        };
+        }
       } catch (error) {
-        console.error('Erro ao buscar estatísticas:', error);
-        throw error;
+        console.error('Erro ao buscar estatísticas:', error)
+        throw error
       }
     },
     permissions: async (_, __, { prisma, user }) => {
       try {
         // Verifica autenticação básica
-        if (!user) throw new Error('Não autorizado');
+        if (!user) throw new Error('Não autorizado')
 
         // Busca usuário com permissões
         const userWithRole = await prisma.user.findUnique({
@@ -292,21 +298,21 @@ export const resolvers = {
               }
             }
           }
-        });
+        })
 
         // Verifica permissão específica
         const hasPermission = userWithRole?.role?.permissions?.some(
           p => p.permission.name === 'manage_roles' || p.permission.name === 'manage_system'
-        );
+        )
 
         if (!hasPermission) {
-          throw new Error('Não autorizado');
+          throw new Error('Não autorizado')
         }
 
-        return prisma.permission.findMany();
+        return prisma.permission.findMany()
       } catch (error) {
-        console.error('Erro ao buscar permissões:', error);
-        throw error;
+        console.error('Erro ao buscar permissões:', error)
+        throw error
       }
     },
     activities: async (_, args, { prisma, user }) => {
@@ -321,21 +327,21 @@ export const resolvers = {
               }
             }
           }
-        });
+        })
 
         const hasPermission = userWithRole?.role?.permissions?.some(
           p => p.permission.name === 'manage_system'
-        );
+        )
 
         if (!hasPermission) {
-          throw new Error('Não autorizado');
+          throw new Error('Não autorizado')
         }
 
         // Constrói o where baseado nos filtros
-        const where = {};
-        if (args.type) where.type = args.type;
-        if (args.level) where.level = args.level;
-        if (args.source) where.source = args.source;
+        const where = {}
+        if (args.type) where.type = args.type
+        if (args.level) where.level = args.level
+        if (args.source) where.source = args.source
 
         return await prisma.activity.findMany({
           where,
@@ -347,10 +353,10 @@ export const resolvers = {
           include: {
             user: true
           }
-        });
+        })
       } catch (error) {
-        console.error('Erro ao buscar atividades:', error);
-        throw error;
+        console.error('Erro ao buscar atividades:', error)
+        throw error
       }
     },
     organizations: async (_, __, { prisma, user }) => {
@@ -449,12 +455,12 @@ export const resolvers = {
             slug: true,
             domain: true
           }
-        });
+        })
 
         if (organization) {
           // Criptografa o ID da organização
-          const hash_id = await bcrypt.hash(organization.id, 10);
-          console.log('Organization found:', { ...organization, hash_id }); // Debug log
+          const hash_id = await bcrypt.hash(organization.id, 10)
+          console.log('Organization found:', { ...organization, hash_id }) // Debug log
           return {
             available: false,
             organization: {
@@ -463,16 +469,16 @@ export const resolvers = {
               slug: organization.slug,
               domain: organization.domain
             }
-          };
+          }
         }
 
         return {
           available: true,
           organization: null
-        };
+        }
       } catch (error) {
-        console.error('Erro ao validar slug:', error);
-        throw error;
+        console.error('Erro ao validar slug:', error)
+        throw error
       }
     }
   },
@@ -480,10 +486,10 @@ export const resolvers = {
   Mutation: {
     register: async (_, args, { auth, prisma }) => {
       try {
-        if (!auth) throw new Error('Controller auth não disponível');
-        
+        if (!auth) throw new Error('Controller auth não disponível')
+
         // Executa o registro
-        const result = await auth.register(args);
+        const result = await auth.register(args)
 
         // Se tiver um organizationHashId, tenta encontrar a organização
         if (args.organizationHashId) {
@@ -492,7 +498,7 @@ export const resolvers = {
             select: {
               id: true
             }
-          });
+          })
 
           // Procura a organização cujo ID corresponde ao hash
           for (const org of organizations) {
@@ -525,17 +531,19 @@ export const resolvers = {
                     }
                   }
                 }
-              });
+              })
 
               // Atualiza o resultado com o usuário atualizado
               result.user = {
                 ...updatedUser,
-                role: updatedUser.role ? {
-                  ...updatedUser.role,
-                  permissions: updatedUser.role.permissions.map(p => p.permission)
-                } : null
-              };
-              break;
+                role: updatedUser.role
+                  ? {
+                      ...updatedUser.role,
+                      permissions: updatedUser.role.permissions.map(p => p.permission)
+                    }
+                  : null
+              }
+              break
             }
           }
         }
@@ -554,15 +562,15 @@ export const resolvers = {
             roleId: result.user.roleId,
             currentOrgId: result.user.currentOrgId
           }
-        });
+        })
 
-        return result;
+        return result
       } catch (error) {
-        console.error('Erro no registro:', error);
-        throw error;
+        console.error('Erro no registro:', error)
+        throw error
       }
     },
-    
+
     registerSuperAdmin: async (_, args, { prisma, app }) => {
       try {
         // Verifica se já existe um superadmin
@@ -572,23 +580,23 @@ export const resolvers = {
               name: 'superadmin'
             }
           }
-        });
+        })
 
         if (existingSuperAdmin) {
-          throw new Error('Já existe um superadmin registrado');
+          throw new Error('Já existe um superadmin registrado')
         }
 
         // Busca a role de superadmin
         const superadminRole = await prisma.role.findUnique({
           where: { name: 'superadmin' }
-        });
+        })
 
         if (!superadminRole) {
-          throw new Error('Role de superadmin não encontrada');
+          throw new Error('Role de superadmin não encontrada')
         }
 
         // Cria o usuário superadmin
-        const hashedPassword = await bcrypt.hash(args.password, 10);
+        const hashedPassword = await bcrypt.hash(args.password, 10)
         const user = await prisma.user.create({
           data: {
             name: args.name,
@@ -608,7 +616,7 @@ export const resolvers = {
               }
             }
           }
-        });
+        })
 
         // Formata o usuário para retornar as permissões corretamente
         const formattedUser = {
@@ -617,7 +625,7 @@ export const resolvers = {
             ...user.role,
             permissions: user.role.permissions.map(p => p.permission)
           }
-        };
+        }
 
         // Configura o sistema
         const systemConfig = await prisma.systemConfig.create({
@@ -627,7 +635,7 @@ export const resolvers = {
             status: 'CONFIGURED',
             setupCompletedAt: new Date()
           }
-        });
+        })
 
         // Registra a atividade
         await logActivity({
@@ -641,7 +649,7 @@ export const resolvers = {
             systemName: args.systemConfig.systemName,
             timezone: args.systemConfig.timezone
           }
-        });
+        })
 
         // Gera o token
         const token = await app.jwt.sign({
@@ -649,16 +657,16 @@ export const resolvers = {
           email: user.email,
           role: user.role?.name,
           permissions: user.role?.permissions.map(p => p.permission.name)
-        });
+        })
 
         return {
           token,
           user: formattedUser,
           systemConfig
-        };
+        }
       } catch (error) {
-        console.error('Erro ao registrar superadmin:', error);
-        throw error;
+        console.error('Erro ao registrar superadmin:', error)
+        throw error
       }
     },
 
@@ -688,14 +696,14 @@ export const resolvers = {
               }
             }
           }
-        });
+        })
 
         const hasPermission = userWithRole?.role?.permissions?.some(
           p => p.permission.name === 'manage_users'
-        );
+        )
 
         if (!hasPermission) {
-          throw new Error('Não autorizado');
+          throw new Error('Não autorizado')
         }
 
         // Se for um agent, verifica se o parentUserId é válido
@@ -705,32 +713,32 @@ export const resolvers = {
             include: {
               role: true
             }
-          });
+          })
 
           if (!parentUser) {
-            throw new Error('Usuário pai não encontrado');
+            throw new Error('Usuário pai não encontrado')
           }
 
           if (parentUser.role?.name !== 'user') {
-            throw new Error('O usuário pai deve ter a role "user"');
+            throw new Error('O usuário pai deve ter a role "user"')
           }
         }
 
         // Verifica se a role é agent e se tem parentUserId
         const role = await prisma.role.findUnique({
           where: { id: args.roleId }
-        });
+        })
 
         if (role?.name === 'agent' && !args.parentUserId) {
-          throw new Error('Um agent precisa ter um usuário pai');
+          throw new Error('Um agent precisa ter um usuário pai')
         }
 
         if (role?.name !== 'agent' && args.parentUserId) {
-          throw new Error('Apenas agents podem ter um usuário pai');
+          throw new Error('Apenas agents podem ter um usuário pai')
         }
 
         // Cria o usuário
-        const hashedPassword = await bcrypt.hash(args.password, 10);
+        const hashedPassword = await bcrypt.hash(args.password, 10)
         const newUser = await prisma.user.create({
           data: {
             name: args.name,
@@ -739,9 +747,11 @@ export const resolvers = {
             role: {
               connect: { id: args.roleId }
             },
-            parentUser: args.parentUserId ? {
-              connect: { id: args.parentUserId }
-            } : undefined,
+            parentUser: args.parentUserId
+              ? {
+                  connect: { id: args.parentUserId }
+                }
+              : undefined,
             active: true
           },
           include: {
@@ -749,7 +759,7 @@ export const resolvers = {
             parentUser: true,
             agents: true
           }
-        });
+        })
 
         // Registra a atividade
         await logActivity({
@@ -759,17 +769,17 @@ export const resolvers = {
           action: 'CREATE_USER',
           description: `Usuário ${newUser.name} criado${args.parentUserId ? ' como agent' : ''}`,
           userId: user.id,
-          metadata: { 
+          metadata: {
             newUserId: newUser.id,
             isAgent: !!args.parentUserId,
             parentUserId: args.parentUserId
           }
-        });
+        })
 
-        return newUser;
+        return newUser
       } catch (error) {
-        console.error('Erro ao criar usuário:', error);
-        throw error;
+        console.error('Erro ao criar usuário:', error)
+        throw error
       }
     },
 
@@ -787,34 +797,34 @@ export const resolvers = {
               }
             }
           }
-        });
+        })
 
         const hasPermission = userWithRole?.role?.permissions?.some(
           p => p.permission.name === 'manage_users'
-        );
+        )
 
         if (!hasPermission) {
-          throw new Error('Não autorizado');
+          throw new Error('Não autorizado')
         }
 
         // Busca o usuário a ser deletado
         const userToDelete = await prisma.user.findUnique({
           where: { id }
-        });
+        })
 
         if (!userToDelete) {
-          throw new Error('Usuário não encontrado');
+          throw new Error('Usuário não encontrado')
         }
 
         // Não permite deletar o próprio usuário
         if (userToDelete.id === user.id) {
-          throw new Error('Não é possível deletar o próprio usuário');
+          throw new Error('Não é possível deletar o próprio usuário')
         }
 
         // Deleta o usuário
         await prisma.user.delete({
           where: { id }
-        });
+        })
 
         // Registra a atividade
         await prisma.activity.create({
@@ -827,12 +837,12 @@ export const resolvers = {
             userId: user.id,
             metadata: { deletedUserId: userToDelete.id }
           }
-        });
+        })
 
-        return true;
+        return true
       } catch (error) {
-        console.error('Erro ao deletar usuário:', error);
-        throw error;
+        console.error('Erro ao deletar usuário:', error)
+        throw error
       }
     },
 
@@ -880,14 +890,14 @@ export const resolvers = {
               }
             }
           }
-        });
+        })
 
         const hasPermission = userWithRole?.role?.permissions?.some(
           p => p.permission.name === 'manage_users'
-        );
+        )
 
         if (!hasPermission) {
-          throw new Error('Não autorizado');
+          throw new Error('Não autorizado')
         }
 
         // Atualiza o usuário
@@ -896,16 +906,22 @@ export const resolvers = {
           data: {
             name: input.name,
             email: input.email,
-            role: input.roleId ? {
-              connect: { id: input.roleId }
-            } : undefined,
-            parentUser: input.parentUserId ? {
-              connect: { id: input.parentUserId }
-            } : undefined,
+            role: input.roleId
+              ? {
+                  connect: { id: input.roleId }
+                }
+              : undefined,
+            parentUser: input.parentUserId
+              ? {
+                  connect: { id: input.parentUserId }
+                }
+              : undefined,
             active: input.active,
-            currentOrg: input.currentOrgId ? {
-              connect: { id: input.currentOrgId }
-            } : undefined
+            currentOrg: input.currentOrgId
+              ? {
+                  connect: { id: input.currentOrgId }
+                }
+              : undefined
           },
           include: {
             role: true,
@@ -917,7 +933,7 @@ export const resolvers = {
               }
             }
           }
-        });
+        })
 
         // Se tiver uma nova organização, cria/atualiza a relação OrganizationUser
         if (input.currentOrgId) {
@@ -939,13 +955,13 @@ export const resolvers = {
               isAdmin: input.isAdmin || false,
               isOwner: input.isOwner || false
             }
-          });
+          })
         }
 
-        return updatedUser;
+        return updatedUser
       } catch (error) {
-        console.error('Erro ao atualizar usuário:', error);
-        throw error;
+        console.error('Erro ao atualizar usuário:', error)
+        throw error
       }
     },
 
@@ -1206,4 +1222,4 @@ export const resolvers = {
       }
     }
   }
-} 
+}

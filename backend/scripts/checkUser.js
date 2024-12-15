@@ -19,7 +19,7 @@ async function checkUser(email) {
         }
       }
     })
-    
+
     console.log('User details:', JSON.stringify(user, null, 2))
   } catch (error) {
     console.error('Error:', error)
@@ -28,4 +28,4 @@ async function checkUser(email) {
   }
 }
 
-checkUser('user@orbitchat.io') 
+checkUser('user@orbitchat.io')

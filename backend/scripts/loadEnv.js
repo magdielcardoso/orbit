@@ -8,4 +8,4 @@ const rootEnvPath = join(__dirname, '../../.env')
 
 config({ path: rootEnvPath })
 
-export const env = process.env 
+export const env = process.env

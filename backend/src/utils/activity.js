@@ -21,8 +21,8 @@ export async function logActivity({
         userId,
         metadata
       }
-    });
+    })
   } catch (error) {
-    console.error('Erro ao registrar atividade:', error);
+    console.error('Erro ao registrar atividade:', error)
   }
-} 
+}

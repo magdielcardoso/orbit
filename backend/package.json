@@ -6,7 +6,9 @@
     "seed": "npx prisma db seed",
     "prisma:migrate": "dotenv -e ../.env -- prisma migrate dev",
     "prisma:generate": "dotenv -e ../.env -- prisma generate",
-    "prisma:studio": "dotenv -e ../.env -- prisma studio"
+    "prisma:studio": "dotenv -e ../.env -- prisma studio",
+    "lint": "eslint .",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@fastify/cors": "^10.0.1",
@@ -29,6 +31,8 @@
     "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
+    "eslint": "^9.17.0",
+    "prettier": "^3.4.2",
     "prisma": "^6.0.1"
   },
   "prisma": {
