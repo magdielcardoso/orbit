@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import { loggerService } from './logger.service.js'
 
 export default class AuthService {
   constructor(prisma) {
@@ -137,6 +138,13 @@ export default class AuthService {
       }))
 
       // Retorna o formato esperado pelo frontend
+      loggerService.log('info', 'Login realizado com sucesso', {
+        service: 'auth',
+        action: 'login',
+        userId: user.id,
+        email: user.email
+      });
+
       return { 
         token: jwt.sign(
           { 
@@ -160,7 +168,12 @@ export default class AuthService {
         }
       }
     } catch (error) {
-      console.error('Login service error:', error)
+      loggerService.log('error', 'Erro no login', {
+        service: 'auth',
+        action: 'login',
+        error: error.message,
+        stack: error.stack
+      });
       throw error
     }
   }

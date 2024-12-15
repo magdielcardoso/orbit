@@ -105,40 +105,50 @@
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Lista de Atividades Recentes -->
-        <div class="mt-8">
-          <h2 class="text-lg leading-6 font-medium text-gray-900 mb-4">
-            Atividades Recentes
-          </h2>
-          <div class="space-y-4">
-            <div
-              v-for="activity in recentActivities"
-              :key="activity.id"
-              class="bg-white shadow overflow-hidden sm:rounded-lg p-4"
-            >
-              <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                  <span
-                    class="px-2 py-1 text-xs font-medium rounded-full"
-                    :class="getActivityStatusClass(activity.type)"
-                  >
-                    {{ formatActivityType(activity.type) }}
-                  </span>
-                  <span class="text-sm text-gray-500">
-                    {{ activity.user.name }}
-                  </span>
-                </div>
+      <!-- Sistema de Logs -->
+      <div class="mt-8">
+        <h2 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+          Logs do Sistema
+        </h2>
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+          <SystemLogs />
+        </div>
+      </div>
+
+      <!-- Lista de Atividades Recentes -->
+      <div class="mt-8">
+        <h2 class="text-lg leading-6 font-medium text-gray-900 mb-4">
+          Atividades Recentes
+        </h2>
+        <div class="space-y-4">
+          <div
+            v-for="activity in recentActivities"
+            :key="activity.id"
+            class="bg-white shadow overflow-hidden sm:rounded-lg p-4"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <span
+                  class="px-2 py-1 text-xs font-medium rounded-full"
+                  :class="getActivityStatusClass(activity.type)"
+                >
+                  {{ formatActivityType(activity.type) }}
+                </span>
                 <span class="text-sm text-gray-500">
-                  {{ formatDate(activity.createdAt) }}
+                  {{ activity.user.name }}
                 </span>
               </div>
-              <p class="mt-2 text-sm text-gray-600">
-                {{ activity.description }}
-              </p>
-              <div class="mt-1 text-xs text-gray-500">
-                {{ activity.action }} | {{ activity.source }}
-              </div>
+              <span class="text-sm text-gray-500">
+                {{ formatDate(activity.createdAt) }}
+              </span>
+            </div>
+            <p class="mt-2 text-sm text-gray-600">
+              {{ activity.description }}
+            </p>
+            <div class="mt-1 text-xs text-gray-500">
+              {{ activity.action }} | {{ activity.source }}
             </div>
           </div>
         </div>
@@ -154,6 +164,7 @@ import { useAuthStore } from '../stores/auth.store';
 import { useRouter } from 'vue-router';
 import { gqlRequest } from '../utils/graphql';
 import { checkSystemStatus } from '../utils/system';
+import SystemLogs from '@/components/SystemLogs.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();

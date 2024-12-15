@@ -22,7 +22,10 @@
     "graphql-subscriptions": "^2.0.0",
     "mercurius": "^15.1.0",
     "pino-pretty": "^10.3.1",
-    "vue3-lottie": "^3.3.1"
+    "socket.io": "^4.8.1",
+    "vue3-lottie": "^3.3.1",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "prisma": "^6.0.1"

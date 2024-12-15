@@ -302,6 +302,7 @@
         </div>
       </div>
     </div>
+    <SystemLogs />
   </div>
 </template>
 
@@ -315,6 +316,7 @@ import {
   Power, Activity, Palette
 } from 'lucide-vue-next';
 import { gqlRequest } from '../../utils/graphql';
+import SystemLogs from '@/components/SystemLogs.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();

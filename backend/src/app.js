@@ -8,6 +8,7 @@ import AuthService from './services/auth.service.js'
 import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { loggerService } from './services/logger.service.js'
 
 // Configura o path para o arquivo .env na raiz do projeto
 const __filename = fileURLToPath(import.meta.url)
@@ -53,6 +54,15 @@ async function setup() {
 
     fastify.log.info('Registrando GraphQL...')
     await fastify.register(graphqlPlugin)
+
+    // Inicializa o serviço de logs
+    loggerService.initialize(fastify.server);
+
+    // Log de teste
+    loggerService.log('info', 'Sistema iniciado com sucesso', {
+      service: 'app',
+      action: 'startup'
+    });
 
   } catch (err) {
     fastify.log.error('Erro durante o setup:', err)
