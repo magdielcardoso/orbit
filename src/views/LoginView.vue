@@ -251,6 +251,17 @@ const showPassword = ref(false);
 // Carregando o arquivo Lottie
 const astronotAnimation = ref(null);
 
+// Função para formatar a URL da conta
+function formatAccountUrl(name) {
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+    .replace(/[^a-z0-9]/g, '-') // Substitui caracteres especiais por hífen
+    .replace(/-+/g, '-') // Remove hífens duplicados
+    .replace(/^-|-$/g, ''); // Remove hífens no início e fim
+}
+
 onMounted(async () => {
   try {
     const response = await fetch('/assets/ui/lotties/astronot.json');
