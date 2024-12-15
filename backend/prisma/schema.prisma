@@ -467,7 +467,7 @@ model Organization {
   deletedAt     DateTime?       // Soft delete
 }
 
-// Rela��ão entre Usuário e Organização
+// Relação entre Usuário e Organização
 model OrganizationUser {
   id             String       @id @default(uuid())
   organizationId String

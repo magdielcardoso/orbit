@@ -14,7 +14,7 @@ CREATE TYPE "ConversationStatus" AS ENUM ('OPEN', 'PENDING', 'RESOLVED', 'CLOSED
 CREATE TYPE "Priority" AS ENUM ('LOW', 'MEDIUM', 'HIGH', 'URGENT');
 
 -- CreateEnum
-CREATE TYPE "ChannelSource" AS ENUM ('WEBCHAT', 'WHATSAPP', 'INSTAGRAM', 'MESSENGER', 'TWITTER', 'MERCADOLIVRE', 'SHOPEE', 'TELEGRAM', 'EMAIL', 'API', 'IFOOD');
+CREATE TYPE "ChannelSource" AS ENUM ('WHATSAPP', 'INSTAGRAM', 'MESSENGER', 'TWITTER', 'MERCADOLIVRE', 'SHOPEE', 'TELEGRAM', 'EMAIL', 'API', 'IFOOD', 'WEBCHAT');
 
 -- CreateEnum
 CREATE TYPE "SubscriptionPlan" AS ENUM ('FREE', 'STARTER', 'PROFESSIONAL', 'ENTERPRISE');
@@ -207,17 +207,17 @@ CREATE TABLE "BrandConfig" (
 );
 
 -- CreateTable
-CREATE TABLE "inboxes" (
+CREATE TABLE "Inbox" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
-    "channel_type" "ChannelSource" NOT NULL,
-    "is_enabled" BOOLEAN NOT NULL DEFAULT true,
-    "organization_id" TEXT NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "channelType" "ChannelSource" NOT NULL,
+    "isEnabled" BOOLEAN NOT NULL DEFAULT true,
+    "organizationId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "inboxes_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Inbox_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -249,14 +249,14 @@ CREATE TABLE "TeamMember" (
 );
 
 -- CreateTable
-CREATE TABLE "inbox_teams" (
+CREATE TABLE "InboxTeam" (
     "id" TEXT NOT NULL,
-    "inbox_id" TEXT NOT NULL,
-    "team_id" TEXT NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "inboxId" TEXT NOT NULL,
+    "teamId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "inbox_teams_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "InboxTeam_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -453,7 +453,7 @@ ALTER TABLE "Activity" ADD CONSTRAINT "Activity_userId_fkey" FOREIGN KEY ("userI
 ALTER TABLE "OperatingHours" ADD CONSTRAINT "OperatingHours_chatConfigId_fkey" FOREIGN KEY ("chatConfigId") REFERENCES "ChatConfig"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "inboxes" ADD CONSTRAINT "inboxes_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "Organization"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Inbox" ADD CONSTRAINT "Inbox_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Team" ADD CONSTRAINT "Team_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -465,13 +465,13 @@ ALTER TABLE "TeamMember" ADD CONSTRAINT "TeamMember_teamId_fkey" FOREIGN KEY ("t
 ALTER TABLE "TeamMember" ADD CONSTRAINT "TeamMember_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "inbox_teams" ADD CONSTRAINT "inbox_teams_inbox_id_fkey" FOREIGN KEY ("inbox_id") REFERENCES "inboxes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "InboxTeam" ADD CONSTRAINT "InboxTeam_inboxId_fkey" FOREIGN KEY ("inboxId") REFERENCES "Inbox"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "inbox_teams" ADD CONSTRAINT "inbox_teams_team_id_fkey" FOREIGN KEY ("team_id") REFERENCES "Team"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "InboxTeam" ADD CONSTRAINT "InboxTeam_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Conversation" ADD CONSTRAINT "Conversation_inboxId_fkey" FOREIGN KEY ("inboxId") REFERENCES "inboxes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Conversation" ADD CONSTRAINT "Conversation_inboxId_fkey" FOREIGN KEY ("inboxId") REFERENCES "Inbox"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Conversation" ADD CONSTRAINT "Conversation_assigneeId_fkey" FOREIGN KEY ("assigneeId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;

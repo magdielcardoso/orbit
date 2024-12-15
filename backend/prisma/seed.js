@@ -247,6 +247,41 @@ async function main() {
         status: 'active'
       }
     })
+
+    // Cria caixas de entrada de teste para a organização
+    const inboxes = [
+      {
+        name: 'WhatsApp Principal',
+        description: 'Canal principal de WhatsApp',
+        channelType: 'WHATSAPP',
+        isEnabled: true
+      },
+      {
+        name: 'Chat do Site',
+        description: 'Widget de chat para o site',
+        channelType: 'WEBCHAT',
+        isEnabled: true
+      },
+      {
+        name: 'E-mail Suporte',
+        description: 'Canal de suporte por e-mail',
+        channelType: 'EMAIL',
+        isEnabled: true
+      }
+    ]
+
+    for (const inbox of inboxes) {
+      await prisma.inbox.upsert({
+        where: {
+          id: `${organization.id}-${inbox.channelType}`
+        },
+        update: {},
+        create: {
+          ...inbox,
+          organizationId: organization.id
+        }
+      })
+    }
   }
 }
 

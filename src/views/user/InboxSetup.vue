@@ -201,9 +201,23 @@ const canProceed = computed(() => {
   return true
 })
 
+const channelTypeMap = {
+  WHATSAPP: 'WHATSAPP',
+  INSTAGRAM: 'INSTAGRAM',
+  MESSENGER: 'MESSENGER',
+  TWITTER: 'API', // Mapeia Twitter para API
+  MERCADOLIVRE: 'MERCADOLIVRE',
+  SHOPEE: 'SHOPEE',
+  TELEGRAM: 'TELEGRAM',
+  EMAIL: 'EMAIL',
+  API: 'API',
+  IFOOD: 'IFOOD',
+  WEBCHAT: 'WEBCHAT'
+}
+
 function selectChannel(channel) {
   selectedChannel.value = channel
-  inboxForm.value.channelType = channel
+  inboxForm.value.channelType = channelTypeMap[channel] || 'API'
 }
 
 function nextStep() {
