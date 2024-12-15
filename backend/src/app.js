@@ -26,6 +26,7 @@ const fastify = Fastify({
 // Setup do servidor
 async function setup() {
   try {
+    // Primeiro registra os plugins básicos
     fastify.log.info('Registrando CORS...')
     await fastify.register(cors, {
       origin: [
@@ -52,17 +53,17 @@ async function setup() {
     fastify.decorate('prisma', prisma)
     fastify.decorate('authService', authService)
 
+    // Inicializa o logger depois que o Fastify está configurado
+    loggerService.initialize(fastify.server, fastify)
+
     fastify.log.info('Registrando GraphQL...')
     await fastify.register(graphqlPlugin)
-
-    // Inicializa o serviço de logs
-    loggerService.initialize(fastify.server);
 
     // Log de teste
     loggerService.log('info', 'Sistema iniciado com sucesso', {
       service: 'app',
       action: 'startup'
-    });
+    })
 
   } catch (err) {
     fastify.log.error('Erro durante o setup:', err)
