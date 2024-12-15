@@ -4,7 +4,7 @@
       :sections="sidebarSections" 
       :show-sidebar="showSecondarySidebar"
     />
-    <div class="flex-1 p-6">
+    <div class="flex-1 p-6 overflow-y-auto">
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
           <div class="flex items-center gap-3">
@@ -44,9 +44,9 @@
       </div>
 
       <!-- Tabela de Contatos -->
-      <div v-else class="mt-8 flex flex-col">
-        <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+      <div v-else class="mt-8">
+        <div class="overflow-x-auto">
+          <div class="inline-block min-w-full align-middle">
             <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
               <table class="min-w-full divide-y divide-gray-300">
                 <thead class="bg-gray-50">
@@ -288,104 +288,15 @@
       </Modal>
     </div>
     
-    <!-- Sidebar Direita de Detalhes -->
-    <div v-if="selectedContact" 
-      class="w-96 border-l border-base-300 bg-base-100 overflow-y-auto flex flex-col h-full">
-      <!-- Cabeçalho -->
-      <div class="p-4 border-b border-base-300">
-        <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center">
-            <div v-if="selectedContact.avatar" class="h-10 w-10 flex-shrink-0">
-              <img :src="selectedContact.avatar" :alt="selectedContact.name" class="h-10 w-10 rounded-full" />
-            </div>
-            <div v-else class="h-10 w-10 rounded-full bg-orbit-100 flex items-center justify-center">
-              <span class="text-orbit-600 font-medium">{{ getInitials(selectedContact.name) }}</span>
-            </div>
-            <div class="ml-3">
-              <h2 class="text-lg font-medium text-base-content">{{ selectedContact.name }}</h2>
-              <p class="text-sm text-base-content/70">{{ selectedContact.email }}</p>
-            </div>
-          </div>
-          <button @click="selectedContact = null" class="text-base-content/70 hover:text-base-content">
-            <span class="sr-only">Fechar</span>
-            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-            </svg>
-          </button>
-        </div>
-
-        <!-- Botões de Ação -->
-        <div class="flex gap-2">
-          <button class="btn btn-sm btn-primary flex-1">Iniciar Conversa</button>
-          <button @click="editContact(selectedContact)" class="btn btn-sm btn-ghost">Editar</button>
-          <button @click="deleteContact(selectedContact)" class="btn btn-sm btn-ghost text-error">Excluir</button>
-        </div>
-      </div>
-
-      <!-- Blocos de Informação -->
-      <div class="p-4 space-y-6">
-        <!-- Bloco de Ações do Kanban -->
-        <div class="space-y-2">
-          <h3 class="text-sm font-medium text-base-content/70">Ações do Kanban</h3>
-          <div class="bg-base-200 rounded-lg p-4">
-            <div class="space-y-4">
-              <div>
-                <h4 class="text-sm font-medium">Funil</h4>
-                <button class="btn btn-sm btn-ghost w-full justify-start mt-1">
-                  <span class="text-base-content/70">Definir funil</span>
-                </button>
-              </div>
-              <div>
-                <h4 class="text-sm font-medium">Status</h4>
-                <div class="bg-info/10 text-info rounded p-2 mt-1">
-                  <span class="text-sm">Negociação</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Bloco de Informações de Contato -->
-        <div class="space-y-2">
-          <h3 class="text-sm font-medium text-base-content/70">Informações de Contato</h3>
-          <div class="space-y-3">
-            <div v-if="selectedContact.phone" class="flex items-center gap-2">
-              <span class="text-base-content/70">Telefone:</span>
-              <a :href="'tel:' + selectedContact.phone" class="text-primary">{{ selectedContact.phone }}</a>
-            </div>
-            <div v-if="selectedContact.email" class="flex items-center gap-2">
-              <span class="text-base-content/70">Email:</span>
-              <a :href="'mailto:' + selectedContact.email" class="text-primary">{{ selectedContact.email }}</a>
-            </div>
-            <div v-if="selectedContact.tags?.length" class="flex flex-wrap gap-1">
-              <span 
-                v-for="tag in selectedContact.tags" 
-                :key="tag"
-                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orbit-100 text-orbit-800"
-              >
-                {{ tag }}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Bloco de Notas -->
-        <div class="space-y-2">
-          <h3 class="text-sm font-medium text-base-content/70">Notas</h3>
-          <p class="text-sm text-base-content/70">{{ selectedContact.notes || 'Nenhuma nota adicionada' }}</p>
-        </div>
-
-        <!-- Bloco de Histórico -->
-        <div class="space-y-2">
-          <h3 class="text-sm font-medium text-base-content/70">Histórico</h3>
-          <div class="text-sm text-base-content/70">
-            <p>Último contato: {{ formatDate(selectedContact.lastContactedAt) || 'Nunca contatado' }}</p>
-            <p>Criado em: {{ formatDate(selectedContact.createdAt) }}</p>
-            <p>Atualizado em: {{ formatDate(selectedContact.updatedAt) }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Substituir o sidebar de detalhes pelo novo componente -->
+    <ContactDetailsSidebar
+      v-if="selectedContact"
+      :contact="selectedContact"
+      :show="!!selectedContact"
+      @close="selectedContact = null"
+      @edit="editContact"
+      @delete="deleteContact"
+    />
   </div>
 </template>
 
@@ -397,6 +308,7 @@ import { useAuthStore } from '@/stores/auth.store'
 import { useRouter } from 'vue-router'
 import Modal from '@/components/Modal.vue'
 import SecondarySidebar from '@/components/layout/SecondarySidebar.vue'
+import ContactDetailsSidebar from '@/components/contacts/ContactDetailsSidebar.vue'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { PanelLeftClose, PanelLeft } from 'lucide-vue-next'
@@ -721,16 +633,5 @@ onMounted(fetchContacts)
 .alert {
   min-width: 200px;
   max-width: 400px;
-}
-
-/* Adicione estilos para a sidebar direita */
-.sidebar-right-enter-active,
-.sidebar-right-leave-active {
-  transition: transform 0.3s ease-in-out;
-}
-
-.sidebar-right-enter-from,
-.sidebar-right-leave-to {
-  transform: translateX(100%);
 }
 </style> 
