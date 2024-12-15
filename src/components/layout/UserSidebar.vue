@@ -13,10 +13,8 @@
           <div class="tooltip tooltip-right" :data-tip="t('navigation.home')">
             <button
               @click="navigate('home')"
-              :class="[
-                'btn btn-ghost btn-sm h-8 w-8 p-0 antialiased',
-                currentRoute === 'home' ? 'btn-active' : ''
-              ]"
+              class="nav-button"
+              :class="{ 'active': currentRoute === 'home' }"
             >
               <Home class="h-4 w-4" />
             </button>
@@ -25,10 +23,8 @@
           <div class="tooltip tooltip-right" :data-tip="t('navigation.chats')">
             <button
               @click="navigate('chats')"
-              :class="[
-                'btn btn-ghost btn-sm h-8 w-8 p-0 antialiased',
-                currentRoute === 'chats' ? 'btn-active' : ''
-              ]"
+              class="nav-button"
+              :class="{ 'active': currentRoute === 'chats' }"
             >
               <MessageCircle class="h-4 w-4" />
             </button>
@@ -37,10 +33,8 @@
           <div class="tooltip tooltip-right" :data-tip="t('navigation.contacts')">
             <button
               @click="navigate('contacts')"
-              :class="[
-                'btn btn-ghost btn-sm h-8 w-8 p-0 antialiased',
-                currentRoute === 'contacts' ? 'btn-active' : ''
-              ]"
+              class="nav-button"
+              :class="{ 'active': currentRoute === 'contacts' }"
             >
               <Users class="h-4 w-4" />
             </button>
@@ -49,10 +43,8 @@
           <div class="tooltip tooltip-right" :data-tip="t('navigation.favorites')">
             <button
               @click="navigate('favorites')"
-              :class="[
-                'btn btn-ghost btn-sm h-8 w-8 p-0 antialiased',
-                currentRoute === 'favorites' ? 'btn-active' : ''
-              ]"
+              class="nav-button"
+              :class="{ 'active': currentRoute === 'favorites' }"
             >
               <Star class="h-4 w-4" />
             </button>
@@ -67,10 +59,8 @@
           <div class="tooltip tooltip-right" :data-tip="t('navigation.notifications')">
             <button
               @click.stop="showNotificationsMenu = !showNotificationsMenu"
-              :class="[
-                'btn btn-ghost btn-sm h-8 w-8 p-0 antialiased relative',
-                currentRoute === 'notifications' ? 'btn-active' : ''
-              ]"
+              class="nav-button relative"
+              :class="{ 'active': currentRoute === 'notifications' }"
             >
               <Bell class="h-4 w-4" />
               <span 
@@ -91,10 +81,8 @@
         <div class="tooltip tooltip-right" :data-tip="t('navigation.settings')">
           <button
             @click="navigate('user-settings')"
-            :class="[
-              'btn btn-ghost btn-sm h-8 w-8 p-0 antialiased',
-              currentRoute === 'user-settings' ? 'btn-active' : ''
-            ]"
+            class="nav-button"
+            :class="{ 'active': currentRoute === 'user-settings' }"
           >
             <Settings class="h-4 w-4" />
           </button>
@@ -106,7 +94,7 @@
             @click.stop="showUserMenu = !showUserMenu"
             class="avatar"
           >
-            <div class="w-8 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+            <div class="w-8 rounded-full ring ring-orbit-500 ring-offset-base-100 ring-offset-2">
               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="avatar" />
             </div>
           </button>
@@ -147,15 +135,15 @@
               <button 
                 v-if="isSuperAdmin"
                 @click="navigateToAdmin"
-                class="flex w-full items-center justify-between px-3 py-2.5 mb-2 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-lg transition-all duration-200 group hover:from-purple-500/20 hover:to-blue-500/20"
+                class="flex w-full items-center justify-between px-3 py-2.5 mb-2 bg-gradient-to-r from-orbit-500/10 to-orbit-600/10 border border-orbit-500/20 rounded-lg transition-all duration-200 group hover:from-orbit-500/20 hover:to-orbit-600/20"
               >
                 <div class="flex items-center gap-3">
-                  <div class="p-1.5 rounded-lg bg-gradient-to-r from-purple-500 to-blue-500 shadow-lg shadow-purple-500/20">
+                  <div class="p-1.5 rounded-lg bg-gradient-to-r from-orbit-500 to-orbit-600 shadow-lg shadow-orbit-500/20">
                     <Settings class="h-4 w-4 text-white" />
                   </div>
-                  <span class="font-medium text-sm text-purple-500 text-left">Gestão da Plataforma</span>
+                  <span class="font-medium text-sm text-orbit-500 text-left">Gestão da Plataforma</span>
                 </div>
-                <ArrowRight class="h-4 w-4 text-purple-400 transition-transform duration-200 group-hover:translate-x-1" />
+                <ArrowRight class="h-4 w-4 text-orbit-400 transition-transform duration-200 group-hover:translate-x-1" />
               </button>
   
               <!-- Profile -->
@@ -348,6 +336,36 @@
   
   .tooltip:hover img {
     filter: brightness(1.1);
+  }
+  
+  /* Estilo dos botões de navegação */
+  .nav-button {
+    @apply h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-200;
+    @apply text-base-content/70 hover:text-base-content dark:hover:text-orbit-200;
+    background-color: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+  }
+  
+  .nav-button:hover {
+    @apply bg-orbit-200 border-orbit-300;
+  }
+  
+  .nav-button.active {
+    @apply bg-orbit-300 text-base-content border-orbit-400;
+  }
+  
+  /* Ajustes para o modo dark */
+  :root[data-theme="dark"] .nav-button:hover {
+    @apply bg-orbit-900 border-orbit-800;
+  }
+  
+  :root[data-theme="dark"] .nav-button.active {
+    @apply bg-orbit-800 border-orbit-700;
+  }
+  
+  :root[data-theme="dark"] .nav-button.active svg {
+    @apply text-orbit-200;
   }
   </style>
   

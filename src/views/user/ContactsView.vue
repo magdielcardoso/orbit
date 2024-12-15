@@ -463,124 +463,130 @@ onMounted(fetchData)
 
     <!-- Modal de novo contato -->
     <Modal
-      v-model="showNewContactModal"
-      :title="t('contacts.modal.title', 'Novo Contato')"
+      v-if="showNewContactModal"
+      @close="showNewContactModal = false"
     >
-      <form @submit.prevent="handleCreateContact" class="space-y-4">
-        <!-- Dados básicos -->
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">{{ t('contacts.form.name', 'Nome') }}*</span>
-          </label>
-          <input
-            v-model="newContact.name"
-            type="text"
-            required
-            class="input input-bordered"
-            :placeholder="t('contacts.form.namePlaceholder', 'Nome do contato')"
-          />
-        </div>
-
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">{{ t('contacts.form.email', 'Email') }}</span>
-          </label>
-          <input
-            v-model="newContact.email"
-            type="email"
-            class="input input-bordered"
-            :placeholder="t('contacts.form.emailPlaceholder', 'email@exemplo.com')"
-          />
-        </div>
-
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">{{ t('contacts.form.phone', 'Telefone') }}</span>
-          </label>
-          <input
-            v-model="newContact.phone"
-            type="tel"
-            class="input input-bordered"
-            :placeholder="t('contacts.form.phonePlaceholder', '+55 11 99999-9999')"
-          />
-        </div>
-
-        <!-- Campos customizados -->
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">{{ t('contacts.form.company', 'Empresa') }}</span>
-          </label>
-          <input
-            v-model="newContact.customFields.empresa"
-            type="text"
-            class="input input-bordered"
-          />
-        </div>
-
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">{{ t('contacts.form.role', 'Cargo') }}</span>
-          </label>
-          <input
-            v-model="newContact.customFields.cargo"
-            type="text"
-            class="input input-bordered"
-          />
-        </div>
-
-        <!-- Tags -->
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">{{ t('contacts.form.tags', 'Tags') }}</span>
-          </label>
-          <div class="flex flex-wrap gap-2 mb-2">
-            <span 
-              v-for="(tag, index) in newContact.tags" 
-              :key="index"
-              class="badge badge-primary gap-2"
-            >
-              {{ tag }}
-              <button type="button" @click="removeTag(index)">&times;</button>
-            </span>
+      <template #title>
+        {{ t('contacts.modal.title', 'Novo Contato') }}
+      </template>
+      
+      <template #content>
+        <form @submit.prevent="handleCreateContact" class="space-y-4">
+          <!-- Dados básicos -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">{{ t('contacts.form.name', 'Nome') }}*</span>
+            </label>
+            <input
+              v-model="newContact.name"
+              type="text"
+              required
+              class="input input-bordered"
+              :placeholder="t('contacts.form.namePlaceholder', 'Nome do contato')"
+            />
           </div>
-          <input
-            type="text"
-            class="input input-bordered"
-            :placeholder="t('contacts.form.tagsPlaceholder', 'Pressione Enter para adicionar')"
-            @keyup.enter="addTag"
-          />
-        </div>
 
-        <!-- Notas -->
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text">{{ t('contacts.form.notes', 'Notas') }}</span>
-          </label>
-          <textarea
-            v-model="newContact.notes"
-            class="textarea textarea-bordered"
-            :placeholder="t('contacts.form.notesPlaceholder', 'Observações sobre o contato')"
-          ></textarea>
-        </div>
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">{{ t('contacts.form.email', 'Email') }}</span>
+            </label>
+            <input
+              v-model="newContact.email"
+              type="email"
+              class="input input-bordered"
+              :placeholder="t('contacts.form.emailPlaceholder', 'email@exemplo.com')"
+            />
+          </div>
 
-        <!-- Botões -->
-        <div class="modal-action">
-          <button 
-            type="button" 
-            class="btn"
-            @click="showNewContactModal = false"
-          >
-            {{ t('common.cancel', 'Cancelar') }}
-          </button>
-          <button 
-            type="submit" 
-            class="btn btn-primary"
-            :disabled="loading"
-          >
-            {{ t('common.save', 'Salvar') }}
-          </button>
-        </div>
-      </form>
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">{{ t('contacts.form.phone', 'Telefone') }}</span>
+            </label>
+            <input
+              v-model="newContact.phone"
+              type="tel"
+              class="input input-bordered"
+              :placeholder="t('contacts.form.phonePlaceholder', '+55 11 99999-9999')"
+            />
+          </div>
+
+          <!-- Campos customizados -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">{{ t('contacts.form.company', 'Empresa') }}</span>
+            </label>
+            <input
+              v-model="newContact.customFields.empresa"
+              type="text"
+              class="input input-bordered"
+            />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">{{ t('contacts.form.role', 'Cargo') }}</span>
+            </label>
+            <input
+              v-model="newContact.customFields.cargo"
+              type="text"
+              class="input input-bordered"
+            />
+          </div>
+
+          <!-- Tags -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">{{ t('contacts.form.tags', 'Tags') }}</span>
+            </label>
+            <div class="flex flex-wrap gap-2 mb-2">
+              <span 
+                v-for="(tag, index) in newContact.tags" 
+                :key="index"
+                class="badge badge-primary gap-2"
+              >
+                {{ tag }}
+                <button type="button" @click="removeTag(index)">&times;</button>
+              </span>
+            </div>
+            <input
+              type="text"
+              class="input input-bordered"
+              :placeholder="t('contacts.form.tagsPlaceholder', 'Pressione Enter para adicionar')"
+              @keyup.enter="addTag"
+            />
+          </div>
+
+          <!-- Notas -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">{{ t('contacts.form.notes', 'Notas') }}</span>
+            </label>
+            <textarea
+              v-model="newContact.notes"
+              class="textarea textarea-bordered"
+              :placeholder="t('contacts.form.notesPlaceholder', 'Observações sobre o contato')"
+            ></textarea>
+          </div>
+        </form>
+      </template>
+
+      <template #footer>
+        <button 
+          type="button" 
+          class="btn"
+          @click="showNewContactModal = false"
+        >
+          {{ t('common.cancel', 'Cancelar') }}
+        </button>
+        <button 
+          type="submit" 
+          class="btn btn-primary ml-3"
+          :disabled="loading"
+          @click="handleCreateContact"
+        >
+          {{ t('common.save', 'Salvar') }}
+        </button>
+      </template>
     </Modal>
   </div>
 </template>

@@ -1,4 +1,4 @@
-<script setup>
+v<script setup>
 import { computed } from 'vue'
 
 const props = defineProps({
@@ -18,12 +18,12 @@ const props = defineProps({
 
 // Cores para os avatares
 const colors = [
-  'bg-primary/10 text-primary',
-  'bg-secondary/10 text-secondary',
-  'bg-accent/10 text-accent',
-  'bg-info/10 text-info',
-  'bg-success/10 text-success',
-  'bg-warning/10 text-warning'
+  'bg-orbit-500/10 text-orbit-500',
+  'bg-orbit-600/10 text-orbit-600',
+  'bg-orbit-700/10 text-orbit-700',
+  'bg-orbit-400/10 text-orbit-400',
+  'bg-orbit-500/10 text-orbit-500',
+  'bg-orbit-600/10 text-orbit-600'
 ]
 
 // Gera uma cor baseada no nome

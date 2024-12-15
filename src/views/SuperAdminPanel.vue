@@ -31,7 +31,7 @@
               <div class="text-sm">
                 <router-link
                   to="/admin/users"
-                  class="font-medium text-purple-700 hover:text-purple-900"
+                  class="font-medium text-orbit-600 hover:text-orbit-700"
                 >
                   Gerenciar Usuários
                 </router-link>
@@ -64,7 +64,7 @@
               <div class="text-sm">
                 <router-link
                   to="/admin/roles"
-                  class="font-medium text-purple-700 hover:text-purple-900"
+                  class="font-medium text-orbit-600 hover:text-orbit-700"
                 >
                   Gerenciar Roles
                 </router-link>
@@ -97,7 +97,7 @@
               <div class="text-sm">
                 <router-link
                   to="/admin/settings"
-                  class="font-medium text-purple-700 hover:text-purple-900"
+                  class="font-medium text-orbit-600 hover:text-orbit-700"
                 >
                   Configurações do Sistema
                 </router-link>

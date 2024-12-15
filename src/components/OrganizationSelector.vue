@@ -141,14 +141,14 @@ defineExpose({
 
 <template>
   <div class="dropdown">
-    <label tabindex="0" class="btn btn-ghost gap-2">
-      <Building class="h-4 w-4" />
-      <span v-if="loading">Carregando...</span>
-      <span v-else class="truncate max-w-[200px]">
+    <label tabindex="0" class="btn btn-ghost btn-xs gap-1.5 h-7 min-h-0 normal-case px-2 border border-dashed border-orbit-200/40 dark:border-orbit-800/40">
+      <Building class="h-3.5 w-3.5" />
+      <span v-if="loading" class="text-xs">Carregando...</span>
+      <span v-else class="truncate max-w-[200px] text-xs">
         {{ authStore.currentOrganization?.name || 'Selecione uma organização' }}
       </span>
     </label>
-    <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 mt-2">
+    <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 mt-1">
       <li v-for="org in organizations" :key="org.id">
         <a 
           :class="{ 'active': org.id === authStore.currentOrganization?.id }"
@@ -157,7 +157,7 @@ defineExpose({
           {{ org.name }}
         </a>
       </li>
-      <li v-if="organizations.length === 0" class="text-sm text-gray-500 p-2">
+      <li v-if="organizations.length === 0" class="text-xs text-gray-500 p-2">
         Nenhuma organização encontrada
       </li>
     </ul>
@@ -167,5 +167,10 @@ defineExpose({
 <style scoped>
 .dropdown-content {
   z-index: 1000;
+}
+
+.btn-ghost:hover {
+  @apply border-orbit-300/60 dark:border-orbit-700/60;
+  border-style: dashed;
 }
 </style> 

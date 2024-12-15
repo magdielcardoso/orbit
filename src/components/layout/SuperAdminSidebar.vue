@@ -18,7 +18,11 @@
         :key="index"
         :to="item.path"
         class="flex items-center px-4 py-3 text-base-content hover:bg-base-300 rounded-xl transition-all duration-200 group"
-        :class="{ 'bg-primary text-primary-content shadow-lg': $route.path === item.path }"
+        :class="[
+          $route.path === item.path 
+            ? 'bg-orbit-500 text-white hover:bg-orbit-600' 
+            : 'hover:bg-base-300'
+        ]"
       >
         <component 
           :is="item.icon" 
@@ -33,12 +37,12 @@
     <div class="px-4 mb-4">
       <button
         @click="backToUserDashboard"
-        class="w-full flex items-center px-4 py-3.5 text-primary bg-primary/5 hover:bg-primary/10 border border-primary/20 rounded-xl transition-all duration-200 group"
+        class="w-full flex items-center px-4 py-3.5 text-orbit-500 bg-orbit-500/5 hover:bg-orbit-500/10 border border-orbit-500/20 rounded-xl transition-all duration-200 group"
       >
         <div class="flex items-center">
           <ArrowLeft class="w-5 h-5 mr-3 transition-transform duration-200 group-hover:-translate-x-1" />
           <div class="flex flex-col items-start">
-            <span class="text-xs text-primary/80">Voltar para</span>
+            <span class="text-xs text-orbit-500/80">Voltar para</span>
             <span class="font-medium text-sm">Painel de Usuário</span>
           </div>
         </div>
@@ -48,8 +52,8 @@
     <!-- User Info -->
     <div class="p-4 mx-4 mb-4 rounded-xl bg-base-300">
       <div class="flex items-center space-x-3">
-        <div class="w-12 h-12 rounded-xl bg-primary flex items-center justify-center shadow-lg">
-          <span class="text-primary-content font-medium">
+        <div class="w-12 h-12 rounded-xl bg-orbit-500 flex items-center justify-center shadow-lg">
+          <span class="text-white font-medium">
             {{ getUserInitials }}
           </span>
         </div>
