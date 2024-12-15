@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import Logger from './logger.controller.js'
+import Logger from '../helpers/logger.helper.js'
 import * as UserModel from '../models/user.model.js'
 export default class Auth {
   async register({ email, password }) {

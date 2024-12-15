@@ -9,7 +9,7 @@ import Auth from './controllers/auth.controller.js'
 import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import Logger from './controllers/logger.controller.js'
+import Logger from './helpers/logger.helper.js'
 
 // Configura o path para o arquivo .env na raiz do projeto
 const __filename = fileURLToPath(import.meta.url)

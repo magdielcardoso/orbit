@@ -21,6 +21,7 @@
     "bcrypt": "^5.1.1",
     "concurrently": "^8.2.2",
     "daisyui": "^4.12.22",
+    "date-fns": "^4.1.0",
     "fastify": "^5.1.0",
     "globals": "^15.13.0",
     "graphql": "^16.9.0",
