@@ -1,10 +1,11 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
+import yaml from '@modyfi/vite-plugin-yaml'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), yaml()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

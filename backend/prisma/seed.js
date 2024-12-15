@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcrypt'
+
 const prisma = new PrismaClient()
 
 async function main() {
@@ -215,29 +217,6 @@ async function main() {
     }
   ]
 
-  // Após criar o usuário e a organização
-  async function createOrganizationUser(userId, organizationId, isAdmin = false, isOwner = false) {
-    await prisma.organizationUser.upsert({
-      where: {
-        organizationId_userId: {
-          organizationId,
-          userId
-        }
-      },
-      update: {
-        isAdmin,
-        isOwner
-      },
-      create: {
-        userId,
-        organizationId,
-        isAdmin,
-        isOwner,
-        status: 'active'
-      }
-    })
-  }
-
   for (const org of organizations) {
     const organization = await prisma.organization.upsert({
       where: { slug: org.slug },
@@ -248,7 +227,7 @@ async function main() {
       }
     })
 
-    // Vincula o usuário de teste à organização
+    // Associa o usuário de teste à organização
     await prisma.organizationUser.upsert({
       where: {
         organizationId_userId: {
@@ -261,274 +240,14 @@ async function main() {
         isOwner: true
       },
       create: {
-        organizationId: organization.id,
         userId: testUser.id,
+        organizationId: organization.id,
         isAdmin: true,
         isOwner: true,
         status: 'active'
       }
     })
-
-    // Cria times para cada organização
-    const teams = [
-      {
-        name: 'Suporte Nível 1',
-        description: 'Atendimento inicial',
-        color: '#22C55E',
-        icon: '🎯'
-      },
-      {
-        name: 'Suporte Técnico',
-        description: 'Problemas técnicos',
-        color: '#3B82F6',
-        icon: '🔧'
-      },
-      {
-        name: 'Vendas',
-        description: 'Equipe comercial',
-        color: '#F59E0B',
-        icon: '💰'
-      }
-    ]
-
-    for (const team of teams) {
-      await prisma.team.upsert({
-        where: {
-          id: `${organization.id}-${team.name}`.toLowerCase(),
-        },
-        update: {},
-        create: {
-          ...team,
-          organizationId: organization.id
-        }
-      })
-    }
-
-    // Cria inboxes para cada organização
-    const inboxes = [
-      {
-        name: 'WhatsApp Principal',
-        description: 'Canal principal de WhatsApp',
-        channelType: 'WHATSAPP',
-        channelConfig: {
-          phoneNumber: '+5511999999999',
-          webhookUrl: 'https://api.orbitchat.io/webhook/whatsapp'
-        }
-      },
-      {
-        name: 'Chat Website',
-        description: 'Widget de chat do site',
-        channelType: 'WEBCHAT',
-        channelConfig: {
-          widgetColor: '#9333EA',
-          welcomeMessage: 'Olá! Como posso ajudar?'
-        }
-      },
-      {
-        name: 'Email Suporte',
-        description: 'Canal de email',
-        channelType: 'EMAIL',
-        channelConfig: {
-          email: 'suporte@empresa.com.br',
-          forwardTo: 'ticket@orbitchat.io'
-        }
-      }
-    ]
-
-    for (const inbox of inboxes) {
-      await prisma.inbox.upsert({
-        where: {
-          id: `${organization.id}-${inbox.name}`.toLowerCase(),
-        },
-        update: {},
-        create: {
-          ...inbox,
-          organizationId: organization.id,
-          isEnabled: true,
-          workingHours: {
-            monday: { start: '09:00', end: '18:00' },
-            tuesday: { start: '09:00', end: '18:00' },
-            wednesday: { start: '09:00', end: '18:00' },
-            thursday: { start: '09:00', end: '18:00' },
-            friday: { start: '09:00', end: '18:00' }
-          }
-        }
-      })
-    }
-
-    // Cria contatos de exemplo
-    const contacts = [
-      {
-        name: 'João Silva',
-        email: 'joao.silva@email.com',
-        phone: '+5511999998888',
-        tags: ['cliente-vip', 'premium'],
-        customFields: {
-          empresa: 'Tech Corp',
-          cargo: 'Diretor',
-          origem: 'Website'
-        }
-      },
-      {
-        name: 'Maria Santos',
-        email: 'maria.santos@email.com',
-        phone: '+5511999997777',
-        tags: ['prospect', 'ecommerce'],
-        customFields: {
-          empresa: 'Shop Online',
-          cargo: 'Gerente',
-          origem: 'LinkedIn'
-        }
-      }
-    ]
-
-    for (const contact of contacts) {
-      await prisma.contact.upsert({
-        where: {
-          organizationId_email: {
-            organizationId: organization.id,
-            email: contact.email
-          }
-        },
-        update: {},
-        create: {
-          ...contact,
-          organizationId: organization.id
-        }
-      })
-    }
-
-    // Cria automações de exemplo
-    const automations = [
-      {
-        name: 'Atribuição Automática',
-        description: 'Distribui conversas automaticamente',
-        trigger: {
-          event: 'conversation.created',
-          channel: ['whatsapp', 'webchat']
-        },
-        conditions: {
-          operator: 'AND',
-          conditions: [
-            { field: 'status', operator: 'equals', value: 'OPEN' },
-            { field: 'assigneeId', operator: 'is_empty' }
-          ]
-        },
-        actions: [
-          {
-            type: 'assign_to_team',
-            teamId: 'support-l1',
-            strategy: 'round_robin'
-          }
-        ]
-      },
-      {
-        name: 'Mensagem Fora do Horário',
-        description: 'Resposta automática fora do expediente',
-        trigger: {
-          event: 'message.created',
-          channel: ['whatsapp', 'webchat']
-        },
-        conditions: {
-          operator: 'AND',
-          conditions: [
-            { field: 'working_hours', operator: 'is', value: 'outside' }
-          ]
-        },
-        actions: [
-          {
-            type: 'send_message',
-            message: 'Olá! Nosso horário de atendimento é de seg-sex, 9h às 18h. Retornaremos assim que possível.'
-          }
-        ]
-      }
-    ]
-
-    for (const automation of automations) {
-      await prisma.automation.upsert({
-        where: {
-          id: `${organization.id}-${automation.name}`.toLowerCase(),
-        },
-        update: {},
-        create: {
-          ...automation,
-          organizationId: organization.id,
-          trigger: automation.trigger,
-          conditions: automation.conditions,
-          actions: automation.actions
-        }
-      })
-    }
-
-    // Cria algumas conversas de exemplo
-    const conversations = [
-      {
-        subject: 'Dúvida sobre produto',
-        status: 'OPEN',
-        priority: 'MEDIUM',
-        channelData: {
-          source: 'whatsapp',
-          contact: '+5511999998888'
-        }
-      },
-      {
-        subject: 'Suporte técnico urgente',
-        status: 'PENDING',
-        priority: 'HIGH',
-        channelData: {
-          source: 'webchat',
-          browser: 'Chrome',
-          os: 'Windows'
-        }
-      }
-    ]
-
-    const firstInbox = await prisma.inbox.findFirst({
-      where: { organizationId: organization.id }
-    })
-
-    for (const conv of conversations) {
-      const conversation = await prisma.conversation.create({
-        data: {
-          ...conv,
-          organizationId: organization.id,
-          inboxId: firstInbox.id,
-          channelData: conv.channelData
-        }
-      })
-
-      // Adiciona algumas mensagens à conversa
-      const messages = [
-        {
-          content: 'Olá, preciso de ajuda com um produto',
-          type: 'text',
-          private: false
-        },
-        {
-          content: 'Claro! Em que posso ajudar?',
-          type: 'text',
-          private: false
-        },
-        {
-          content: 'Nota interna: Cliente VIP, priorizar atendimento',
-          type: 'text',
-          private: true
-        }
-      ]
-
-      for (const msg of messages) {
-        await prisma.message.create({
-          data: {
-            ...msg,
-            conversationId: conversation.id,
-            userId: (await prisma.user.findFirst()).id // Usa o primeiro usuário encontrado
-          }
-        })
-      }
-    }
   }
-
-  console.log('Seed de desenvolvimento executado com sucesso!')
 }
 
 main()

@@ -274,11 +274,17 @@ enum Priority {
 
 // Nova enum para origem da conversa
 enum ChannelSource {
-  WEBCHAT
   WHATSAPP
+  INSTAGRAM
+  MESSENGER
+  TWITTER
+  MERCADOLIVRE
+  SHOPEE
   TELEGRAM
   EMAIL
   API
+  IFOOD
+  WEBCHAT
 }
 
 // Nova model para Inbox (caixas de entrada)
@@ -286,15 +292,14 @@ model Inbox {
   id            String      @id @default(cuid())
   name          String
   description   String?
-  channelType   String      @map("channel_type")
-  isEnabled     Boolean     @default(true) @map("is_enabled")
+  channelType   ChannelSource
+  isEnabled     Boolean     @default(true)
   organization  Organization @relation(fields: [organizationId], references: [id])
-  organizationId String      @map("organization_id")
+  organizationId String
   teams         InboxTeam[]
-  createdAt     DateTime    @default(now()) @map("created_at")
-  updatedAt     DateTime    @updatedAt @map("updated_at")
-
-  @@map("inboxes")
+  conversations Conversation[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 }
 
 // Nova model para Times
@@ -338,13 +343,11 @@ model TeamMember {
 model InboxTeam {
   id        String   @id @default(cuid())
   inbox     Inbox    @relation(fields: [inboxId], references: [id])
-  inboxId   String   @map("inbox_id")
+  inboxId   String
   team      Team     @relation(fields: [teamId], references: [id])
-  teamId    String   @map("team_id")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("inbox_teams")
+  teamId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // Nova model para Conversas
@@ -464,7 +467,7 @@ model Organization {
   deletedAt     DateTime?       // Soft delete
 }
 
-// Relação entre Usuário e Organização
+// Rela��ão entre Usuário e Organização
 model OrganizationUser {
   id             String       @id @default(uuid())
   organizationId String

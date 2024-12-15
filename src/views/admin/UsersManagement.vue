@@ -209,17 +209,10 @@
     </Modal>
 
     <!-- Modal de Edição -->
-    <Modal
-      v-if="showEditModal"
-      @close="showEditModal = false"
-      class="modal-dynamic-height"
-    >
-      <template #title>
-        {{ t('admin.users.editUser') }}
-      </template>
-
+    <Modal v-if="showEditModal" @close="showEditModal = false">
+      <template #title>{{ t('admin.users.editUser') }}</template>
       <template #content>
-        <form id="editUserForm" @submit.prevent="handleUpdateUser" class="space-y-4">
+        <form @submit.prevent="handleUpdateUser" class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700">
               {{ t('admin.users.form.name') }}
@@ -249,7 +242,7 @@
               {{ t('admin.users.form.role') }}
             </label>
             <select
-              v-model="editingUser.role.id"
+              v-model="editingUser.roleId"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm"
             >
               <option value="">{{ t('admin.users.form.selectRole') }}</option>
@@ -260,121 +253,122 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+            <label class="block text-sm font-medium text-gray-700">
               {{ t('admin.users.form.status.title') }}
             </label>
-            <div class="relative inline-flex items-center cursor-pointer">
-              <input 
-                type="checkbox"
-                v-model="editingUser.active"
-                class="sr-only peer"
-                :title="t('admin.users.form.status.toggleActive')"
-              >
-              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600">
-              </div>
-              <span class="ml-3 text-sm font-medium text-gray-700">
-                {{ editingUser.active ? t('admin.users.form.status.active') : t('admin.users.form.status.inactive') }}
-              </span>
+            <div class="mt-2">
+              <label class="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  v-model="editingUser.active"
+                  class="form-checkbox h-4 w-4 text-purple-600 transition duration-150 ease-in-out"
+                  :title="t('admin.users.form.status.toggleActive')"
+                />
+                <span class="ml-2">{{ editingUser.active ? t('admin.users.form.status.active') : t('admin.users.form.status.inactive') }}</span>
+              </label>
             </div>
           </div>
 
-          <!-- Organização -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">{{ t('admin.users.form.organization.title') }}</span>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              {{ t('admin.users.form.organization.title') }}
             </label>
-            
-            <!-- Multi-select com tags -->
-            <div class="relative">
-              <div class="input input-bordered w-full min-h-[42px] flex items-center flex-wrap gap-2 p-1 cursor-text" @click="showOrgDropdown = true">
-                <!-- Tags das organizações selecionadas -->
-                <div 
-                  v-for="org in selectedOrganizations" 
-                  :key="org.id"
-                  :class="`badge gap-1 ${getOrgBadgeColor(org)}`"
-                >
-                  {{ org.name }}
-                  <button 
-                    @click.stop="removeOrganization(org)"
-                    class="btn btn-ghost btn-xs text-xs"
-                  >
-                    ×
-                  </button>
+            <div class="relative mt-1" ref="orgDropdownContainer">
+              <div 
+                @click="showOrgDropdown = !showOrgDropdown"
+                class="cursor-pointer bg-white border border-gray-300 rounded-md px-3 py-2 flex items-center justify-between"
+              >
+                <div class="flex items-center gap-2">
+                  <template v-if="editingUser.currentOrgId">
+                    <div class="flex items-center gap-2">
+                      <UserAvatar 
+                        :name="organizations.find(o => o.id === editingUser.currentOrgId)?.name || ''"
+                        size="sm"
+                      />
+                      <span class="text-sm">
+                        {{ organizations.find(o => o.id === editingUser.currentOrgId)?.name }}
+                      </span>
+                    </div>
+                  </template>
+                  <span v-else class="text-gray-500 text-sm">
+                    {{ t('admin.users.form.organization.select') }}
+                  </span>
                 </div>
-
-                <!-- Input inline com as tags -->
-                <input
-                  type="text"
-                  v-model="orgSearchText"
-                  class="flex-1 min-w-[60px] outline-none bg-transparent border-none p-1"
-                  :placeholder="selectedOrganizations.length ? '' : t('admin.users.form.organization.select')"
-                />
+                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
               </div>
 
-              <!-- Dropdown de organizações -->
+              <!-- Dropdown -->
               <div 
-                v-if="showOrgDropdown"
-                class="absolute z-50 w-full mt-1 bg-base-100 shadow-lg rounded-lg border border-base-300"
+                v-if="showOrgDropdown" 
+                class="absolute z-50 mt-1 w-full bg-white shadow-lg rounded-md py-1 max-h-60 overflow-auto"
+                style="min-width: 100%;"
               >
-                <!-- Barra de pesquisa no topo do dropdown -->
-                <div class="p-2 border-b border-base-300">
-                  <div class="relative">
-                    <input
-                      type="text"
-                      v-model="orgSearchText"
-                      class="input input-sm input-bordered w-full pr-8"
-                      :placeholder="t('admin.users.form.organization.search')"
-                      ref="searchInput"
-                    />
-                    <span class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400">
-                      🔍
-                    </span>
-                  </div>
+                <div class="px-3 py-2">
+                  <input
+                    ref="searchInput"
+                    v-model="orgSearchText"
+                    type="text"
+                    class="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-purple-500"
+                    :placeholder="t('common.search')"
+                  />
                 </div>
-
-                <!-- Lista de organizações -->
-                <div class="max-h-60 overflow-auto">
-                  <ul class="menu menu-compact">
-                    <li v-for="org in filteredOrganizations" :key="org.id">
-                      <a 
-                        @click="toggleOrganization(org)"
-                        class="flex items-center justify-between py-2"
-                      >
-                        <span>{{ org.name }}</span>
-                        <input 
-                          type="checkbox"
-                          :checked="isOrganizationSelected(org)"
-                          class="checkbox checkbox-sm"
-                          @click.stop
+                
+                <div class="mt-2">
+                  <div
+                    v-for="org in filteredOrganizations"
+                    :key="org.id"
+                    @click="() => {
+                      editingUser.currentOrgId = org.id;
+                      showOrgDropdown = false;
+                    }"
+                    class="px-3 py-2 hover:bg-purple-50 cursor-pointer"
+                  >
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <UserAvatar 
+                          :name="org.name"
+                          size="sm"
                         />
-                      </a>
-                    </li>
-                    <li v-if="filteredOrganizations.length === 0" class="p-2 text-sm text-gray-500 text-center">
-                      {{ t('admin.users.form.organization.noResults') }}
-                    </li>
-                  </ul>
+                        <div>
+                          <div class="text-sm font-medium text-gray-900">{{ org.name }}</div>
+                          <div class="text-xs text-gray-500">{{ org.slug }}</div>
+                        </div>
+                      </div>
+                      <span 
+                        class="badge badge-sm"
+                        :class="{
+                          'badge-ghost': org.plan === 'FREE',
+                          'badge-primary': org.plan === 'STARTER',
+                          'badge-secondary': org.plan === 'PROFESSIONAL',
+                          'badge-accent': org.plan === 'ENTERPRISE'
+                        }"
+                      >
+                        {{ org.plan }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </form>
       </template>
-
       <template #footer>
-        <button 
-          type="button" 
-          class="btn"
+        <button
+          type="button"
           @click="showEditModal = false"
+          class="mr-3 inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
         >
           {{ t('common.cancel') }}
         </button>
-        <button 
+        <button
           type="submit"
-          form="editUserForm"
-          class="btn btn-primary ml-3"
           :disabled="loading"
+          @click="handleUpdateUser"
+          class="inline-flex justify-center rounded-md border border-transparent bg-purple-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
         >
-          <span v-if="loading" class="loading loading-spinner"></span>
           {{ loading ? t('common.loading') : t('common.save') }}
         </button>
       </template>
@@ -383,12 +377,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, nextTick, watch } from 'vue';
-import { useI18n } from '@/i18n';
-import { gqlRequest } from '../../utils/graphql';
+import { ref, onMounted, computed, nextTick, watch, onUnmounted } from 'vue';
+import { useI18n } from '@/i18n/plugin';
+import { gqlRequest } from '@/utils/graphql';
 import { useAuthStore } from '../../stores/auth.store';
 import { useRouter } from 'vue-router';
 import Modal from '../../components/Modal.vue';
+import UserAvatar from '../../components/chats/UserAvatar.vue';
 
 const { t } = useI18n();
 const authStore = useAuthStore();
@@ -413,6 +408,7 @@ const orgSearchText = ref('')
 const showOrgDropdown = ref(false)
 const selectedOrganizations = ref([])
 const searchInput = ref(null)
+const orgDropdownContainer = ref(null)
 
 // Função para verificar se a role selecionada é agent
 function checkIfAgentRole(roleId) {
@@ -483,14 +479,11 @@ async function fetchData() {
           id
           name
         }
-        me {
-          organizations {
-            organization {
-              id
-              name
-              slug
-            }
-          }
+        organizations {
+          id
+          name
+          slug
+          plan
         }
       }
     `;
@@ -501,11 +494,10 @@ async function fetchData() {
       }
     });
 
-    console.log('Usuários carregados:', response.users);
+    console.log('Dados carregados:', response);
     users.value = response.users;
     roles.value = response.roles;
-    // Extrai as organizações do usuário atual
-    organizations.value = response.me?.organizations?.map(org => org.organization) || [];
+    organizations.value = response.organizations || [];
     await loadPotentialParentUsers();
   } catch (error) {
     console.error('Erro ao carregar dados:', error);
@@ -513,51 +505,10 @@ async function fetchData() {
       authStore.logout();
       router.push('/login');
     }
+    showToast(error.message, 'error');
   } finally {
     loading.value = false;
   }
-}
-
-// Função para mostrar toast
-function showToast(message, type = 'success') {
-  // Remove toasts anteriores
-  const existingToasts = document.querySelectorAll('.toast')
-  existingToasts.forEach(toast => toast.remove())
-
-  // Cria o elemento toast
-  const toast = document.createElement('div')
-  toast.className = `toast toast-top toast-end z-50`
-
-  // Cria o alerta dentro do toast
-  const alert = document.createElement('div')
-  alert.className = `alert ${type === 'success' ? 'alert-success' : 'alert-error'} shadow-lg`
-
-  // Cria o conteúdo do alerta
-  const content = document.createElement('div')
-  content.className = 'flex items-center gap-2'
-
-  // Ícone
-  const icon = document.createElement('span')
-  icon.className = 'text-lg'
-  icon.textContent = type === 'success' ? '✓' : '✕'
-  
-  // Texto
-  const text = document.createElement('span')
-  text.textContent = message
-
-  // Monta a estrutura
-  content.appendChild(icon)
-  content.appendChild(text)
-  alert.appendChild(content)
-  toast.appendChild(alert)
-
-  // Adiciona o toast ao body
-  document.body.appendChild(toast)
-
-  // Remove após 3 segundos
-  setTimeout(() => {
-    toast.remove()
-  }, 3000)
 }
 
 // Modifica a função handleCreateUser para incluir parentUser na resposta
@@ -612,48 +563,42 @@ async function handleCreateUser() {
     await fetchData(); // Recarrega os dados
     showNewUserModal.value = false;
     newUser.value = { name: '', email: '', password: '', roleId: '', parentUserId: '' };
-    
-    // Toast de sucesso
-    showToast(t('admin.users.createSuccess'))
+    showToast(t('admin.users.createSuccess'));
   } catch (error) {
-    console.error('Erro ao criar usuário:', error)
-    // Toast de erro
-    showToast(error.message, 'error')
+    console.error('Erro ao criar usuário:', error);
+    showToast(error.message, 'error');
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 // Exclui usuário
 async function deleteUser(user) {
   if (!confirm(t('admin.users.confirmDelete', { name: user.name }))) {
-    return
+    return;
   }
 
   try {
-    loading.value = true
+    loading.value = true;
     const mutation = `
       mutation DeleteUser($id: ID!) {
         deleteUser(id: $id)
       }
-    `
+    `;
 
     await gqlRequest(mutation, { id: user.id }, {
       headers: {
         'Authorization': `Bearer ${authStore.token}`
       }
-    })
+    });
 
-    await fetchData()
-    
-    // Toast de sucesso
-    showToast(t('admin.users.deleteSuccess'))
+    await fetchData();
+    showToast(t('admin.users.deleteSuccess'));
   } catch (error) {
-    console.error('Erro ao excluir usuário:', error)
-    // Toast de erro
-    showToast(error.message, 'error')
+    console.error('Erro ao excluir usuário:', error);
+    showToast(error.message, 'error');
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
@@ -690,168 +635,57 @@ async function fetchOrganizations() {
 }
 
 // Função para editar usuário
-async function editUser(user) {
-  try {
-    // Busca os dados completos do usuário incluindo organizações
-    const query = `
-      query GetUserDetails {
-        users {
-          id
-          name
-          email
-          active
-          role {
-            id
-            name
-          }
-          parentUser {
-            id
-            name
-          }
-          currentOrgId
-          organizations {
-            organization {
-              id
-              name
-            }
-            isAdmin
-            isOwner
-            status
-          }
-        }
-      }
-    `
-
-    const response = await gqlRequest(query, null, {
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`
-      }
-    })
-
-    console.log('Resposta completa:', response)
-
-    // Encontra o usuário específico no array
-    const userDetails = response.users.find(u => u.id === user.id)
-    console.log('Detalhes do usuário:', userDetails)
-
-    if (!userDetails) {
-      throw new Error(t('admin.users.errors.userNotFound'))
-    }
-
-    // Encontra a organização atual nas organizações do usuário
-    const currentOrg = userDetails.organizations?.find(org => 
-      org.organization.id === userDetails.currentOrgId
-    )?.organization
-    console.log('Organização atual:', currentOrg)
-
-    // Se não tiver organização atual, pega a primeira da lista
-    const defaultOrg = currentOrg || userDetails.organizations?.[0]?.organization
-    console.log('Organização default:', defaultOrg)
-
-    const orgRelation = userDetails.organizations?.find(org => 
-      org.organization.id === defaultOrg?.id
-    )
-    console.log('Relação com a organização:', orgRelation)
-
-    editingUser.value = {
-      id: userDetails.id,
-      name: userDetails.name,
-      email: userDetails.email,
-      active: userDetails.active,
-      role: {
-        id: userDetails.role?.id,
-        name: userDetails.role?.name
-      },
-      parentUser: userDetails.parentUser ? {
-        id: userDetails.parentUser.id,
-        name: userDetails.parentUser.name
-      } : null,
-      organizationId: defaultOrg?.id || '',
-      isAdmin: orgRelation?.isAdmin || false,
-      isOwner: orgRelation?.isOwner || false
-    }
-
-    // Carrega a lista de organizações disponíveis
-    await fetchOrganizations()
-
-    // Inicializa as organizações selecionadas
-    selectedOrganizations.value = userDetails.organizations?.map(org => ({
-      id: org.organization.id,
-      name: org.organization.name,
-      isAdmin: org.isAdmin,
-      isOwner: org.isOwner
-    })) || []
-
-    showEditModal.value = true
-  } catch (error) {
-    console.error('Erro ao carregar detalhes do usuário:', error)
-    alert(error.message)
+function editUser(user) {
+  editingUser.value = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    roleId: user.role?.id,
+    active: user.active,
+    currentOrgId: user.currentOrgId || ''
   }
+  showEditModal.value = true
 }
 
 // Função para atualizar usuário
 async function handleUpdateUser() {
   try {
-    loading.value = true
+    loading.value = true;
     const mutation = `
       mutation UpdateUser($id: ID!, $input: UserInput!) {
         updateUser(id: $id, input: $input) {
           id
           name
           email
-          active
           role {
             id
             name
           }
-          parentUser {
-            id
-            name
-          }
+          active
           currentOrgId
-          organizations {
-            organization {
-              id
-              name
-            }
-          }
         }
       }
-    `
+    `;
 
     await gqlRequest(mutation, {
       id: editingUser.value.id,
       input: {
         name: editingUser.value.name,
         email: editingUser.value.email,
-        roleId: editingUser.value.role?.id,
+        roleId: editingUser.value.roleId,
         active: editingUser.value.active,
-        parentUserId: editingUser.value.parentUser?.id,
-        currentOrgId: editingUser.value.organizationId || null,
-        organizations: selectedOrganizations.value.map(org => ({
-          id: org.id,
-          isAdmin: org.isAdmin,
-          isOwner: org.isOwner
-        }))
+        currentOrgId: editingUser.value.currentOrgId || null
       }
-    }, {
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`
-      }
-    })
-
-    await fetchData() // Recarrega os dados
-    showEditModal.value = false
-    editingUser.value = null
+    });
     
-    // Substitui o alert pelo toast
-    showToast(t('admin.users.updateSuccess'))
+    showEditModal.value = false;
+    await fetchData();
+    showToast(t('admin.users.updateSuccess'));
   } catch (error) {
-    console.error('Erro ao atualizar usuário:', error)
-    // Toast de erro
-    showToast(error.message, 'error')
+    console.error('Erro ao atualizar usuário:', error);
+    showToast(error.message, 'error');
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
@@ -885,10 +719,19 @@ function removeOrganization(org) {
   }
 }
 
-// Fechar dropdown ao clicar fora
+// Atualizar o evento de clique fora
 onMounted(() => {
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('.form-control')) {
+    if (orgDropdownContainer.value && !orgDropdownContainer.value.contains(e.target)) {
+      showOrgDropdown.value = false
+    }
+  })
+})
+
+// Remover o evento ao desmontar o componente
+onUnmounted(() => {
+  document.removeEventListener('click', (e) => {
+    if (orgDropdownContainer.value && !orgDropdownContainer.value.contains(e.target)) {
       showOrgDropdown.value = false
     }
   })
@@ -913,6 +756,83 @@ watch(showOrgDropdown, (newValue) => {
     })
   }
 })
+
+// Função para buscar usuários
+async function fetchUsers() {
+  try {
+    loading.value = true
+    const query = `
+      query GetUsers {
+        users {
+          id
+          name
+          email
+          active
+          role {
+            id
+            name
+          }
+        }
+      }
+    `
+    const response = await gqlRequest(query)
+    users.value = response.users
+  } catch (error) {
+    console.error('Erro ao buscar usuários:', error)
+    showToast(error.message, 'error')
+  } finally {
+    loading.value = false
+  }
+}
+
+// Função para buscar roles
+async function fetchRoles() {
+  try {
+    const query = `
+      query GetRoles {
+        roles {
+          id
+          name
+        }
+      }
+    `
+    const response = await gqlRequest(query)
+    roles.value = response.roles
+  } catch (error) {
+    console.error('Erro ao buscar roles:', error)
+    showToast(error.message, 'error')
+  }
+}
+
+// Carregar dados iniciais
+onMounted(async () => {
+  await Promise.all([fetchUsers(), fetchRoles()])
+})
+
+// Adicionar fun��ão showToast
+function showToast(message, type = 'success') {
+  // Cria o elemento toast
+  const toast = document.createElement('div');
+  toast.className = 'toast toast-top toast-end z-50';
+
+  // Cria o alerta
+  const alert = document.createElement('div');
+  alert.className = `alert ${type === 'success' ? 'alert-success' : 'alert-error'}`;
+
+  // Cria o conteúdo
+  const content = document.createElement('span');
+  content.textContent = message;
+
+  // Monta a estrutura
+  alert.appendChild(content);
+  toast.appendChild(alert);
+  document.body.appendChild(toast);
+
+  // Remove após 3 segundos
+  setTimeout(() => {
+    toast.remove();
+  }, 3000);
+}
 </script> 
 
 <style scoped>

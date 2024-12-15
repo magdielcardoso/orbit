@@ -128,7 +128,7 @@ export default {
       notifications: {
         title: 'Notificações',
         preferences: {
-          title: 'Preferências de Notificação',
+          title: 'Preferências de Notificações',
           description: 'Configure como você recebe notificações'
         }
       },
@@ -242,31 +242,24 @@ export default {
           toggleActive: 'Clique para ativar/desativar o usuário'
         },
         organization: {
-          title: 'Organizações',
-          select: 'Selecione as organizações',
-          search: 'Buscar organizações...',
-          noResults: 'Nenhuma organização encontrada',
-          selected: 'organizações selecionadas'
-        },
-        organization: 'Organização',
-        selectOrganization: 'Selecione uma organização',
-        isAdmin: 'Administrador da organização',
-        isOwner: 'Proprietário da organização'
+          title: 'Organização',
+          select: 'Selecione uma organização',
+          permissions: 'Permissões da organização',
+          isAdmin: 'Administrador da organização',
+          isOwner: 'Proprietário da organização',
+          noOrganization: 'Sem organização'
+        }
       },
       noUsers: 'Nenhum usuário encontrado',
       noRole: 'Sem função atribuída',
       loading: 'Carregando usuários...',
-      agentOf: 'Agente de',
       editUser: 'Editar Usuário',
       updateSuccess: 'Usuário atualizado com sucesso!',
       errors: {
         userNotFound: 'Usuário não encontrado',
         organizationRequired: 'Selecione uma organização',
         loadingFailed: 'Erro ao carregar usuário',
-        updateFailed: 'Erro ao atualizar usuário',
-        createError: 'Erro ao criar usuário',
-        updateError: 'Erro ao atualizar usuário',
-        deleteError: 'Erro ao excluir usuário'
+        updateFailed: 'Erro ao atualizar usuário'
       },
       createSuccess: 'Usuário criado com sucesso!',
       deleteSuccess: 'Usuário excluído com sucesso!'

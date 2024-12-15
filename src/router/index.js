@@ -15,6 +15,7 @@ import { checkSystemStatus } from '@/utils/system'
 import { formatAccountUrl } from '../utils/string'
 import UserSettings from '@/views/user/UserSettings.vue'
 import InboxSettings from '@/views/user/InboxSettings.vue'
+import InboxSetup from '@/views/user/InboxSetup.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -126,6 +127,23 @@ const router = createRouter({
               }
             },
           ]
+        }
+      ]
+    },
+    {
+      path: '/settings',
+      component: DefaultLayout,
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: 'inbox',
+          component: InboxSettings,
+          name: 'inbox-settings'
+        },
+        {
+          path: 'inbox/new',
+          component: InboxSetup,
+          name: 'inbox-setup'
         }
       ]
     }

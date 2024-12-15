@@ -36,6 +36,7 @@
   },
   "devDependencies": {
     "@fastify/type-provider-json-schema-to-ts": "^4.0.1",
+    "@modyfi/vite-plugin-yaml": "^1.1.0",
     "@pinia/testing": "^0.1.7",
     "@prisma/client": "^6.0.1",
     "@rushstack/eslint-patch": "^1.10.4",

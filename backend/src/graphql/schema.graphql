@@ -98,11 +98,16 @@ export const typeDefs = `#graphql
   }
 
   enum ChannelSource {
-    WEBCHAT
     WHATSAPP
+    INSTAGRAM
+    MESSENGER
+    TWITTER
+    MERCADOLIVRE
+    SHOPEE
     TELEGRAM
     EMAIL
     API
+    IFOOD
   }
 
   input ContactInput {

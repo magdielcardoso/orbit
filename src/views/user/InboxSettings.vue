@@ -12,7 +12,7 @@
                 Um canal é o modo de comunicação que seu cliente escolhe para interagir com você.
               </p>
             </div>
-            <button class="btn btn-primary" @click="showInboxModal = true">
+            <button class="btn btn-primary" @click="router.push('/settings/inbox/new')">
               <span class="i-lucide-plus mr-2" />
               {{ t('settings.sections.inbox.addInbox') }}
             </button>

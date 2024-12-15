@@ -1,0 +1,61 @@
+# Configuração dos canais disponíveis para caixas de entrada
+channels:
+  WHATSAPP:
+    title: "WhatsApp"
+    description: "Conecte-se com seus clientes via WhatsApp"
+    icon: "/assets/channels/whatsapp.png"
+    enabled: true
+
+  INSTAGRAM:
+    title: "Instagram"
+    description: "Gerencie mensagens diretas do Instagram"
+    icon: "/assets/channels/instagram.png"
+    enabled: true
+
+  MESSENGER:
+    title: "Facebook Messenger" 
+    description: "Atenda clientes pelo chat do Facebook"
+    icon: "/assets/channels/messenger.png"
+    enabled: true
+
+  TWITTER:
+    title: "X (Twitter)"
+    description: "Monitore e responda menções no X"
+    icon: "/assets/channels/x.webp"
+    enabled: true
+
+  MERCADOLIVRE:
+    title: "Mercado Livre"
+    description: "Gerencie perguntas e mensagens do Mercado Livre"
+    icon: "/assets/channels/mercado-livre.webp"
+    enabled: true
+
+  SHOPEE:
+    title: "Shopee"
+    description: "Atenda compradores da sua loja Shopee"
+    icon: "/assets/channels/shopee.png"
+    enabled: true
+
+  TELEGRAM:
+    title: "Telegram"
+    description: "Conecte-se com clientes via Telegram"
+    icon: "/assets/channels/telegram.png"
+    enabled: true
+
+  EMAIL:
+    title: "E-mail"
+    description: "Gerencie comunicações por e-mail"
+    icon: "/assets/channels/email.png"
+    enabled: true
+
+  API:
+    title: "API"
+    description: "Integre canais personalizados via API"
+    icon: "/assets/channels/api.png"
+    enabled: true
+
+  IFOOD:
+    title: "iFood"
+    description: "Gerencie pedidos e mensagens do iFood"
+    icon: "/assets/channels/ifood.png"
+    enabled: true

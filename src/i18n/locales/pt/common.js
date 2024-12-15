@@ -118,6 +118,7 @@ export default {
     close: 'Fechar',
     loading: 'Carregando...',
     actions: 'Ações',
+    search: 'Pesquisar',
     parentUser: 'Usuário Responsável',
     selectParentUser: 'Selecione o usuário responsável',
     agentInfo: 'Um agente é um usuário que atua em nome de um usuário normal. Agentes podem atender chats e interagir com clientes em nome do usuário responsável. Cada agente deve estar vinculado a um usuário normal.',
