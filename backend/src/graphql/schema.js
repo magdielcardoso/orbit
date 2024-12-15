@@ -132,7 +132,7 @@ export const typeDefs = `#graphql
 
   type Mutation {
     # Auth
-    register(email: String!, password: String!, name: String!): AuthPayload!
+    register(email: String!, password: String!, name: String!, organizationHashId: String): AuthPayload!
     login(email: String!, password: String!): AuthPayload!
     registerSuperAdmin(
       name: String!
@@ -564,5 +564,6 @@ export const typeDefs = `#graphql
     name: String!
     slug: String!
     domain: String
+    hash_id: String
   }
 ` 

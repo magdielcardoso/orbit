@@ -361,6 +361,8 @@
             :loop="true"
             :autoplay="true"
             :speed="0.5"
+            direction="normal"
+            mode="bounce"
           />
         </div>
 
@@ -488,6 +490,7 @@ async function validateSlug() {
         validateOrganizationSlug(slug: $slug) {
           available
           organization {
+            hash_id
             name
             slug
             domain
@@ -505,6 +508,8 @@ async function validateSlug() {
     if (!validation.available) {
       // Apenas mostra o preview da organização existente
       organizationPreview.value = validation.organization;
+      // Salva o hash_id para usar no registro
+      form.value.organization.hash_id = validation.organization.hash_id;
     } else {
       // Mostra o preview com os dados do formulário
       organizationPreview.value = {
@@ -512,6 +517,7 @@ async function validateSlug() {
         slug: form.value.organization.slug,
         domain: form.value.organization.domain
       };
+      form.value.organization.hash_id = null;
     }
 
     // Sempre permite prosseguir se tiver um slug válido
@@ -535,9 +541,10 @@ async function handleRegister() {
     loading.value = true;
     error.value = null;
 
+    // Primeiro registra o usuário com o hash_id da organização
     const registerMutation = `
-      mutation Register($input: RegisterInput!) {
-        register(input: $input) {
+      mutation Register($email: String!, $password: String!, $name: String!, $organizationHashId: String) {
+        register(email: $email, password: $password, name: $name, organizationHashId: $organizationHashId) {
           token
           user {
             id
@@ -550,37 +557,25 @@ async function handleRegister() {
                 name
               }
             }
-            currentOrg {
-              id
-              name
-              slug
-            }
+            currentOrgId
           }
         }
       }
     `;
 
-    const response = await gqlRequest(registerMutation, {
-      input: {
-        name: form.value.name,
-        email: form.value.email,
-        password: form.value.password,
-        organization: {
-          name: form.value.organization.name,
-          slug: form.value.organization.slug,
-          domain: form.value.organization.domain || null,
-          timezone: form.value.preferences.timezone,
-          locale: form.value.preferences.locale
-        }
-      }
+    const registerResponse = await gqlRequest(registerMutation, {
+      email: form.value.email,
+      password: form.value.password,
+      name: form.value.name,
+      organizationHashId: form.value.organization.hash_id
     });
 
     authStore.setAuth({
-      token: response.register.token,
-      user: response.register.user
+      token: registerResponse.register.token,
+      user: registerResponse.register.user
     });
 
-    const accountUrl = formatAccountUrl(response.register.user.currentOrg.slug);
+    const accountUrl = formatAccountUrl(form.value.organization.slug);
     router.push(`/dashboard/${accountUrl}`);
   } catch (err) {
     console.error('Erro no registro:', err);

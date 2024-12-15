@@ -186,6 +186,11 @@ export default {
     register: {
       title: 'Criar sua conta',
       subtitle: 'Comece sua jornada conosco',
+      steps: {
+        account: 'Conta',
+        organization: 'Organização',
+        confirmation: 'Confirmação'
+      },
       name: 'Nome',
       namePlaceholder: 'Digite seu nome completo',
       email: 'E-mail',
@@ -196,6 +201,23 @@ export default {
       loading: 'Criando...',
       error: 'Erro ao criar conta. Tente novamente.',
       hasAccount: 'Já tem uma conta? Faça login',
+      confirmation: {
+        userData: 'Dados do Usuário',
+        organizationData: 'Dados da Organização',
+        preferences: 'Preferências'
+      },
+      organization: {
+        name: 'Nome da Organização',
+        namePlaceholder: 'Digite o nome da sua organização',
+        slug: 'Identificador único',
+        slugPlaceholder: 'identificador-unico',
+        domain: 'Domínio',
+        domainPlaceholder: 'exemplo.com.br'
+      },
+      preferences: {
+        timezone: 'Fuso horário',
+        language: 'Idioma'
+      },
       hero: {
         title: 'Bem-vindo ao OrbitChat',
         feature1: {

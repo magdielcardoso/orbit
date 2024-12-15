@@ -143,21 +143,37 @@
     <!-- Hero Section -->
     <div class="w-1/2 p-12 relative overflow-hidden flex flex-col bg-purple-900">
       <!-- Gradientes animados -->
-      <div class="absolute inset-0 liquid-gradient"></div>
+      <div class="absolute inset-0 liquid-gradient z-0"></div>
+
+      <!-- Logo de fundo -->
+      <div class="absolute inset-0 flex items-center justify-center z-10 -translate-y-32">
+        <img 
+          src="/orbit.svg" 
+          alt="" 
+          class="w-[550px] h-[550px] opacity-50 blur-sm floating-logo"
+          aria-hidden="true"
+        />
+      </div>
 
       <!-- Resto do conteúdo -->
-      <div class="relative z-10 h-full flex flex-col">
-        <!-- Imagem de fundo -->
-        <div class="flex-1 relative">
-          <img 
-            src="/assets/ui/omnichannel.png" 
-            alt="Omnichannel" 
-            class="absolute inset-0 w-full h-full object-contain scale-125"
+      <div class="relative z-20 h-full flex flex-col">
+        <!-- Lottie Animation -->
+        <div class="flex-1 relative flex items-center justify-center scale-150 transform -mb-64">
+          <Vue3Lottie
+            v-if="astronotAnimation"
+            :animation-data="astronotAnimation"
+            :height="800"
+            :width="800"
+            :loop="true"
+            :autoplay="true"
+            :speed="0.5"
+            direction="normal"
+            mode="bounce"
           />
         </div>
 
         <!-- Cards de Features -->
-        <div class="grid grid-cols-3 gap-8 -mt-32 px-8 mb-8 relative z-20">
+        <div class="grid grid-cols-3 gap-8 px-8 mb-8 relative z-30">
           <!-- Feature 1 -->
           <div 
             class="bg-white/10 backdrop-blur-sm rounded-xl shadow-[0_0_15px_rgba(168,85,247,0.15)] w-full transform hover:scale-105 transition-all duration-300 border border-purple-500/20 hover:shadow-[0_0_30px_rgba(168,85,247,0.3)] hover:border-purple-500/40"
@@ -209,14 +225,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth.store';
 import { useI18n } from '@/i18n/plugin';
 import LanguageSelector from '../components/LanguageSelector.vue';
 import { Eye, EyeOff } from 'lucide-vue-next';
 import { gqlRequest } from '../utils/graphql';
-import { formatAccountUrl } from '../utils/string';
+import { Vue3Lottie } from 'vue3-lottie';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -231,6 +247,19 @@ const form = ref({
 const loading = ref(false);
 const error = ref(null);
 const showPassword = ref(false);
+
+// Carregando o arquivo Lottie
+const astronotAnimation = ref(null);
+
+onMounted(async () => {
+  try {
+    const response = await fetch('/assets/ui/lotties/astronot.json');
+    if (!response.ok) throw new Error('Erro ao carregar animação');
+    astronotAnimation.value = await response.json();
+  } catch (err) {
+    console.error('Erro ao carregar animação:', err);
+  }
+});
 
 async function handleLogin() {
   try {
@@ -293,21 +322,44 @@ async function handleLogin() {
   opacity: 0.7;
 }
 
-@keyframes liquid {
+.floating-logo {
+  animation: float-space 20s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes float-space {
   0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  20% {
+    transform: translate(20px, -20px) rotate(3deg) scale(1.02);
+  }
+  40% {
+    transform: translate(-15px, -25px) rotate(-2deg) scale(0.98);
+  }
+  60% {
+    transform: translate(-20px, 15px) rotate(-4deg) scale(1.01);
+  }
+  80% {
+    transform: translate(15px, 20px) rotate(2deg) scale(0.99);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+}
+
+@keyframes liquid {
+  0%, 100% {
     background-position: 0% 0%;
   }
   25% {
-    background-position: 100% 25%;
+    transform: translate(15px, -15px);
   }
   50% {
-    background-position: 80% 100%;
+    transform: translate(0, 0);
   }
   75% {
-    background-position: 20% 75%;
-  }
-  100% {
-    background-position: 0% 0%;
+    transform: translate(-15px, 15px);
   }
 }
 </style> 

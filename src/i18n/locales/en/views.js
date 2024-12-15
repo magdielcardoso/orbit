@@ -185,6 +185,11 @@ export default {
     register: {
       title: 'Create your account',
       subtitle: 'Start your journey with us',
+      steps: {
+        account: 'Account',
+        organization: 'Organization',
+        confirmation: 'Confirmation'
+      },
       name: 'Name',
       namePlaceholder: 'Enter your full name',
       email: 'Email',
@@ -195,11 +200,6 @@ export default {
       loading: 'Creating...',
       error: 'Error creating account. Please try again.',
       hasAccount: 'Already have an account? Sign in',
-      steps: {
-        account: 'Account',
-        organization: 'Organization',
-        confirmation: 'Confirmation'
-      },
       confirmation: {
         userData: 'User Data',
         organizationData: 'Organization Data',

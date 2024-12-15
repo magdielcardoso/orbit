@@ -440,19 +440,40 @@ export const resolvers = {
       }
     },
     validateOrganizationSlug: async (_, { slug }, { prisma }) => {
-      const organization = await prisma.organization.findUnique({
-        where: { slug },
-        select: {
-          name: true,
-          slug: true,
-          domain: true
-        }
-      });
+      try {
+        const organization = await prisma.organization.findUnique({
+          where: { slug },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            domain: true
+          }
+        });
 
-      return {
-        available: !organization,
-        organization: organization || null
-      };
+        if (organization) {
+          // Criptografa o ID da organização
+          const hash_id = await bcrypt.hash(organization.id, 10);
+          console.log('Organization found:', { ...organization, hash_id }); // Debug log
+          return {
+            available: false,
+            organization: {
+              hash_id,
+              name: organization.name,
+              slug: organization.slug,
+              domain: organization.domain
+            }
+          };
+        }
+
+        return {
+          available: true,
+          organization: null
+        };
+      } catch (error) {
+        console.error('Erro ao validar slug:', error);
+        throw error;
+      }
     }
   },
 
@@ -463,6 +484,61 @@ export const resolvers = {
         
         // Executa o registro
         const result = await authService.register(args);
+
+        // Se tiver um organizationHashId, tenta encontrar a organização
+        if (args.organizationHashId) {
+          // Busca todas as organizações
+          const organizations = await prisma.organization.findMany({
+            select: {
+              id: true
+            }
+          });
+
+          // Procura a organização cujo ID corresponde ao hash
+          for (const org of organizations) {
+            if (await bcrypt.compare(org.id, args.organizationHashId)) {
+              // Atualiza o usuário com o currentOrgId e cria a relação OrganizationUser
+              const updatedUser = await prisma.user.update({
+                where: { id: result.user.id },
+                data: {
+                  currentOrgId: org.id,
+                  organizations: {
+                    create: {
+                      organizationId: org.id,
+                      isAdmin: false,
+                      isOwner: false,
+                      status: 'active'
+                    }
+                  }
+                },
+                include: {
+                  role: {
+                    include: {
+                      permissions: {
+                        include: { permission: true }
+                      }
+                    }
+                  },
+                  organizations: {
+                    include: {
+                      organization: true
+                    }
+                  }
+                }
+              });
+
+              // Atualiza o resultado com o usuário atualizado
+              result.user = {
+                ...updatedUser,
+                role: updatedUser.role ? {
+                  ...updatedUser.role,
+                  permissions: updatedUser.role.permissions.map(p => p.permission)
+                } : null
+              };
+              break;
+            }
+          }
+        }
 
         // Registra a atividade
         await logActivity({
@@ -475,7 +551,8 @@ export const resolvers = {
           metadata: {
             newUserId: result.user.id,
             email: result.user.email,
-            roleId: result.user.roleId
+            roleId: result.user.roleId,
+            currentOrgId: result.user.currentOrgId
           }
         });
 
