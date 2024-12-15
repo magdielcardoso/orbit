@@ -13,6 +13,8 @@ import SystemSettings from '../views/admin/SystemSettings.vue'
 import BrandingSettings from '../views/admin/settings/BrandingSettings.vue'
 import { checkSystemStatus } from '@/utils/system'
 import { formatAccountUrl } from '../utils/string'
+import UserSettings from '@/views/user/UserSettings.vue'
+import InboxSettings from '@/views/user/InboxSettings.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -54,6 +56,14 @@ const router = createRouter({
           path: 'settings',
           name: 'user-settings',
           component: () => import('../views/user/UserSettings.vue')
+        },
+        {
+          path: 'settings/inbox',
+          name: 'inbox-settings',
+          component: InboxSettings,
+          meta: {
+            requiresAuth: true
+          }
         }
       ]
     },

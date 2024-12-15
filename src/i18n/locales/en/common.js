@@ -19,7 +19,12 @@ export default {
     accountSettings: 'Account Settings',
     agents: 'Agents',
     teams: 'Teams',
-    inbox: 'Inbox',
+    inbox: {
+      title: 'Inbox',
+      channels: 'Channels',
+      settings: 'Inbox Settings',
+      manage: 'Manage Inboxes'
+    },
     tags: 'Tags',
     customFields: 'Custom Fields',
     macros: 'Macros',

@@ -141,6 +141,13 @@ export default {
           title: 'API Tokens',
           description: 'Manage your API access tokens'
         }
+      },
+      inbox: {
+        title: 'Inbox',
+        inboxes: 'Inboxes',
+        addInbox: 'Add Inbox',
+        noInboxes: 'No inboxes found',
+        addInboxHelp: 'Add your first inbox to start managing your communications'
       }
     }
   },

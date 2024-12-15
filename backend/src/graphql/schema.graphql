@@ -1,4 +1,6 @@
 export const typeDefs = `#graphql
+  scalar DateTime
+
   type User {
     id: ID!
     email: String!
@@ -42,49 +44,11 @@ export const typeDefs = `#graphql
     status: String!
   }
 
-  type Query {
-    me: User
-    users: [User!]!
-    roles: [Role!]!
-    permissions: [Permission!]!
-    systemStatus: SystemStatus!
-    contacts(organizationId: ID!): [Contact!]!
-  }
-
-  type Mutation {
-    # Auth
-    register(email: String!, password: String!, name: String!): AuthPayload!
-    login(email: String!, password: String!): AuthPayload!
-    
-    # Users
-    createUser(
-      email: String!, 
-      password: String!, 
-      name: String!, 
-      roleId: String!, 
-      parentUserId: String
-    ): User!
-    updateUser(id: ID!, email: String, name: String, roleId: String, active: Boolean): User!
-    deleteUser(id: ID!): Boolean!
-    
-    # Roles
-    createRole(name: String!, description: String): Role!
-    updateRole(id: ID!, name: String, description: String): Role!
-    deleteRole(id: ID!): Boolean!
-    
-    # Role Permissions
-    addPermissionToRole(roleId: ID!, permissionId: ID!): Role!
-    removePermissionFromRole(roleId: ID!, permissionId: ID!): Role!
-    
-    createContact(input: ContactInput!): Contact!
-    updateContact(id: ID!, input: ContactInput!): Contact!
-    deleteContact(id: ID!): Boolean!
-  }
-
   type Organization {
     id: ID!
     name: String!
     slug: String!
+    inboxes: [Inbox!]!
   }
 
   type OrganizationUser {
@@ -108,6 +72,39 @@ export const typeDefs = `#graphql
     organization: Organization!
   }
 
+  type Team {
+    id: ID!
+    name: String!
+  }
+
+  type Inbox {
+    id: ID!
+    name: String!
+    description: String
+    channelType: ChannelSource!
+    isEnabled: Boolean!
+    organization: Organization!
+    teams: [InboxTeam!]!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+  }
+
+  type InboxTeam {
+    id: ID!
+    inbox: Inbox!
+    team: Team!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+  }
+
+  enum ChannelSource {
+    WEBCHAT
+    WHATSAPP
+    TELEGRAM
+    EMAIL
+    API
+  }
+
   input ContactInput {
     organizationId: ID!
     name: String!
@@ -115,6 +112,54 @@ export const typeDefs = `#graphql
     phone: String
     tags: [String!]
     notes: String
+  }
+
+  input InboxInput {
+    name: String!
+    description: String
+    channelType: ChannelSource!
+    organizationId: ID!
+  }
+
+  type Query {
+    me: User
+    users: [User!]!
+    roles: [Role!]!
+    permissions: [Permission!]!
+    systemStatus: SystemStatus!
+    contacts(organizationId: ID!): [Contact!]!
+    inbox(id: ID!): Inbox
+    organization(id: ID!): Organization
+  }
+
+  type Mutation {
+    # Auth
+    register(email: String!, password: String!, name: String!): AuthPayload!
+    login(email: String!, password: String!): AuthPayload!
+    
+    # Users
+    createUser(email: String!, password: String!, name: String!, roleId: String!, parentUserId: String): User!
+    updateUser(id: ID!, email: String, name: String, roleId: String, active: Boolean): User!
+    deleteUser(id: ID!): Boolean!
+    
+    # Roles
+    createRole(name: String!, description: String): Role!
+    updateRole(id: ID!, name: String, description: String): Role!
+    deleteRole(id: ID!): Boolean!
+    
+    # Role Permissions
+    addPermissionToRole(roleId: ID!, permissionId: ID!): Role!
+    removePermissionFromRole(roleId: ID!, permissionId: ID!): Role!
+    
+    # Contacts
+    createContact(input: ContactInput!): Contact!
+    updateContact(id: ID!, input: ContactInput!): Contact!
+    deleteContact(id: ID!): Boolean!
+    
+    # Inboxes
+    createInbox(input: InboxInput!): Inbox!
+    updateInbox(id: ID!, input: InboxInput!): Inbox!
+    deleteInbox(id: ID!): ID!
   }
 ` 
 

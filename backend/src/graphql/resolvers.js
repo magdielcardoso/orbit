@@ -404,6 +404,40 @@ export const resolvers = {
         console.error('Erro ao buscar contatos:', error)
         throw error
       }
+    },
+    organization: async (_, { id }, { prisma, user }) => {
+      try {
+        // Verifica se o usuário tem acesso à organização
+        const orgUser = await prisma.organizationUser.findFirst({
+          where: {
+            userId: user.id,
+            organizationId: id
+          }
+        })
+
+        if (!orgUser) {
+          throw new Error('Não autorizado: usuário não pertence a esta organização')
+        }
+
+        // Busca a organização com suas caixas de entrada
+        return prisma.organization.findUnique({
+          where: { id },
+          include: {
+            inboxes: {
+              include: {
+                teams: {
+                  include: {
+                    team: true
+                  }
+                }
+              }
+            }
+          }
+        })
+      } catch (error) {
+        console.error('Erro ao buscar organização:', error)
+        throw error
+      }
     }
   },
 
@@ -461,7 +495,7 @@ export const resolvers = {
           throw new Error('Role de superadmin não encontrada');
         }
 
-        // Cria o usuário superadmin
+        // Cria o usu��rio superadmin
         const hashedPassword = await bcrypt.hash(args.password, 10);
         const user = await prisma.user.create({
           data: {
@@ -946,6 +980,136 @@ export const resolvers = {
         return true
       } catch (error) {
         console.error('Erro ao deletar contato:', error)
+        throw error
+      }
+    },
+
+    createInbox: async (_, { input }, { prisma, user }) => {
+      try {
+        // Verifica se o usuário tem acesso à organização
+        const orgUser = await prisma.organizationUser.findFirst({
+          where: {
+            userId: user.id,
+            organizationId: input.organizationId
+          }
+        })
+
+        if (!orgUser) {
+          throw new Error('Não autorizado: usuário não pertence a esta organização')
+        }
+
+        // Cria a caixa de entrada
+        const inbox = await prisma.inbox.create({
+          data: {
+            name: input.name,
+            description: input.description,
+            channelType: input.channelType,
+            isEnabled: input.isEnabled,
+            organization: {
+              connect: { id: input.organizationId }
+            }
+          },
+          include: {
+            teams: {
+              include: {
+                team: true
+              }
+            }
+          }
+        })
+
+        return inbox
+      } catch (error) {
+        console.error('Erro ao criar caixa de entrada:', error)
+        throw error
+      }
+    },
+
+    updateInbox: async (_, { id, input }, { prisma, user }) => {
+      try {
+        // Busca a caixa de entrada para verificar permissões
+        const inbox = await prisma.inbox.findUnique({
+          where: { id },
+          include: {
+            organization: true
+          }
+        })
+
+        if (!inbox) {
+          throw new Error('Caixa de entrada não encontrada')
+        }
+
+        // Verifica se o usuário tem acesso à organização
+        const orgUser = await prisma.organizationUser.findFirst({
+          where: {
+            userId: user.id,
+            organizationId: inbox.organization.id
+          }
+        })
+
+        if (!orgUser) {
+          throw new Error('Não autorizado: usuário não pertence a esta organização')
+        }
+
+        // Atualiza a caixa de entrada
+        const updatedInbox = await prisma.inbox.update({
+          where: { id },
+          data: {
+            name: input.name,
+            description: input.description,
+            channelType: input.channelType,
+            isEnabled: input.isEnabled
+          },
+          include: {
+            teams: {
+              include: {
+                team: true
+              }
+            }
+          }
+        })
+
+        return updatedInbox
+      } catch (error) {
+        console.error('Erro ao atualizar caixa de entrada:', error)
+        throw error
+      }
+    },
+
+    deleteInbox: async (_, { id }, { prisma, user }) => {
+      try {
+        // Busca a caixa de entrada para verificar permissões
+        const inbox = await prisma.inbox.findUnique({
+          where: { id },
+          include: {
+            organization: true
+          }
+        })
+
+        if (!inbox) {
+          throw new Error('Caixa de entrada não encontrada')
+        }
+
+        // Verifica se o usuário tem acesso à organização
+        const orgUser = await prisma.organizationUser.findFirst({
+          where: {
+            userId: user.id,
+            organizationId: inbox.organization.id
+          }
+        })
+
+        if (!orgUser) {
+          throw new Error('Não autorizado: usuário não pertence a esta organização')
+        }
+
+        // Exclui a caixa de entrada
+        await prisma.inbox.delete({
+          where: { id }
+        })
+
+        return id
+      } catch (error) {
+        console.error('Erro ao excluir caixa de entrada:', error)
         throw error
       }
     }

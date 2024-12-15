@@ -142,6 +142,13 @@ export default {
           title: 'Tokens de API',
           description: 'Gerencie seus tokens de acesso à API'
         }
+      },
+      inbox: {
+        title: 'Caixas de Entrada',
+        inboxes: 'Caixas de Entrada',
+        addInbox: 'Adicionar Caixa de Entrada',
+        noInboxes: 'Nenhuma caixa de entrada encontrada',
+        addInboxHelp: 'Adicione sua primeira caixa de entrada para começar a gerenciar suas comunicações'
       }
     }
   },

@@ -283,29 +283,18 @@ enum ChannelSource {
 
 // Nova model para Inbox (caixas de entrada)
 model Inbox {
-  id          String        @id @default(uuid())
-  name        String
-  description String?
-  isEnabled   Boolean       @default(true)
-  channelType ChannelSource
-  
-  // Configurações específicas do canal
-  channelConfig Json?       // Configurações específicas de cada canal
-  
-  // Relações
-  conversations Conversation[]
-  teams        InboxTeam[]
-  
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  
-  organizationId   String
-  organization     Organization      @relation(fields: [organizationId], references: [id])
-  workingHours     Json?            // Horário de funcionamento específico
-  autoAssignment   Boolean          @default(true)
-  assignmentRules  Json?            // Regras de distribuição de conversas
-  welcomeMessage   String?          // Mensagem de boas-vindas específica
-  awayMessage      String?          // Mensagem de ausência
+  id            String      @id @default(cuid())
+  name          String
+  description   String?
+  channelType   String      @map("channel_type")
+  isEnabled     Boolean     @default(true) @map("is_enabled")
+  organization  Organization @relation(fields: [organizationId], references: [id])
+  organizationId String      @map("organization_id")
+  teams         InboxTeam[]
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  @@map("inboxes")
 }
 
 // Nova model para Times
@@ -347,17 +336,15 @@ model TeamMember {
 
 // Relação entre Time e Inbox
 model InboxTeam {
-  id        String   @id @default(uuid())
-  inboxId   String
-  teamId    String
-  
+  id        String   @id @default(cuid())
   inbox     Inbox    @relation(fields: [inboxId], references: [id])
+  inboxId   String   @map("inbox_id")
   team      Team     @relation(fields: [teamId], references: [id])
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  teamId    String   @map("team_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@unique([inboxId, teamId])
+  @@map("inbox_teams")
 }
 
 // Nova model para Conversas

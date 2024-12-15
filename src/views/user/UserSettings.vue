@@ -32,6 +32,18 @@ const sidebarSections = computed(() => [
     ]
   },
   {
+    id: 'inbox',
+    label: t('settings.sections.inbox.title'),
+    items: [
+      {
+        id: 'inbox-settings',
+        label: t('settings.sections.inbox.inboxes'),
+        icon: 'Inbox',
+        to: '/settings/inbox'
+      }
+    ]
+  },
+  {
     id: 'notifications',
     label: t('settings.sections.notifications.title'),
     items: [

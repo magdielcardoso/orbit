@@ -19,7 +19,12 @@ export default {
     accountSettings: 'Configurações da Conta',
     agents: 'Agentes',
     teams: 'Equipes',
-    inbox: 'Caixas de Entrada',
+    inbox: {
+      title: 'Caixas de Entrada',
+      channels: 'Canais',
+      settings: 'Configurações da Caixa',
+      manage: 'Gerenciar Caixas'
+    },
     tags: 'Rótulos',
     customFields: 'Atributos Personalizados',
     macros: 'Macros',
