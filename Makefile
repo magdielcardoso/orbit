@@ -1,6 +1,6 @@
 # Variáveis
 NODE = node
-NPM = npm
+NPM = pnpm
 PRISMA = npx prisma
 
 # Comandos principais
