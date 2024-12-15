@@ -23,8 +23,12 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
+      meta: { requiresAuth: true },
       redirect: to => {
         const authStore = useAuthStore();
+        if (!authStore.isAuthenticated) {
+          return '/login';
+        }
         return `/dashboard/${formatAccountUrl(authStore.user?.name)}`;
       }
     },
@@ -155,8 +159,15 @@ router.beforeEach(async (to, from, next) => {
   const isAuthenticated = authStore.isAuthenticated
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
+  const publicRoutes = ['/login', '/register', '/setup']
 
   try {
+    // Se não estiver autenticado e não for uma rota pública, redireciona para login
+    if (!isAuthenticated && !publicRoutes.includes(to.path)) {
+      console.log('Usuário não autenticado, redirecionando para login')
+      return next('/login')
+    }
+
     // Verifica o status do sistema usando GraphQL
     const systemStatus = await checkSystemStatus()
     console.log('System status:', systemStatus) // Debug
@@ -179,9 +190,10 @@ router.beforeEach(async (to, from, next) => {
       localStorage.setItem('systemConfigured', 'true')
     }
 
-    // Remove o redirecionamento automático de admin para /admin
+    // Se já estiver autenticado, não permite acessar login/register
     if ((to.path === '/login' || to.path === '/register') && isAuthenticated) {
-      return next('/')
+      const userName = formatAccountUrl(authStore.user?.name)
+      return next(`/dashboard/${userName}`)
     }
 
     // Verifica acesso à conta
@@ -204,7 +216,7 @@ router.beforeEach(async (to, from, next) => {
     next()
   } catch (error) {
     console.error('Erro ao verificar status do sistema:', error)
-    next()
+    next('/login')
   }
 })
 
