@@ -195,6 +195,28 @@ export default {
       loading: 'Creating...',
       error: 'Error creating account. Please try again.',
       hasAccount: 'Already have an account? Sign in',
+      steps: {
+        account: 'Account',
+        organization: 'Organization',
+        confirmation: 'Confirmation'
+      },
+      confirmation: {
+        userData: 'User Data',
+        organizationData: 'Organization Data',
+        preferences: 'Preferences'
+      },
+      organization: {
+        name: 'Organization Name',
+        namePlaceholder: 'Enter your organization name',
+        slug: 'Unique identifier',
+        slugPlaceholder: 'unique-identifier',
+        domain: 'Domain',
+        domainPlaceholder: 'example.com'
+      },
+      preferences: {
+        timezone: 'Timezone',
+        language: 'Language'
+      },
       hero: {
         title: 'Welcome to OrbitChat',
         feature1: {

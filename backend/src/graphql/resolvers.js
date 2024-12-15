@@ -438,6 +438,21 @@ export const resolvers = {
         console.error('Erro ao buscar organização:', error)
         throw error
       }
+    },
+    validateOrganizationSlug: async (_, { slug }, { prisma }) => {
+      const organization = await prisma.organization.findUnique({
+        where: { slug },
+        select: {
+          name: true,
+          slug: true,
+          domain: true
+        }
+      });
+
+      return {
+        available: !organization,
+        organization: organization || null
+      };
     }
   },
 
@@ -495,7 +510,7 @@ export const resolvers = {
           throw new Error('Role de superadmin não encontrada');
         }
 
-        // Cria o usu��rio superadmin
+        // Cria o usuário superadmin
         const hashedPassword = await bcrypt.hash(args.password, 10);
         const user = await prisma.user.create({
           data: {

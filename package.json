@@ -32,6 +32,7 @@
     "socket.io-client": "^4.8.1",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
+    "vue3-lottie": "^3.3.1",
     "zod": "^3.24.1"
   },
   "devDependencies": {

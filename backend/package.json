@@ -21,7 +21,8 @@
     "graphql": "^16.9.0",
     "graphql-subscriptions": "^2.0.0",
     "mercurius": "^15.1.0",
-    "pino-pretty": "^10.3.1"
+    "pino-pretty": "^10.3.1",
+    "vue3-lottie": "^3.3.1"
   },
   "devDependencies": {
     "prisma": "^6.0.1"

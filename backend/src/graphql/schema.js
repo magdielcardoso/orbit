@@ -121,6 +121,7 @@ export const typeDefs = `#graphql
     automations(organizationId: ID!): [Automation!]!
     automation(id: ID!): Automation
     organizations: [Organization!]!
+    validateOrganizationSlug(slug: String!): OrganizationSlugValidation!
   }
 
   type AdminStats {
@@ -537,5 +538,31 @@ export const typeDefs = `#graphql
     active: Boolean
     parentUserId: String
     currentOrgId: String
+  }
+
+  input RegisterInput {
+    name: String!
+    email: String!
+    password: String!
+    organization: OrganizationRegisterInput!
+  }
+
+  input OrganizationRegisterInput {
+    name: String!
+    slug: String!
+    domain: String
+    timezone: String!
+    locale: String!
+  }
+
+  type OrganizationSlugValidation {
+    available: Boolean!
+    organization: OrganizationPreview
+  }
+
+  type OrganizationPreview {
+    name: String!
+    slug: String!
+    domain: String
   }
 ` 

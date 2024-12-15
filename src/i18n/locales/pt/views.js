@@ -128,7 +128,7 @@ export default {
       notifications: {
         title: 'Notificações',
         preferences: {
-          title: 'Preferências de Notificações',
+          title: 'Preferências de Notifica��ões',
           description: 'Configure como você recebe notificações'
         }
       },
@@ -170,7 +170,7 @@ export default {
       hero: {
         title: 'Bem-vindo ao OrbitChat',
         feature1: {
-          title: 'Comunicação Simplificada',
+          title: 'Comunica��ão Simplificada',
           description: 'Gerencie todas as suas conversas em um só lugar de forma eficiente e organizada.'
         },
         feature2: {
@@ -322,7 +322,16 @@ export default {
         maxTeams: 'Limite de times',
         maxInboxes: 'Limite de caixas de entrada',
         timezone: 'Fuso horário',
-        locale: 'Idioma padrão'
+        locale: 'Idioma padrão',
+        organization: {
+          name: 'Nome da Organização',
+          namePlaceholder: 'Digite o nome da sua organização',
+          slug: 'Identificador único',
+          slugPlaceholder: 'identificador-unico',
+          domain: 'Domínio',
+          domainPlaceholder: 'exemplo.com.br',
+          slugInUse: 'Este identificador já está em uso. Por favor, escolha outro.'
+        }
       },
       plans: {
         free: 'Gratuito',
