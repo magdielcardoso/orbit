@@ -17,6 +17,7 @@
     "@fastify/cors": "^10.0.1",
     "@fastify/jwt": "^9.0.1",
     "@fastify/sensible": "^6.0.1",
+    "@vueuse/motion": "^2.2.6",
     "bcrypt": "^5.1.1",
     "concurrently": "^8.2.2",
     "daisyui": "^4.12.22",

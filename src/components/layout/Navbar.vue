@@ -13,11 +13,11 @@
           <button 
             v-for="action in quickActions" 
             :key="action.name"
-            class="btn btn-ghost btn-xs gap-1 hover:bg-orbit-200 hover:border-orbit-300 dark:hover:bg-orbit-900 dark:hover:border-orbit-800 normal-case h-7 min-h-0 px-2"
+            class="btn btn-ghost btn-xs gap-1 hover:bg-orbit-200 hover:border-orbit-300 dark:hover:bg-orbit-900 dark:hover:border-orbit-800 normal-case h-7 min-h-0 px-2 font-normal"
             :class="{ 'text-orbit-500 dark:text-orbit-400': action.highlight }"
           >
             <component :is="action.icon" class="h-3.5 w-3.5" />
-            <span class="text-xs">{{ action.label }}</span>
+            <span class="text-xs">{{ t(`navbar.quickActions.${action.name}`) }}</span>
           </button>
         </div>
       </div>
@@ -36,28 +36,31 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from '@/i18n'
 import OrganizationSelector from '../OrganizationSelector.vue'
 import { Search, Plus, Users, MessageCircle, Calendar } from 'lucide-vue-next'
 
+const { t } = useI18n()
+
 const quickActions = [
   {
-    label: 'Nova Conversa',
+    label: t('navbar.quickActions.newChat'),
     icon: Plus,
-    name: 'new-chat',
+    name: 'newChat',
     highlight: true
   },
   {
-    label: 'Reuniões',
+    label: t('navbar.quickActions.meetings'),
     icon: Calendar,
     name: 'meetings'
   },
   {
-    label: 'Grupos',
+    label: t('navbar.quickActions.groups'),
     icon: Users,
     name: 'groups'
   },
   {
-    label: 'Mensagens',
+    label: t('navbar.quickActions.messages'),
     icon: MessageCircle,
     name: 'messages'
   }

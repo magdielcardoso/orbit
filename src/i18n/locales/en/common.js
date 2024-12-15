@@ -142,5 +142,25 @@ export default {
       cancel: 'Cancel',
       loading: 'Loading...'
     }
+  },
+  contacts: {
+    management: 'Management',
+    allContacts: 'All Contacts',
+    favorites: 'Favorites',
+    recent: 'Recent',
+    segments: {
+      title: 'Segments',
+      customers: 'Customers',
+      leads: 'Leads',
+      archived: 'Archived'
+    }
+  },
+  navbar: {
+    quickActions: {
+      newChat: 'New Chat',
+      meetings: 'Meetings',
+      groups: 'Groups',
+      messages: 'Messages'
+    }
   }
 } 

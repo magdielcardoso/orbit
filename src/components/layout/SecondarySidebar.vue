@@ -30,19 +30,11 @@ import BetaTag from '../ui/BetaTag.vue'
 const props = defineProps({
   sections: {
     type: Array,
-    default: () => [],
-    validator: (value) => {
-      return value.every(section => {
-        return typeof section.id === 'string' &&
-               typeof section.label === 'string' &&
-               Array.isArray(section.items) &&
-               section.items.every(item => {
-                 return typeof item.id === 'string' &&
-                        typeof item.label === 'string' &&
-                        typeof item.icon === 'string'
-               })
-      })
-    }
+    required: true
+  },
+  showSidebar: {
+    type: Boolean,
+    default: true
   }
 })
 
@@ -177,39 +169,51 @@ const navigate = (itemId) => {
 </script>
 
 <template>
-  <aside class="h-full w-64 border-r border-base-300 bg-base-100 overflow-x-hidden">
-    <div class="flex h-full flex-col">
-      <!-- Seções do Menu -->
-      <div class="flex-1 space-y-2 overflow-y-auto p-4">
-        <div v-for="section in menuItems" :key="section.id" class="mb-6">
-          <!-- Título da Seção -->
-          <div class="mb-2 text-sm font-medium text-base-content/70 text-left pl-3 flex items-center gap-2">
-            {{ section.label }}
-            <BetaTag v-if="section.beta" />
-          </div>
+  <Transition
+    enter-active-class="transition-all duration-300 ease-in-out"
+    leave-active-class="transition-all duration-300 ease-in-out"
+    enter-from-class="-ml-64 opacity-0"
+    enter-to-class="ml-0 opacity-100"
+    leave-from-class="ml-0 opacity-100"
+    leave-to-class="-ml-64 opacity-0"
+  >
+    <div 
+      v-show="showSidebar"
+      class="w-64 border-r border-base-300 bg-base-100 overflow-y-auto flex flex-col h-full shrink-0"
+    >
+      <div class="flex h-full flex-col">
+        <!-- Seções do Menu -->
+        <div class="flex-1 space-y-2 overflow-y-auto p-4">
+          <div v-for="section in menuItems" :key="section.id" class="mb-6">
+            <!-- Título da Seção -->
+            <div class="mb-2 text-sm font-medium text-base-content/70 text-left pl-3 flex items-center gap-2">
+              {{ section.label }}
+              <BetaTag v-if="section.beta" />
+            </div>
 
-          <!-- Items da Seção -->
-          <div class="space-y-1">
-            <template v-for="item in section.items" :key="item.id">
-              <!-- Regular Item -->
-              <button
-                @click="navigate(item.id)"
-                :class="[
-                  'flex w-full items-start gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
-                  isItemActive(item.id)
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-base-content hover:bg-base-200'
-                ]"
-              >
-                <component :is="item.icon" class="h-4 w-4 shrink-0 mt-0.5" />
-                <span class="leading-tight text-left">{{ item.label }}</span>
-              </button>
-            </template>
+            <!-- Items da Seção -->
+            <div class="space-y-1">
+              <template v-for="item in section.items" :key="item.id">
+                <!-- Regular Item -->
+                <button
+                  @click="navigate(item.id)"
+                  :class="[
+                    'flex w-full items-start gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
+                    isItemActive(item.id)
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-base-content hover:bg-base-200'
+                  ]"
+                >
+                  <component :is="item.icon" class="h-4 w-4 shrink-0 mt-0.5" />
+                  <span class="leading-tight text-left">{{ item.label }}</span>
+                </button>
+              </template>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </aside>
+  </Transition>
 </template>
 
 <style scoped>

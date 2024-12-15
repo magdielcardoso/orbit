@@ -141,7 +141,7 @@ defineExpose({
 
 <template>
   <div class="dropdown">
-    <label tabindex="0" class="btn btn-ghost btn-xs gap-1.5 h-7 min-h-0 normal-case px-2 border border-dashed border-orbit-200/40 dark:border-orbit-800/40">
+    <label tabindex="0" class="btn btn-ghost btn-xs gap-1.5 h-7 min-h-0 normal-case px-2 border border-dashed border-orbit-200/40 dark:border-orbit-800/40 font-normal">
       <Building class="h-3.5 w-3.5" />
       <span v-if="loading" class="text-xs">Carregando...</span>
       <span v-else class="truncate max-w-[200px] text-xs">

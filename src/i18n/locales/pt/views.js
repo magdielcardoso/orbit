@@ -55,6 +55,16 @@ export default {
     addContact: 'Adicionar Contato',
     newContact: 'Novo Contato',
     editContact: 'Editar Contato',
+    management: 'Gerenciamento',
+    allContacts: 'Todos os Contatos',
+    favorites: 'Favoritos',
+    recent: 'Recentes',
+    segments: {
+      title: 'Segmentos',
+      customers: 'Clientes',
+      leads: 'Leads',
+      archived: 'Arquivados'
+    },
     table: {
       name: 'Nome',
       email: 'E-mail',
