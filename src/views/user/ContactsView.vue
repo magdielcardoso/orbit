@@ -1,253 +1,444 @@
+<template>
+  <div class="p-6">
+    <div class="sm:flex sm:items-center">
+      <div class="sm:flex-auto">
+        <h1 class="text-2xl font-semibold text-gray-900">{{ t('contacts.title') }}</h1>
+        <p class="mt-2 text-sm text-gray-700">
+          {{ t('contacts.description') }}
+        </p>
+      </div>
+      <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+        <button
+          @click="showNewContactModal = true"
+          class="inline-flex items-center justify-center rounded-md border border-transparent bg-orbit-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-orbit-700 focus:outline-none focus:ring-2 focus:ring-orbit-500 focus:ring-offset-2 sm:w-auto"
+        >
+          {{ t('contacts.addContact') }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div v-if="loading" class="flex justify-center items-center py-8">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-orbit-500"></div>
+    </div>
+
+    <!-- Error state -->
+    <div v-else-if="!contacts.length" class="text-center py-8">
+      <p class="text-gray-500">{{ t('contacts.noContacts') }}</p>
+    </div>
+
+    <!-- Tabela de Contatos -->
+    <div v-else class="mt-8 flex flex-col">
+      <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+        <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+            <table class="min-w-full divide-y divide-gray-300">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
+                    {{ t('contacts.table.name') }}
+                  </th>
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                    {{ t('contacts.table.email') }}
+                  </th>
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                    {{ t('contacts.table.phone') }}
+                  </th>
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                    {{ t('contacts.table.lastContact') }}
+                  </th>
+                  <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                    <span class="sr-only">{{ t('common.actions') }}</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200 bg-white">
+                <tr v-for="contact in contacts" :key="contact.id">
+                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                    <div class="flex items-center">
+                      <div v-if="contact.avatar" class="h-8 w-8 flex-shrink-0">
+                        <img :src="contact.avatar" :alt="contact.name" class="h-8 w-8 rounded-full" />
+                      </div>
+                      <div v-else class="h-8 w-8 rounded-full bg-orbit-100 flex items-center justify-center">
+                        <span class="text-orbit-600 font-medium">{{ getInitials(contact.name) }}</span>
+                      </div>
+                      <div class="ml-4">
+                        <div class="font-medium text-gray-900">{{ contact.name }}</div>
+                        <div v-if="contact.tags?.length" class="mt-1">
+                          <span 
+                            v-for="tag in contact.tags" 
+                            :key="tag"
+                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orbit-100 text-orbit-800 mr-1"
+                          >
+                            {{ tag }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    {{ contact.email }}
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    {{ contact.phone }}
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    {{ formatDate(contact.lastContactedAt) }}
+                  </td>
+                  <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                    <button
+                      @click="editContact(contact)"
+                      class="text-orbit-600 hover:text-orbit-900 mr-4"
+                    >
+                      {{ t('common.edit') }}
+                    </button>
+                    <button
+                      @click="deleteContact(contact)"
+                      class="text-red-600 hover:text-red-900"
+                    >
+                      {{ t('common.delete') }}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Novo Contato -->
+    <Modal v-if="showNewContactModal" @close="showNewContactModal = false">
+      <template #title>{{ t('contacts.newContact') }}</template>
+      <template #content>
+        <form @submit.prevent="handleCreateContact" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              {{ t('contacts.form.name') }}
+            </label>
+            <input
+              v-model="newContact.name"
+              type="text"
+              required
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              {{ t('contacts.form.email') }}
+            </label>
+            <input
+              v-model="newContact.email"
+              type="email"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              {{ t('contacts.form.phone') }}
+            </label>
+            <input
+              v-model="newContact.phone"
+              type="tel"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              {{ t('contacts.form.tags') }}
+            </label>
+            <input
+              v-model="newContact.tags"
+              type="text"
+              placeholder="Separe as tags por vírgula"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              {{ t('contacts.form.notes') }}
+            </label>
+            <textarea
+              v-model="newContact.notes"
+              rows="3"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+            ></textarea>
+          </div>
+        </form>
+      </template>
+      <template #footer>
+        <button
+          type="button"
+          @click="showNewContactModal = false"
+          class="mr-3 inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orbit-500 focus:ring-offset-2"
+        >
+          {{ t('common.cancel') }}
+        </button>
+        <button
+          type="submit"
+          :disabled="loading"
+          @click="handleCreateContact"
+          class="inline-flex justify-center rounded-md border border-transparent bg-orbit-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-orbit-700 focus:outline-none focus:ring-2 focus:ring-orbit-500 focus:ring-offset-2"
+        >
+          {{ loading ? t('common.loading') : t('common.save') }}
+        </button>
+      </template>
+    </Modal>
+
+    <!-- Modal de Edição -->
+    <Modal v-if="showEditModal" @close="showEditModal = false">
+      <template #title>{{ t('contacts.editContact') }}</template>
+      <template #content>
+        <form @submit.prevent="handleUpdateContact" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              {{ t('contacts.form.name') }}
+            </label>
+            <input
+              v-model="editingContact.name"
+              type="text"
+              required
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              {{ t('contacts.form.email') }}
+            </label>
+            <input
+              v-model="editingContact.email"
+              type="email"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              {{ t('contacts.form.phone') }}
+            </label>
+            <input
+              v-model="editingContact.phone"
+              type="tel"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              {{ t('contacts.form.tags') }}
+            </label>
+            <input
+              v-model="editingContact.tags"
+              type="text"
+              placeholder="Separe as tags por vírgula"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              {{ t('contacts.form.notes') }}
+            </label>
+            <textarea
+              v-model="editingContact.notes"
+              rows="3"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+            ></textarea>
+          </div>
+        </form>
+      </template>
+      <template #footer>
+        <button
+          type="button"
+          @click="showEditModal = false"
+          class="mr-3 inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orbit-500 focus:ring-offset-2"
+        >
+          {{ t('common.cancel') }}
+        </button>
+        <button
+          type="submit"
+          :disabled="loading"
+          @click="handleUpdateContact"
+          class="inline-flex justify-center rounded-md border border-transparent bg-orbit-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-orbit-700 focus:outline-none focus:ring-2 focus:ring-orbit-500 focus:ring-offset-2"
+        >
+          {{ loading ? t('common.loading') : t('common.save') }}
+        </button>
+      </template>
+    </Modal>
+  </div>
+</template>
+
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useI18n } from '@/i18n/plugin'
+import { useI18n } from '@/i18n'
+import { gqlRequest } from '@/utils/graphql'
 import { useAuthStore } from '@/stores/auth.store'
 import { useRouter } from 'vue-router'
-import { gqlRequest } from '@/utils/graphql'
-import { 
-  Search, 
-  Plus, 
-  Filter,
-  MoreVertical,
-  Mail,
-  Phone,
-  Tag,
-  Building,
-  Calendar
-} from 'lucide-vue-next'
 import Modal from '@/components/Modal.vue'
+import { format } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
 const router = useRouter()
-
-// Estado
 const contacts = ref([])
-const loading = ref(true)
-const searchQuery = ref('')
-const selectedTags = ref([])
-const showFilters = ref(false)
-const error = ref(null)
-
-// Estado para novo contato
+const loading = ref(false)
 const showNewContactModal = ref(false)
+const showEditModal = ref(false)
+const editingContact = ref(null)
+
 const newContact = ref({
   name: '',
   email: '',
   phone: '',
-  customFields: {
-    empresa: '',
-    cargo: ''
-  },
-  tags: [],
+  tags: '',
   notes: ''
 })
 
-// Busca contatos
-async function fetchData() {
+// Função para buscar contatos
+async function fetchContacts() {
   try {
     loading.value = true
-    error.value = null
-    console.log('Iniciando fetchData...')
-
-    // Primeiro, busca as organizações do usuário
-    const orgQuery = `
-      query GetUserOrganizations {
-        me {
-          id
-          organizations {
-            organization {
-              id
-              name
-              slug
-            }
-            isAdmin
-            isOwner
-          }
-        }
-      }
-    `
-
-    const orgResponse = await gqlRequest(orgQuery, null, {
-      headers: {
-        'Authorization': `Bearer ${authStore.token}`
-      }
-    })
-
-    // Se o usuário tem organizações
-    if (orgResponse?.me?.organizations?.length > 0) {
-      // Se não tem organização atual selecionada, seleciona a primeira
-      if (!authStore.currentOrganization) {
-        const firstOrg = orgResponse.me.organizations[0].organization
-        authStore.setCurrentOrganization(firstOrg)
-      }
-
-      // Agora busca os contatos da organização atual
-      const contactsQuery = `
-        query GetOrganizationContacts($organizationId: ID!) {
-          organization(id: $organizationId) {
-            contacts {
-              id
-              name
-              email
-              phone
-              avatar
-              tags
-              customFields
-              lastContactedAt
-              createdAt
-            }
-          }
-        }
-      `
-
-      const contactsResponse = await gqlRequest(contactsQuery, {
-        organizationId: authStore.currentOrganizationId
-      }, {
-        headers: {
-          'Authorization': `Bearer ${authStore.token}`
-        }
-      })
-
-      contacts.value = contactsResponse?.organization?.contacts || []
-    } else {
-      error.value = 'Você não está vinculado a nenhuma organização. Entre em contato com o administrador.'
+    if (!authStore.isAuthenticated) {
+      throw new Error('Não autenticado')
     }
 
-  } catch (err) {
-    console.error('Erro detalhado ao buscar dados:', err)
-    error.value = 'Erro ao carregar contatos. Tente novamente.'
-  } finally {
-    loading.value = false
-  }
-}
-
-// Busca filtrada de contatos
-async function searchContacts() {
-  console.log('Iniciando busca com:', {
-    searchQuery: searchQuery.value,
-    selectedTags: selectedTags.value
-  })
-
-  if (!searchQuery.value && !selectedTags.value.length) {
-    console.log('Nenhum filtro aplicado, voltando para fetchData')
-    await fetchData()
-    return
-  }
-
-  try {
-    loading.value = true
-    error.value = null
+    // Verifica se tem organização selecionada
+    if (!authStore.currentOrganization?.id) {
+      throw new Error('Selecione uma organização primeiro')
+    }
 
     const query = `
-      query SearchContacts($search: String, $tags: [String!]) {
-        me {
-          organizations {
-            organization {
-              contacts(search: $search, tags: $tags) {
-                id
-                name
-                email
-                phone
-                avatar
-                tags
-                customFields
-                lastContactedAt
-                createdAt
-              }
-            }
-          }
+      query GetContacts($organizationId: ID!) {
+        contacts(organizationId: $organizationId) {
+          id
+          name
+          email
+          phone
+          avatar
+          tags
+          notes
+          lastContactedAt
+          createdAt
+          updatedAt
         }
       }
     `
 
-    console.log('Enviando query de busca:', {
-      query,
-      variables: {
-        search: searchQuery.value,
-        tags: selectedTags.value
-      }
-    })
-
     const response = await gqlRequest(query, {
-      search: searchQuery.value,
-      tags: selectedTags.value.length ? selectedTags.value : null
+      organizationId: authStore.currentOrganization.id
     }, {
       headers: {
         'Authorization': `Bearer ${authStore.token}`
       }
     })
 
-    console.log('Resposta da busca:', response)
-
-    if (response?.me?.organizations?.length > 0) {
-      const firstOrg = response.me.organizations[0].organization
-      contacts.value = firstOrg.contacts || []
-      console.log('Contatos filtrados:', contacts.value)
+    contacts.value = response.contacts
+  } catch (error) {
+    console.error('Erro ao carregar contatos:', error)
+    if (error.message.includes('autoriza') || error.message.includes('autentica')) {
+      authStore.logout()
+      router.push('/login')
     }
-  } catch (err) {
-    console.error('Erro na busca:', {
-      error: err,
-      message: err.message,
-      stack: err.stack
-    })
-    error.value = 'Erro ao filtrar contatos. Tente novamente.'
+    showToast(error.message, 'error')
   } finally {
     loading.value = false
-    console.log('Estado final da busca:', {
-      loading: loading.value,
-      error: error.value,
-      contactsCount: contacts.value.length,
-      hasError: !!error.value
-    })
   }
 }
 
-// Formata data
-function formatDate(date) {
-  return new Date(date).toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  })
-}
-
-// Watch para busca
-let searchTimeout
-function handleSearch() {
-  clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(searchContacts, 300)
-}
-
-// Função para criar contato
+// Função para criar novo contato
 async function handleCreateContact() {
   try {
-    if (!authStore.currentOrganizationId) {
-      throw new Error('Selecione uma organização primeiro')
+    if (!newContact.value.name) {
+      showToast(t('contacts.errors.nameRequired'), 'error')
+      return
     }
 
     loading.value = true
-    const mutation = `
+    const tagsArray = newContact.value.tags ? newContact.value.tags.split(',').map(tag => tag.trim()) : []
+    const { data } = await gqlRequest(
+      `
       mutation CreateContact($input: ContactInput!) {
         createContact(input: $input) {
           id
           name
           email
           phone
-          avatar
-          customFields
           tags
           notes
           lastContactedAt
           createdAt
         }
       }
+      `,
+      {
+        input: {
+          name: newContact.value.name,
+          email: newContact.value.email || null,
+          phone: newContact.value.phone || null,
+          tags: tagsArray,
+          notes: newContact.value.notes || null,
+          organizationId: authStore.currentOrganization.id
+        }
+      }
+    )
+
+    await fetchContacts()
+    showNewContactModal.value = false
+    newContact.value = { name: '', email: '', phone: '', tags: '', notes: '' }
+    showToast(t('contacts.createSuccess'))
+  } catch (error) {
+    console.error('Erro ao criar contato:', error)
+    showToast(error.message, 'error')
+  } finally {
+    loading.value = false
+  }
+}
+
+// Função para editar contato
+async function editContact(contact) {
+  editingContact.value = {
+    ...contact,
+    tags: contact.tags?.join(', ') || ''
+  }
+  showEditModal.value = true
+}
+
+// Função para atualizar contato
+async function handleUpdateContact() {
+  try {
+    if (!authStore.currentOrganization?.id) {
+      throw new Error('Selecione uma organização primeiro')
+    }
+
+    loading.value = true
+    const mutation = `
+      mutation UpdateContact($id: ID!, $input: ContactInput!) {
+        updateContact(id: $id, input: $input) {
+          id
+          name
+          email
+          phone
+          tags
+          notes
+        }
+      }
     `
 
     const variables = {
+      id: editingContact.value.id,
       input: {
-        organizationId: authStore.currentOrganizationId,
-        ...newContact.value
+        name: editingContact.value.name,
+        email: editingContact.value.email || null,
+        phone: editingContact.value.phone || null,
+        tags: editingContact.value.tags.split(',').map(tag => tag.trim()),
+        notes: editingContact.value.notes || null,
+        organizationId: authStore.currentOrganization.id
       }
     }
 
@@ -257,342 +448,107 @@ async function handleCreateContact() {
       }
     })
 
-    await fetchData()
-    showNewContactModal.value = false
-    newContact.value = {
-      name: '',
-      email: '',
-      phone: '',
-      customFields: {
-        empresa: '',
-        cargo: ''
-      },
-      tags: [],
-      notes: ''
-    }
-    alert('Contato criado com sucesso!')
-  } catch (err) {
-    console.error('Erro ao criar contato:', err)
-    alert(err.message)
+    await fetchContacts()
+    showEditModal.value = false
+    editingContact.value = null
+    showToast(t('contacts.updateSuccess'))
+  } catch (error) {
+    console.error('Erro ao atualizar contato:', error)
+    showToast(error.message, 'error')
   } finally {
     loading.value = false
   }
 }
 
-// Função para adicionar tag
-function addTag(event) {
-  const tag = event.target.value.trim()
-  if (event.key === 'Enter' && tag && !newContact.value.tags.includes(tag)) {
-    newContact.value.tags.push(tag)
-    event.target.value = ''
+// Função para excluir contato
+async function deleteContact(contact) {
+  if (!confirm(t('contacts.confirmDelete', { name: contact.name }))) {
+    return
+  }
+
+  try {
+    loading.value = true
+    const mutation = `
+      mutation DeleteContact($id: ID!) {
+        deleteContact(id: $id)
+      }
+    `
+
+    await gqlRequest(mutation, { id: contact.id }, {
+      headers: {
+        'Authorization': `Bearer ${authStore.token}`
+      }
+    })
+
+    await fetchContacts()
+    showToast(t('contacts.deleteSuccess'))
+  } catch (error) {
+    console.error('Erro ao excluir contato:', error)
+    showToast(error.message, 'error')
+  } finally {
+    loading.value = false
   }
 }
 
-// Função para remover tag
-function removeTag(index) {
-  newContact.value.tags.splice(index, 1)
+// Função para formatar data
+function formatDate(date) {
+  if (!date) return '-'
+  return format(new Date(date), 'dd/MM/yyyy HH:mm', { locale: ptBR })
 }
 
-onMounted(fetchData)
+// Função para obter iniciais do nome
+function getInitials(name) {
+  return name
+    .split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+}
+
+// Função para mostrar toast
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div')
+  toast.className = `toast toast-top toast-end z-50`
+
+  const alert = document.createElement('div')
+  alert.className = `alert ${type === 'success' ? 'alert-success' : 'alert-error'} shadow-lg`
+
+  const content = document.createElement('div')
+  content.className = 'flex items-center gap-2'
+
+  const icon = document.createElement('span')
+  icon.className = 'text-lg'
+  icon.textContent = type === 'success' ? '✓' : '✕'
+  
+  const text = document.createElement('span')
+  text.textContent = message
+
+  content.appendChild(icon)
+  content.appendChild(text)
+  alert.appendChild(content)
+  toast.appendChild(alert)
+
+  document.body.appendChild(toast)
+
+  setTimeout(() => {
+    toast.remove()
+  }, 3000)
+}
+
+onMounted(fetchContacts)
 </script>
 
-<template>
-  <div class="p-6">
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-semibold text-gray-900">
-        {{ t('contacts.title', 'Contatos') }}
-      </h1>
-      <button 
-        class="btn btn-primary"
-        @click="showNewContactModal = true"
-      >
-        <Plus class="h-4 w-4 mr-2" />
-        {{ t('contacts.addNew', 'Adicionar Contato') }}
-      </button>
-    </div>
-
-    <!-- Mensagem de erro -->
-    <div v-if="error" class="alert alert-error mb-6">
-      <span>{{ error }}</span>
-    </div>
-
-    <!-- Barra de Busca e Filtros -->
-    <div class="flex gap-4 mb-6">
-      <div class="flex-1 relative">
-        <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-        <input
-          type="text"
-          v-model="searchQuery"
-          :placeholder="t('contacts.searchPlaceholder', 'Buscar contatos...')"
-          class="input input-bordered w-full pl-10"
-          @input="handleSearch"
-        />
-      </div>
-      <button 
-        class="btn btn-ghost" 
-        @click="showFilters = !showFilters"
-      >
-        <Filter class="h-4 w-4 mr-2" />
-        {{ t('common.filters', 'Filtros') }}
-      </button>
-    </div>
-
-    <!-- Lista de Contatos -->
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-      <!-- Loading -->
-      <div v-if="loading" class="p-8 text-center">
-        <span class="loading loading-spinner loading-lg"></span>
-      </div>
-
-      <!-- Lista vazia -->
-      <div v-else-if="contacts.length === 0" class="p-8 text-center">
-        <div class="text-gray-500">
-          {{ t('contacts.empty', 'Nenhum contato encontrado') }}
-        </div>
-      </div>
-
-      <!-- Tabela de contatos -->
-      <table v-else class="table table-zebra w-full">
-        <thead>
-          <tr>
-            <th>{{ t('contacts.table.name', 'Nome') }}</th>
-            <th>{{ t('contacts.table.contact', 'Contato') }}</th>
-            <th>{{ t('contacts.table.company', 'Empresa') }}</th>
-            <th>{{ t('contacts.table.tags', 'Tags') }}</th>
-            <th>{{ t('contacts.table.lastContact', 'Último Contato') }}</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="contact in contacts" :key="contact.id">
-            <!-- Nome e Avatar -->
-            <td class="flex items-center gap-3">
-              <div class="avatar">
-                <div class="w-10 h-10 rounded-full bg-primary/10">
-                  <img 
-                    v-if="contact.avatar" 
-                    :src="contact.avatar" 
-                    :alt="contact.name"
-                  />
-                  <span v-else class="text-lg font-medium">
-                    {{ contact.name.charAt(0) }}
-                  </span>
-                </div>
-              </div>
-              <div>
-                <div class="font-medium">{{ contact.name }}</div>
-                <div class="text-sm text-gray-500">
-                  ID: {{ contact.id.slice(0, 8) }}
-                </div>
-              </div>
-            </td>
-
-            <!-- Contatos -->
-            <td>
-              <div class="flex flex-col gap-1">
-                <div v-if="contact.email" class="flex items-center gap-2">
-                  <Mail class="h-4 w-4 text-gray-400" />
-                  <span>{{ contact.email }}</span>
-                </div>
-                <div v-if="contact.phone" class="flex items-center gap-2">
-                  <Phone class="h-4 w-4 text-gray-400" />
-                  <span>{{ contact.phone }}</span>
-                </div>
-              </div>
-            </td>
-
-            <!-- Empresa -->
-            <td>
-              <div v-if="contact.customFields?.empresa" class="flex items-center gap-2">
-                <Building class="h-4 w-4 text-gray-400" />
-                <span>{{ contact.customFields.empresa }}</span>
-                <span v-if="contact.customFields?.cargo" class="text-sm text-gray-500">
-                  ({{ contact.customFields.cargo }})
-                </span>
-              </div>
-            </td>
-
-            <!-- Tags -->
-            <td>
-              <div class="flex flex-wrap gap-1">
-                <span 
-                  v-for="tag in contact.tags" 
-                  :key="tag"
-                  class="badge badge-sm"
-                >
-                  {{ tag }}
-                </span>
-              </div>
-            </td>
-
-            <!-- Último contato -->
-            <td>
-              <div v-if="contact.lastContactedAt" class="flex items-center gap-2">
-                <Calendar class="h-4 w-4 text-gray-400" />
-                <span>{{ formatDate(contact.lastContactedAt) }}</span>
-              </div>
-              <span v-else class="text-gray-400">
-                {{ t('contacts.table.never', 'Nunca') }}
-              </span>
-            </td>
-
-            <!-- Ações -->
-            <td>
-              <div class="dropdown dropdown-end">
-                <label tabindex="0" class="btn btn-ghost btn-sm">
-                  <MoreVertical class="h-4 w-4" />
-                </label>
-                <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
-                  <li>
-                    <a>{{ t('contacts.actions.edit', 'Editar') }}</a>
-                  </li>
-                  <li>
-                    <a>{{ t('contacts.actions.delete', 'Excluir') }}</a>
-                  </li>
-                  <li>
-                    <a>{{ t('contacts.actions.newConversation', 'Nova Conversa') }}</a>
-                  </li>
-                </ul>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Modal de novo contato -->
-    <Modal
-      v-if="showNewContactModal"
-      @close="showNewContactModal = false"
-    >
-      <template #title>
-        {{ t('contacts.modal.title', 'Novo Contato') }}
-      </template>
-      
-      <template #content>
-        <form @submit.prevent="handleCreateContact" class="space-y-4">
-          <!-- Dados básicos -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">{{ t('contacts.form.name', 'Nome') }}*</span>
-            </label>
-            <input
-              v-model="newContact.name"
-              type="text"
-              required
-              class="input input-bordered"
-              :placeholder="t('contacts.form.namePlaceholder', 'Nome do contato')"
-            />
-          </div>
-
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">{{ t('contacts.form.email', 'Email') }}</span>
-            </label>
-            <input
-              v-model="newContact.email"
-              type="email"
-              class="input input-bordered"
-              :placeholder="t('contacts.form.emailPlaceholder', 'email@exemplo.com')"
-            />
-          </div>
-
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">{{ t('contacts.form.phone', 'Telefone') }}</span>
-            </label>
-            <input
-              v-model="newContact.phone"
-              type="tel"
-              class="input input-bordered"
-              :placeholder="t('contacts.form.phonePlaceholder', '+55 11 99999-9999')"
-            />
-          </div>
-
-          <!-- Campos customizados -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">{{ t('contacts.form.company', 'Empresa') }}</span>
-            </label>
-            <input
-              v-model="newContact.customFields.empresa"
-              type="text"
-              class="input input-bordered"
-            />
-          </div>
-
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">{{ t('contacts.form.role', 'Cargo') }}</span>
-            </label>
-            <input
-              v-model="newContact.customFields.cargo"
-              type="text"
-              class="input input-bordered"
-            />
-          </div>
-
-          <!-- Tags -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">{{ t('contacts.form.tags', 'Tags') }}</span>
-            </label>
-            <div class="flex flex-wrap gap-2 mb-2">
-              <span 
-                v-for="(tag, index) in newContact.tags" 
-                :key="index"
-                class="badge badge-primary gap-2"
-              >
-                {{ tag }}
-                <button type="button" @click="removeTag(index)">&times;</button>
-              </span>
-            </div>
-            <input
-              type="text"
-              class="input input-bordered"
-              :placeholder="t('contacts.form.tagsPlaceholder', 'Pressione Enter para adicionar')"
-              @keyup.enter="addTag"
-            />
-          </div>
-
-          <!-- Notas -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text">{{ t('contacts.form.notes', 'Notas') }}</span>
-            </label>
-            <textarea
-              v-model="newContact.notes"
-              class="textarea textarea-bordered"
-              :placeholder="t('contacts.form.notesPlaceholder', 'Observações sobre o contato')"
-            ></textarea>
-          </div>
-        </form>
-      </template>
-
-      <template #footer>
-        <button 
-          type="button" 
-          class="btn"
-          @click="showNewContactModal = false"
-        >
-          {{ t('common.cancel', 'Cancelar') }}
-        </button>
-        <button 
-          type="submit" 
-          class="btn btn-primary ml-3"
-          :disabled="loading"
-          @click="handleCreateContact"
-        >
-          {{ t('common.save', 'Salvar') }}
-        </button>
-      </template>
-    </Modal>
-  </div>
-</template>
-
 <style scoped>
-.table th:first-child {
-  position: static;
+.toast {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+}
+
+.alert {
+  min-width: 200px;
+  max-width: 400px;
 }
 </style> 

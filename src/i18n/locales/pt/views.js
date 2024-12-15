@@ -50,8 +50,41 @@ export default {
   },
   contacts: {
     title: 'Contatos',
-    noContacts: 'Nenhum contato ainda',
-    addContact: 'Adicionar contato'
+    description: 'Gerencie seus contatos e mantenha seu relacionamento com clientes.',
+    noContacts: 'Nenhum contato encontrado',
+    addContact: 'Adicionar Contato',
+    newContact: 'Novo Contato',
+    editContact: 'Editar Contato',
+    table: {
+      name: 'Nome',
+      email: 'E-mail',
+      phone: 'Telefone',
+      lastContact: 'Último Contato',
+      tags: 'Tags'
+    },
+    form: {
+      name: 'Nome',
+      email: 'E-mail',
+      phone: 'Telefone',
+      tags: 'Tags',
+      notes: 'Observações',
+      namePlaceholder: 'Digite o nome do contato',
+      emailPlaceholder: 'Digite o e-mail do contato',
+      phonePlaceholder: 'Digite o telefone do contato',
+      tagsPlaceholder: 'Separe as tags por vírgula',
+      notesPlaceholder: 'Adicione observações sobre o contato'
+    },
+    confirmDelete: 'Tem certeza que deseja excluir o contato {name}?',
+    createSuccess: 'Contato criado com sucesso!',
+    updateSuccess: 'Contato atualizado com sucesso!',
+    deleteSuccess: 'Contato excluído com sucesso!',
+    errors: {
+      createError: 'Erro ao criar contato',
+      updateError: 'Erro ao atualizar contato',
+      deleteError: 'Erro ao excluir contato',
+      notFound: 'Contato não encontrado',
+      nameRequired: 'O nome do contato é obrigatório'
+    }
   },
   favorites: {
     title: 'Favoritos',

@@ -49,8 +49,41 @@ export default {
   },
   contacts: {
     title: 'Contacts',
-    noContacts: 'No contacts yet',
-    addContact: 'Add contact'
+    description: 'Manage your contacts and maintain customer relationships.',
+    noContacts: 'No contacts found',
+    addContact: 'Add Contact',
+    newContact: 'New Contact',
+    editContact: 'Edit Contact',
+    table: {
+      name: 'Name',
+      email: 'Email',
+      phone: 'Phone',
+      lastContact: 'Last Contact',
+      tags: 'Tags'
+    },
+    form: {
+      name: 'Name',
+      email: 'Email',
+      phone: 'Phone',
+      tags: 'Tags',
+      notes: 'Notes',
+      namePlaceholder: 'Enter contact name',
+      emailPlaceholder: 'Enter contact email',
+      phonePlaceholder: 'Enter contact phone',
+      tagsPlaceholder: 'Separate tags with commas',
+      notesPlaceholder: 'Add notes about the contact'
+    },
+    confirmDelete: 'Are you sure you want to delete contact {name}?',
+    createSuccess: 'Contact created successfully!',
+    updateSuccess: 'Contact updated successfully!',
+    deleteSuccess: 'Contact deleted successfully!',
+    errors: {
+      createError: 'Error creating contact',
+      updateError: 'Error updating contact',
+      deleteError: 'Error deleting contact',
+      notFound: 'Contact not found',
+      nameRequired: 'Contact name is required'
+    }
   },
   favorites: {
     title: 'Favorites',

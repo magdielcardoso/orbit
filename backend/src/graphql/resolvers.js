@@ -376,6 +376,34 @@ export const resolvers = {
         console.error('Erro ao buscar organizações:', error)
         throw error
       }
+    },
+    contacts: async (_, { organizationId }, { prisma, user }) => {
+      try {
+        // Verifica se o usuário tem acesso à organização
+        const orgUser = await prisma.organizationUser.findFirst({
+          where: {
+            userId: user.id,
+            organizationId: organizationId
+          }
+        })
+
+        if (!orgUser) {
+          throw new Error('Não autorizado: usuário não pertence a esta organização')
+        }
+
+        // Busca os contatos da organização
+        return prisma.contact.findMany({
+          where: {
+            organizationId: organizationId
+          },
+          orderBy: {
+            createdAt: 'desc'
+          }
+        })
+      } catch (error) {
+        console.error('Erro ao buscar contatos:', error)
+        throw error
+      }
     }
   },
 
@@ -683,24 +711,33 @@ export const resolvers = {
     },
 
     createContact: async (_, { input }, { prisma, user }) => {
-      // Verifica se o usuário tem acesso à organização
-      const orgUser = await prisma.organizationUser.findFirst({
-        where: {
-          userId: user.id,
-          organizationId: input.organizationId
-        }
-      })
+      try {
+        // Verifica se o usuário tem acesso à organização
+        const orgUser = await prisma.organizationUser.findFirst({
+          where: {
+            userId: user.id,
+            organizationId: input.organizationId
+          }
+        })
 
-      if (!orgUser) {
-        throw new Error('Não autorizado: usuário não pertence a esta organização')
+        if (!orgUser) {
+          throw new Error('Não autorizado: usuário não pertence a esta organização')
+        }
+
+        // Remove o organizationId do input e usa-o para conectar a organização
+        const { organizationId, ...contactData } = input
+
+        // Cria o contato
+        return prisma.contact.create({
+          data: {
+            ...contactData,
+            organizationId
+          }
+        })
+      } catch (error) {
+        console.error('Erro ao criar contato:', error)
+        throw error
       }
-
-      return prisma.contact.create({
-        data: {
-          ...input,
-          organizationId: input.organizationId
-        }
-      })
     },
 
     updateUser: async (_, { id, input }, { prisma, user }) => {
@@ -831,6 +868,84 @@ export const resolvers = {
         return organization
       } catch (error) {
         console.error('Erro ao criar organização:', error)
+        throw error
+      }
+    },
+
+    updateContact: async (_, { id, input }, { prisma, user }) => {
+      try {
+        // Verifica se o contato existe e pertence à organização do usuário
+        const contact = await prisma.contact.findFirst({
+          where: {
+            id: id,
+            organizationId: input.organizationId
+          }
+        })
+
+        if (!contact) {
+          throw new Error('Contato não encontrado')
+        }
+
+        // Verifica se o usuário tem acesso à organização
+        const orgUser = await prisma.organizationUser.findFirst({
+          where: {
+            userId: user.id,
+            organizationId: input.organizationId
+          }
+        })
+
+        if (!orgUser) {
+          throw new Error('Não autorizado: usuário não pertence a esta organização')
+        }
+
+        // Remove o organizationId do input e usa-o para conectar a organização
+        const { organizationId, ...contactData } = input
+
+        // Atualiza o contato
+        return prisma.contact.update({
+          where: { id },
+          data: {
+            ...contactData,
+            organizationId
+          }
+        })
+      } catch (error) {
+        console.error('Erro ao atualizar contato:', error)
+        throw error
+      }
+    },
+
+    deleteContact: async (_, { id }, { prisma, user }) => {
+      try {
+        // Busca o contato para verificar a organização
+        const contact = await prisma.contact.findUnique({
+          where: { id }
+        })
+
+        if (!contact) {
+          throw new Error('Contato não encontrado')
+        }
+
+        // Verifica se o usuário tem acesso à organização
+        const orgUser = await prisma.organizationUser.findFirst({
+          where: {
+            userId: user.id,
+            organizationId: contact.organizationId
+          }
+        })
+
+        if (!orgUser) {
+          throw new Error('Não autorizado: usuário não pertence a esta organização')
+        }
+
+        // Deleta o contato
+        await prisma.contact.delete({
+          where: { id }
+        })
+
+        return true
+      } catch (error) {
+        console.error('Erro ao deletar contato:', error)
         throw error
       }
     }

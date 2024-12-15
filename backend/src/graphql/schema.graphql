@@ -48,6 +48,7 @@ export const typeDefs = `#graphql
     roles: [Role!]!
     permissions: [Permission!]!
     systemStatus: SystemStatus!
+    contacts(organizationId: ID!): [Contact!]!
   }
 
   type Mutation {
@@ -74,6 +75,10 @@ export const typeDefs = `#graphql
     # Role Permissions
     addPermissionToRole(roleId: ID!, permissionId: ID!): Role!
     removePermissionFromRole(roleId: ID!, permissionId: ID!): Role!
+    
+    createContact(input: ContactInput!): Contact!
+    updateContact(id: ID!, input: ContactInput!): Contact!
+    deleteContact(id: ID!): Boolean!
   }
 
   type Organization {
@@ -87,6 +92,29 @@ export const typeDefs = `#graphql
     isAdmin: Boolean!
     isOwner: Boolean!
     status: String!
+  }
+
+  type Contact {
+    id: ID!
+    name: String!
+    email: String
+    phone: String
+    avatar: String
+    tags: [String!]
+    notes: String
+    lastContactedAt: String
+    createdAt: String!
+    updatedAt: String!
+    organization: Organization!
+  }
+
+  input ContactInput {
+    organizationId: ID!
+    name: String!
+    email: String
+    phone: String
+    tags: [String!]
+    notes: String
   }
 ` 
 
