@@ -160,7 +160,12 @@ export default {
       loading: 'Loading...',
       submit: 'Sign in',
       noAccount: "Don't have an account? Sign up",
+      orContinueWith: 'or continue with',
       error: 'Invalid email or password',
+      termsText: 'By continuing, you agree to our',
+      privacyPolicy: 'Privacy Policy',
+      termsOfUse: 'Terms of Use',
+      and: 'and',
       hero: {
         title: 'Welcome to OrbitChat',
         feature1: {

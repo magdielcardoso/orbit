@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="300" height="210" viewBox="0 0 300 210" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="210" fill="#fff"/>
+  <g fill="#bf0a30">
+    <rect width="300" height="16.15" y="0"/>
+    <rect width="300" height="16.15" y="32.3"/>
+    <rect width="300" height="16.15" y="64.6"/>
+    <rect width="300" height="16.15" y="96.9"/>
+    <rect width="300" height="16.15" y="129.2"/>
+    <rect width="300" height="16.15" y="161.5"/>
+    <rect width="300" height="16.15" y="193.8"/>
+  </g>
+  <rect width="120" height="112.5" fill="#002868"/>
+  <g fill="#fff">
+    <circle cx="10" cy="10" r="3"/>
+    <circle cx="30" cy="10" r="3"/>
+    <circle cx="50" cy="10" r="3"/>
+    <circle cx="70" cy="10" r="3"/>
+    <circle cx="90" cy="10" r="3"/>
+    <circle cx="110" cy="10" r="3"/>
+    
+    <circle cx="20" cy="25" r="3"/>
+    <circle cx="40" cy="25" r="3"/>
+    <circle cx="60" cy="25" r="3"/>
+    <circle cx="80" cy="25" r="3"/>
+    <circle cx="100" cy="25" r="3"/>
+    
+    <circle cx="10" cy="40" r="3"/>
+    <circle cx="30" cy="40" r="3"/>
+    <circle cx="50" cy="40" r="3"/>
+    <circle cx="70" cy="40" r="3"/>
+    <circle cx="90" cy="40" r="3"/>
+    <circle cx="110" cy="40" r="3"/>
+    
+    <circle cx="20" cy="55" r="3"/>
+    <circle cx="40" cy="55" r="3"/>
+    <circle cx="60" cy="55" r="3"/>
+    <circle cx="80" cy="55" r="3"/>
+    <circle cx="100" cy="55" r="3"/>
+    
+    <circle cx="10" cy="70" r="3"/>
+    <circle cx="30" cy="70" r="3"/>
+    <circle cx="50" cy="70" r="3"/>
+    <circle cx="70" cy="70" r="3"/>
+    <circle cx="90" cy="70" r="3"/>
+    <circle cx="110" cy="70" r="3"/>
+    
+    <circle cx="20" cy="85" r="3"/>
+    <circle cx="40" cy="85" r="3"/>
+    <circle cx="60" cy="85" r="3"/>
+    <circle cx="80" cy="85" r="3"/>
+    <circle cx="100" cy="85" r="3"/>
+    
+    <circle cx="10" cy="100" r="3"/>
+    <circle cx="30" cy="100" r="3"/>
+    <circle cx="50" cy="100" r="3"/>
+    <circle cx="70" cy="100" r="3"/>
+    <circle cx="90" cy="100" r="3"/>
+    <circle cx="110" cy="100" r="3"/>
+  </g>
+</svg> 

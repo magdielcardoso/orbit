@@ -161,7 +161,12 @@ export default {
       loading: 'Carregando...',
       submit: 'Entrar',
       noAccount: 'Não tem uma conta? Cadastre-se',
+      orContinueWith: 'ou continue com',
       error: 'E-mail ou senha inválidos',
+      termsText: 'Ao continuar, você concorda com nossos',
+      privacyPolicy: 'Política de Privacidade',
+      termsOfUse: 'Termos de Uso',
+      and: 'e',
       hero: {
         title: 'Bem-vindo ao OrbitChat',
         feature1: {

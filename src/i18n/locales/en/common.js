@@ -168,5 +168,10 @@ export default {
       groups: 'Groups',
       messages: 'Messages'
     }
+  },
+  languages: {
+    pt: 'Portuguese',
+    en: 'English',
+    selectLanguage: 'Select language'
   }
 } 

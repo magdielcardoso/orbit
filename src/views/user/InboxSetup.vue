@@ -80,38 +80,233 @@
         </div>
       </div>
 
-      <!-- Step 2: Configuração do Canal -->
+      <!-- Step 2: Configuração de Agentes ou Provedor de Email -->
       <div v-else-if="currentStep === 1" class="max-w-2xl">
-        <div class="space-y-6">
+        <!-- Configuração de Provedor de Email -->
+        <template v-if="selectedChannel === 'EMAIL'">
           <div>
-            <label class="block text-sm font-medium text-gray-700">Nome da Caixa de Entrada</label>
-            <input
-              v-model="inboxForm.name"
-              type="text"
-              required
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
-              :placeholder="`Ex: ${selectedChannelConfig?.title || 'Chat do Site'}`"
-            />
-          </div>
+            <h2 class="text-xl font-semibold mb-2">Selecione seu provedor de email</h2>
+            <p class="text-sm text-base-content/70 mb-6">
+              Selecione um provedor de email da lista abaixo. Se você n��o vir seu provedor de email na lista, pode selecionar a opção de outro provedor e fornecer as Credenciais IMAP e SMTP.
+            </p>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Descrição</label>
-            <textarea
-              v-model="inboxForm.description"
-              rows="2"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
-              :placeholder="selectedChannelConfig?.description || 'Uma breve descrição desta caixa de entrada'"
-            ></textarea>
-          </div>
+            <div class="grid grid-cols-3 gap-6">
+              <!-- Microsoft -->
+              <div
+                @click="selectEmailProvider('microsoft')"
+                :class="[
+                  'p-6 rounded-lg border-2 cursor-pointer transition-all hover:border-orbit-500 hover:shadow-md flex flex-col items-center gap-4',
+                  inboxForm.emailProvider === 'microsoft' ? 'border-orbit-500 ring-2 ring-orbit-500/20 bg-orbit-50/10' : 'border-orbit-100'
+                ]"
+              >
+                <div class="w-16 h-16 bg-[#F3F3F3] rounded-lg grid grid-cols-2 gap-1 p-2">
+                  <div class="bg-[#F25022]"></div>
+                  <div class="bg-[#7FBA00]"></div>
+                  <div class="bg-[#00A4EF]"></div>
+                  <div class="bg-[#FFB900]"></div>
+                </div>
+                <span class="font-medium">Microsoft</span>
+              </div>
 
-          <!-- Campos específicos do canal serão adicionados aqui -->
-        </div>
+              <!-- Google -->
+              <div
+                @click="selectEmailProvider('google')"
+                :class="[
+                  'p-6 rounded-lg border-2 cursor-pointer transition-all hover:border-orbit-500 hover:shadow-md flex flex-col items-center gap-4',
+                  inboxForm.emailProvider === 'google' ? 'border-orbit-500 ring-2 ring-orbit-500/20 bg-orbit-50/10' : 'border-orbit-100'
+                ]"
+              >
+                <div class="w-16 h-16 flex items-center justify-center">
+                  <span class="i-lucide-mail-search h-12 w-12"></span>
+                </div>
+                <span class="font-medium">Google</span>
+              </div>
+
+              <!-- Outros Provedores -->
+              <div
+                @click="selectEmailProvider('other')"
+                :class="[
+                  'p-6 rounded-lg border-2 cursor-pointer transition-all hover:border-orbit-500 hover:shadow-md flex flex-col items-center gap-4',
+                  inboxForm.emailProvider === 'other' ? 'border-orbit-500 ring-2 ring-orbit-500/20 bg-orbit-50/10' : 'border-orbit-100'
+                ]"
+              >
+                <div class="w-16 h-16 flex items-center justify-center">
+                  <span class="i-lucide-mail h-12 w-12"></span>
+                </div>
+                <span class="font-medium">Outros Provedores</span>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Configuração de Agentes (para outros canais) -->
+        <template v-else>
+          <div class="space-y-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Nome da Caixa de Entrada</label>
+              <input
+                v-model="inboxForm.name"
+                type="text"
+                required
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+                :placeholder="`Ex: ${selectedChannelConfig?.title || 'Chat do Site'}`"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Descrição</label>
+              <textarea
+                v-model="inboxForm.description"
+                rows="2"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+                :placeholder="selectedChannelConfig?.description || 'Uma breve descrição desta caixa de entrada'"
+              ></textarea>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Agentes</label>
+              <p class="text-sm text-base-content/70 mb-4">
+                Aqui você pode adicionar agentes para gerenciar sua nova caixa de entrada criada. Somente esses agentes selecionados terão acesso à sua caixa de entrada. Agentes que não fazem parte desta caixa de entrada não poderão ver ou responder mensagens nesta caixa de entrada quando fizerem login.
+              </p>
+              <p class="text-sm text-base-content/70 mb-4 font-medium">
+                PS: Como administrador, se você precisar de acesso a todas as caixas de entrada, deve se adicionar como agente a todas as caixas de entrada que criar.
+              </p>
+              
+              <!-- Select de Agentes -->
+              <div class="relative" ref="agentsDropdownRef">
+                <!-- Dropdown Trigger -->
+                <div
+                  @click.stop="showAgentsDropdown = !showAgentsDropdown"
+                  class="mt-1 relative w-full cursor-pointer rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-orbit-500 focus:outline-none focus:ring-1 focus:ring-orbit-500 sm:text-sm"
+                >
+                  <span class="block truncate">
+                    {{ selectedAgents.length ? `${selectedAgents.length} agente(s) selecionado(s)` : 'Selecione os agentes' }}
+                  </span>
+                  <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                    <span class="i-lucide-chevron-down h-4 w-4 text-gray-400" aria-hidden="true"></span>
+                  </span>
+                </div>
+
+                <!-- Dropdown Menu -->
+                <div
+                  v-if="showAgentsDropdown"
+                  class="absolute z-10 mt-1 w-full rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                >
+                  <div class="p-2">
+                    <!-- Search Input -->
+                    <div class="relative mb-2">
+                      <span class="i-lucide-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4"></span>
+                      <input
+                        v-model="agentSearch"
+                        type="text"
+                        class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orbit-500 sm:text-sm sm:leading-6"
+                        placeholder="Buscar agentes..."
+                        @click.stop
+                      >
+                    </div>
+
+                    <!-- Users List -->
+                    <div class="max-h-60 overflow-auto">
+                      <div
+                        v-for="user in filteredUsers"
+                        :key="user.id"
+                        @click.stop="toggleAgent(user.id)"
+                        :class="[
+                          'relative flex items-center gap-2 px-3 py-2 cursor-pointer rounded-md transition-all duration-200',
+                          selectedAgents.includes(user.id) 
+                            ? 'bg-orbit-50 border-2 border-orbit-500' 
+                            : 'hover:bg-orbit-50/50 border-2 border-transparent'
+                        ]"
+                      >
+                        <!-- Avatar ou Iniciais -->
+                        <div class="flex-shrink-0 h-8 w-8 rounded-full bg-orbit-100 flex items-center justify-center">
+                          <span class="text-sm font-medium text-orbit-600">
+                            {{ user.name.charAt(0).toUpperCase() }}
+                          </span>
+                        </div>
+
+                        <!-- User Info -->
+                        <div class="flex-1 min-w-0">
+                          <p class="text-sm font-medium text-gray-900 truncate">{{ user.name }}</p>
+                          <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
+                        </div>
+
+                        <!-- Role Badge -->
+                        <span 
+                          :class="[
+                            'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
+                            user.role?.name === 'agent' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                          ]"
+                        >
+                          {{ user.role?.name === 'agent' ? 'Agente' : 'Usuário' }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
       </div>
 
-      <!-- Step 3: Configuração de Times -->
+      <!-- Step 3: Configuração do Canal -->
       <div v-else-if="currentStep === 2" class="max-w-2xl">
         <div class="space-y-6">
-          <!-- Seleção de times será adicionada aqui -->
+          <!-- Campos específicos do canal -->
+          <template v-if="selectedChannel === 'WHATSAPP'">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Provedor de API</label>
+              <select
+                v-model="inboxForm.provider"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+              >
+                <option value="">Selecione um provedor</option>
+                <option value="whatsapp_cloud">WhatsApp Cloud</option>
+                <option value="360dialog">360dialog</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Número de telefone</label>
+              <input
+                v-model="inboxForm.phoneNumber"
+                type="text"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+                placeholder="Por favor, insira o número de telefone do qual a mensagem será enviada."
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700">ID do número de telefone</label>
+              <input
+                v-model="inboxForm.phoneNumberId"
+                type="text"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+                placeholder="Por favor, insira o ID do número de telefone obtido no painel de desenvolvedores do Facebook."
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700">ID da conta comercial</label>
+              <input
+                v-model="inboxForm.businessAccountId"
+                type="text"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+                placeholder="Por favor, insira o ID da conta comercial obtido no painel de desenvolvedores do Facebook."
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Chave API</label>
+              <input
+                v-model="inboxForm.apiKey"
+                type="password"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+                placeholder="Chave API"
+              />
+            </div>
+          </template>
         </div>
       </div>
 
@@ -147,7 +342,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import { useI18n } from '@/i18n/plugin'
@@ -167,12 +362,12 @@ const steps = [
     description: 'Selecione o tipo de canal que você deseja configurar'
   },
   {
-    title: 'Configuração',
-    description: 'Configure as informações básicas do canal'
+    title: 'Agentes',
+    description: 'Selecione os agentes que terão acesso a este canal'
   },
   {
-    title: 'Times',
-    description: 'Defina quais times terão acesso a este canal'
+    title: 'Configuração',
+    description: 'Configure as informações específicas do canal'
   }
 ]
 
@@ -183,7 +378,16 @@ const inboxForm = ref({
   name: '',
   description: '',
   channelType: '',
-  organizationId: authStore.currentOrganization?.id
+  organizationId: authStore.currentOrganization?.id,
+  agents: [],
+  // Campos específicos do Email
+  emailProvider: '',
+  // Campos específicos do WhatsApp
+  provider: '',
+  phoneNumber: '',
+  phoneNumberId: '',
+  businessAccountId: '',
+  apiKey: ''
 })
 
 const selectedChannelConfig = computed(() => {
@@ -191,12 +395,64 @@ const selectedChannelConfig = computed(() => {
   return channels.channels[selectedChannel.value]
 })
 
+const users = ref([])
+const selectedAgents = ref([])
+
+// Função para buscar usuários
+async function fetchUsers() {
+  try {
+    const query = `
+      query GetUsers {
+        users {
+          id
+          name
+          email
+          role {
+            id
+            name
+          }
+          active
+        }
+      }
+    `
+
+    const response = await gqlRequest(query)
+    users.value = response.users.filter(user => user.active && ['agent', 'user'].includes(user.role?.name))
+  } catch (error) {
+    console.error('Erro ao buscar usuários:', error)
+  }
+}
+
+// Chama a função ao montar o componente
+onMounted(async () => {
+  await fetchUsers()
+})
+
 const canProceed = computed(() => {
   if (currentStep.value === 0) {
     return selectedChannel.value !== null
   }
   if (currentStep.value === 1) {
-    return inboxForm.value.name.trim() !== ''
+    if (selectedChannel.value === 'EMAIL') {
+      return inboxForm.value.emailProvider !== ''
+    }
+    return inboxForm.value.name.trim() !== '' && selectedAgents.value.length > 0
+  }
+  if (currentStep.value === 2) {
+    if (selectedChannel.value === 'EMAIL') {
+      return inboxForm.value.name.trim() !== '' && selectedAgents.value.length > 0
+    }
+    // Validação específica para WhatsApp
+    if (selectedChannel.value === 'WHATSAPP') {
+      return (
+        inboxForm.value.provider &&
+        inboxForm.value.phoneNumber &&
+        inboxForm.value.phoneNumberId &&
+        inboxForm.value.businessAccountId &&
+        inboxForm.value.apiKey
+      )
+    }
+    return true
   }
   return true
 })
@@ -229,6 +485,9 @@ function nextStep() {
 async function handleSubmit() {
   try {
     loading.value = true
+    
+    // Atualiza o inboxForm com os agentes selecionados
+    inboxForm.value.agents = selectedAgents.value
 
     const mutation = `
       mutation CreateInbox($input: InboxInput!) {
@@ -255,7 +514,7 @@ async function handleSubmit() {
     router.push('/settings/inbox')
   } catch (error) {
     console.error('Erro ao criar caixa de entrada:', error)
-    // Adicione aqui a lógica para mostrar o erro ao usuário
+    showToast(error.message, 'error')
   } finally {
     loading.value = false
   }
@@ -319,4 +578,45 @@ const sidebarSections = computed(() => [
     ]
   }
 ])
+
+function selectEmailProvider(provider) {
+  inboxForm.value.emailProvider = provider
+}
+
+const showAgentsDropdown = ref(false)
+const agentSearch = ref('')
+
+const filteredUsers = computed(() => {
+  if (!agentSearch.value) return users.value
+  const search = agentSearch.value.toLowerCase()
+  return users.value.filter(user => 
+    user.name.toLowerCase().includes(search) || 
+    user.email.toLowerCase().includes(search)
+  )
+})
+
+function toggleAgent(userId) {
+  const index = selectedAgents.value.indexOf(userId)
+  if (index === -1) {
+    selectedAgents.value.push(userId)
+  } else {
+    selectedAgents.value.splice(index, 1)
+  }
+}
+
+const agentsDropdownRef = ref(null)
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
+function handleClickOutside(e) {
+  if (agentsDropdownRef.value && !agentsDropdownRef.value.contains(e.target)) {
+    showAgentsDropdown.value = false
+  }
+}
 </script> 
