@@ -20,13 +20,13 @@ export default async function graphqlPlugin(fastify) {
           fastify.log.error('Erro ao verificar token:', err)
         }
 
-        if (!fastify.authService) {
-          throw new Error('AuthService não está registrado')
+        if (!fastify.auth) {
+          throw new Error('Controller auth não está registrado')
         }
 
         return {
           prisma: fastify.prisma,
-          authService: fastify.authService,
+          auth: fastify.auth,
           user,
           app: fastify
         }

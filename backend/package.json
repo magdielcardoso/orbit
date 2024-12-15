@@ -18,6 +18,7 @@
     "dotenv": "^16.4.7",
     "dotenv-cli": "^7.4.1",
     "fastify": "^5.1.0",
+    "fastify-plugin": "^5.0.1",
     "graphql": "^16.9.0",
     "graphql-subscriptions": "^2.0.0",
     "mercurius": "^15.1.0",
@@ -31,6 +32,7 @@
     "prisma": "^6.0.1"
   },
   "prisma": {
-    "seed": "node prisma/seed.js"
+    "seed": "node prisma/seed.js",
+    "schema": "./db/schema.prisma"
   }
 }

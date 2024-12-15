@@ -2,13 +2,13 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import jwt from '@fastify/jwt'
 import sensible from '@fastify/sensible'
-import { PrismaClient } from '@prisma/client'
+import prismaPlugin from './plugins/prisma.plugin.js'
 import graphqlPlugin from './plugins/graphql.js'
-import AuthService from './services/auth.service.js'
+import Auth from './controllers/auth.controller.js'
 import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { loggerService } from './services/logger.service.js'
+import Logger from './controllers/logger.controller.js'
 
 // Configura o path para o arquivo .env na raiz do projeto
 const __filename = fileURLToPath(import.meta.url)
@@ -47,20 +47,18 @@ async function setup() {
     })
 
     fastify.log.info('Registrando serviços...')
-    const prisma = new PrismaClient()
-    const authService = new AuthService(prisma)
-
-    fastify.decorate('prisma', prisma)
-    fastify.decorate('authService', authService)
+    await fastify.register(prismaPlugin)
+    const auth = new Auth(fastify.prisma)
+    fastify.decorate('auth', auth)
 
     // Inicializa o logger depois que o Fastify está configurado
-    loggerService.initialize(fastify.server, fastify)
+    Logger.initialize(fastify.server, fastify)
 
     fastify.log.info('Registrando GraphQL...')
     await fastify.register(graphqlPlugin)
 
     // Log de teste
-    loggerService.log('info', 'Sistema iniciado com sucesso', {
+    Logger.log('info', 'Sistema iniciado com sucesso', {
       service: 'app',
       action: 'startup'
     })

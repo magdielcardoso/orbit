@@ -61,7 +61,7 @@ export const logger = winston.createLogger({
   ]
 });
 
-class LoggerService {
+class Logger {
   constructor() {
     this.io = null;
     this.connectedClients = new Set();
@@ -333,4 +333,4 @@ class LoggerService {
   }
 }
 
-export const loggerService = new LoggerService(); 
+export default new Logger(); 

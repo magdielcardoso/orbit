@@ -478,12 +478,12 @@ export const resolvers = {
   },
 
   Mutation: {
-    register: async (_, args, { authService, prisma }) => {
+    register: async (_, args, { auth, prisma }) => {
       try {
-        if (!authService) throw new Error('AuthService não disponível');
+        if (!auth) throw new Error('Controller auth não disponível');
         
         // Executa o registro
-        const result = await authService.register(args);
+        const result = await auth.register(args);
 
         // Se tiver um organizationHashId, tenta encontrar a organização
         if (args.organizationHashId) {
@@ -662,10 +662,10 @@ export const resolvers = {
       }
     },
 
-    login: async (_, args, { authService }) => {
+    login: async (_, args, { auth }) => {
       try {
-        if (!authService) throw new Error('AuthService não disponível')
-        const result = await authService.login(args)
+        if (!auth) throw new Error('Controller auth não disponível')
+        const result = await auth.login(args)
         console.log('Login result:', result) // Debug
         return result
       } catch (error) {

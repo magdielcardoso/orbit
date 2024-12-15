@@ -35,6 +35,9 @@ importers:
       fastify:
         specifier: ^5.1.0
         version: 5.2.0
+      fastify-plugin:
+        specifier: ^5.0.1
+        version: 5.0.1
       graphql:
         specifier: ^16.9.0
         version: 16.10.0
