@@ -40,7 +40,7 @@ const detailedFormat = winston.format.printf(({ level, message, timestamp, ...me
 });
 
 // Atualiza o logger com mais transportes e formatos
-export const logger = winston.createLogger({
+export const transports = winston.createLogger({
   level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
   format: winston.format.combine(
     winston.format.timestamp({
@@ -257,7 +257,7 @@ class Logger {
       this.recentLogs.shift();
     }
 
-    logger.log(level, message, logEntry);
+    transports.log(level, message, logEntry);
     
     // Envia para clientes conectados
     if (this.io) {

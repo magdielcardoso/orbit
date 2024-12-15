@@ -1,5 +1,4 @@
 import os from 'os';
-import { prisma } from '../lib/prisma.js';
 
 export async function getSystemMetrics() {
   const cpuUsage = os.loadavg()[0];

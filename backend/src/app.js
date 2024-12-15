@@ -3,6 +3,7 @@ import cors from '@fastify/cors'
 import jwt from '@fastify/jwt'
 import sensible from '@fastify/sensible'
 import prismaPlugin from './plugins/prisma.plugin.js'
+import loadControllers from './plugins/controllers.plugin.js'
 import graphqlPlugin from './plugins/graphql.js'
 import Auth from './controllers/auth.controller.js'
 import dotenv from 'dotenv'
@@ -46,7 +47,8 @@ async function setup() {
       secret: process.env.JWT_SECRET
     })
 
-    fastify.log.info('Registrando serviços...')
+    fastify.log.info('Registrando controladores...')
+    await loadControllers(fastify);
     await fastify.register(prismaPlugin)
     const auth = new Auth(fastify.prisma)
     fastify.decorate('auth', auth)

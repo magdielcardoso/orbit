@@ -1,4 +1,4 @@
-export default async function authRoutes(fastify, options) {
+export default async function authRoutes(fastify) {
   fastify.post('/auth/register', async (request, reply) => {
     try {
       const result = await fastify.auth.register(request.body)

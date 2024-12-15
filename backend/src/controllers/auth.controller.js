@@ -1,79 +1,30 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import Logger from './logger.controller.js'
-
+import * as UserModel from '../models/user.model.js';
 export default class Auth {
-  constructor(prisma) {
-    this.prisma = prisma
-  }
 
-  async register({ email, password, name }) {
+  async register({ email, password,  }) {
     try {
-      // Verifica se usuário já existe
-      const existingUser = await this.prisma.user.findUnique({
-        where: { email }
-      })
+      const existingUser = await UserModel.findUserIfExists(email)
 
       if (existingUser) {
         throw new Error('Email já cadastrado')
       }
 
-      // Busca ou cria o papel padrão 'user'
-      let userRole = await this.prisma.role.findUnique({
-        where: { name: 'user' }
-      })
+      let userRole = await UserModel.findRole('user');
 
       if (!userRole) {
-        userRole = await this.prisma.role.create({
-          data: {
-            name: 'user',
-            description: 'Usuário padrão do sistema'
-          }
-        })
+        userRole = await UserModel.createRole('user')
 
-        // Cria permissão use_chat se não existir
-        const useChat = await this.prisma.permission.upsert({
-          where: { name: 'use_chat' },
-          update: {},
-          create: {
-            name: 'use_chat',
-            description: 'Usar o chat'
-          }
-        })
+        const useChat = await UserModel.createPermissionIfNotExists('user_chat', 'Usar o chat')
 
-        // Associa permissão ao papel
-        await this.prisma.rolePermission.create({
-          data: {
-            roleId: userRole.id,
-            permissionId: useChat.id
-          }
-        })
+        await UserModel.relatesRolePermission(userRole, useChat)
       }
 
-      // Cria o usuário com o papel padrão
-      const hashedPassword = await bcrypt.hash(password, 10)
-      const user = await this.prisma.user.create({
-        data: {
-          email,
-          password: hashedPassword,
-          name,
-          roleId: userRole.id,
-          active: true
-        },
-        include: {
-          role: {
-            include: {
-              permissions: {
-                include: {
-                  permission: true
-                }
-              }
-            }
-          }
-        }
-      })
+      const passwordHash = await bcrypt.hash(password, 10)
+      const user = UserModel.createUser(name, email, passwordHash, userRole)
 
-      // Gera o token
       const token = jwt.sign(
         {
           id: user.id,
@@ -85,7 +36,6 @@ export default class Auth {
         { expiresIn: '7d' }
       );
 
-      // Retorna o usuário formatado com suas permissões
       return {
         token,
         user: {
@@ -104,21 +54,7 @@ export default class Auth {
 
   async login({ email, password }) {
     try {
-      // Busca o usuário com todas as permissões
-      const user = await this.prisma.user.findUnique({
-        where: { email },
-        include: {
-          role: {
-            include: {
-              permissions: {
-                include: {
-                  permission: true
-                }
-              }
-            }
-          }
-        }
-      })
+      const user = await UserModel.findUserByEmail(email)
 
       console.log('Found user:', JSON.stringify(user, null, 2)) // Debug
 
@@ -126,18 +62,15 @@ export default class Auth {
         throw new Error('Usuário não encontrado')
       }
 
-      // Verifica a senha
       const valid = await bcrypt.compare(password, user.password)
       if (!valid) {
         throw new Error('Senha inválida')
       }
 
-      // Mapeia as permissões para o formato esperado
       const permissions = user.role.permissions.map(rp => ({
         name: rp.permission.name
       }))
 
-      // Retorna o formato esperado pelo frontend
       Logger.log('info', 'Login realizado com sucesso', {
         service: 'auth',
         action: 'login',
