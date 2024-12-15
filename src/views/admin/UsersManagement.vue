@@ -212,6 +212,7 @@
     <Modal
       v-if="showEditModal"
       @close="showEditModal = false"
+      class="modal-dynamic-height"
     >
       <template #title>
         {{ t('admin.users.editUser') }}
@@ -280,21 +281,81 @@
           <!-- Organização -->
           <div class="form-control">
             <label class="label">
-              <span class="label-text">{{ t('admin.users.form.organization') }}</span>
+              <span class="label-text">{{ t('admin.users.form.organization.title') }}</span>
             </label>
-            <select
-              v-model="editingUser.organizationId"
-              class="select select-bordered w-full"
-            >
-              <option value="">{{ t('admin.users.form.selectOrganization') }}</option>
-              <option 
-                v-for="org in organizations" 
-                :key="org.id" 
-                :value="org.id"
+            
+            <!-- Multi-select com tags -->
+            <div class="relative">
+              <div class="input input-bordered w-full min-h-[42px] flex items-center flex-wrap gap-2 p-1 cursor-text" @click="showOrgDropdown = true">
+                <!-- Tags das organizações selecionadas -->
+                <div 
+                  v-for="org in selectedOrganizations" 
+                  :key="org.id"
+                  :class="`badge gap-1 ${getOrgBadgeColor(org)}`"
+                >
+                  {{ org.name }}
+                  <button 
+                    @click.stop="removeOrganization(org)"
+                    class="btn btn-ghost btn-xs text-xs"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <!-- Input inline com as tags -->
+                <input
+                  type="text"
+                  v-model="orgSearchText"
+                  class="flex-1 min-w-[60px] outline-none bg-transparent border-none p-1"
+                  :placeholder="selectedOrganizations.length ? '' : t('admin.users.form.organization.select')"
+                />
+              </div>
+
+              <!-- Dropdown de organizações -->
+              <div 
+                v-if="showOrgDropdown"
+                class="absolute z-50 w-full mt-1 bg-base-100 shadow-lg rounded-lg border border-base-300"
               >
-                {{ org.name }}
-              </option>
-            </select>
+                <!-- Barra de pesquisa no topo do dropdown -->
+                <div class="p-2 border-b border-base-300">
+                  <div class="relative">
+                    <input
+                      type="text"
+                      v-model="orgSearchText"
+                      class="input input-sm input-bordered w-full pr-8"
+                      :placeholder="t('admin.users.form.organization.search')"
+                      ref="searchInput"
+                    />
+                    <span class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400">
+                      🔍
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Lista de organizações -->
+                <div class="max-h-60 overflow-auto">
+                  <ul class="menu menu-compact">
+                    <li v-for="org in filteredOrganizations" :key="org.id">
+                      <a 
+                        @click="toggleOrganization(org)"
+                        class="flex items-center justify-between py-2"
+                      >
+                        <span>{{ org.name }}</span>
+                        <input 
+                          type="checkbox"
+                          :checked="isOrganizationSelected(org)"
+                          class="checkbox checkbox-sm"
+                          @click.stop
+                        />
+                      </a>
+                    </li>
+                    <li v-if="filteredOrganizations.length === 0" class="p-2 text-sm text-gray-500 text-center">
+                      {{ t('admin.users.form.organization.noResults') }}
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
         </form>
       </template>
@@ -322,7 +383,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed, nextTick, watch } from 'vue';
 import { useI18n } from '@/i18n';
 import { gqlRequest } from '../../utils/graphql';
 import { useAuthStore } from '../../stores/auth.store';
@@ -348,6 +409,10 @@ const isAgentRole = ref(false);
 const showEditModal = ref(false)
 const editingUser = ref(null)
 const organizations = ref([])
+const orgSearchText = ref('')
+const showOrgDropdown = ref(false)
+const selectedOrganizations = ref([])
+const searchInput = ref(null)
 
 // Função para verificar se a role selecionada é agent
 function checkIfAgentRole(roleId) {
@@ -709,6 +774,14 @@ async function editUser(user) {
     // Carrega a lista de organizações disponíveis
     await fetchOrganizations()
 
+    // Inicializa as organizações selecionadas
+    selectedOrganizations.value = userDetails.organizations?.map(org => ({
+      id: org.organization.id,
+      name: org.organization.name,
+      isAdmin: org.isAdmin,
+      isOwner: org.isOwner
+    })) || []
+
     showEditModal.value = true
   } catch (error) {
     console.error('Erro ao carregar detalhes do usuário:', error)
@@ -754,7 +827,12 @@ async function handleUpdateUser() {
         roleId: editingUser.value.role?.id,
         active: editingUser.value.active,
         parentUserId: editingUser.value.parentUser?.id,
-        currentOrgId: editingUser.value.organizationId || null
+        currentOrgId: editingUser.value.organizationId || null,
+        organizations: selectedOrganizations.value.map(org => ({
+          id: org.id,
+          isAdmin: org.isAdmin,
+          isOwner: org.isOwner
+        }))
       }
     }, {
       headers: {
@@ -776,4 +854,139 @@ async function handleUpdateUser() {
     loading.value = false
   }
 }
+
+// Computed para filtrar organizações
+const filteredOrganizations = computed(() => {
+  return organizations.value.filter(org => 
+    org.name.toLowerCase().includes(orgSearchText.value.toLowerCase())
+  )
+})
+
+// Verifica se uma organização está selecionada
+function isOrganizationSelected(org) {
+  return selectedOrganizations.value.some(selected => selected.id === org.id)
+}
+
+// Adiciona/remove organização da seleção
+function toggleOrganization(org) {
+  const index = selectedOrganizations.value.findIndex(selected => selected.id === org.id)
+  if (index === -1) {
+    selectedOrganizations.value.push(org)
+  } else {
+    selectedOrganizations.value.splice(index, 1)
+  }
+}
+
+// Remove organização da seleção
+function removeOrganization(org) {
+  const index = selectedOrganizations.value.findIndex(selected => selected.id === org.id)
+  if (index !== -1) {
+    selectedOrganizations.value.splice(index, 1)
+  }
+}
+
+// Fechar dropdown ao clicar fora
+onMounted(() => {
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.form-control')) {
+      showOrgDropdown.value = false
+    }
+  })
+})
+
+// Função para gerar cor da badge baseada no plano da organização
+function getOrgBadgeColor(org) {
+  const colors = {
+    'FREE': 'badge-ghost',
+    'STARTER': 'badge-primary',
+    'PROFESSIONAL': 'badge-secondary',
+    'ENTERPRISE': 'badge-accent'
+  }
+  return colors[org.plan] || 'badge-neutral'
+}
+
+// Foca no input de pesquisa quando abrir o dropdown
+watch(showOrgDropdown, (newValue) => {
+  if (newValue) {
+    nextTick(() => {
+      searchInput.value?.focus()
+    })
+  }
+})
 </script> 
+
+<style scoped>
+/* Ajusta a altura do modal dinamicamente */
+.modal-dynamic-height :deep(.modal-box) {
+  max-height: 90vh;
+  height: auto;
+  min-height: fit-content;
+  overflow: visible;
+  transition: all 0.3s ease;
+}
+
+/* Ajusta o container do form para ter scroll quando necessário */
+.modal-dynamic-height :deep(.modal-box) form {
+  max-height: calc(90vh - 10rem);
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Ajusta o dropdown para não ser cortado */
+.form-control {
+  position: relative;
+  z-index: 50;
+}
+
+/* Container do dropdown */
+.form-control .relative {
+  position: static; /* Permite que o dropdown expanda o modal */
+}
+
+/* Dropdown de organizações */
+.form-control .relative > div[class*="absolute"] {
+  position: relative;
+  width: 100%;
+  margin-top: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+/* Garante que o dropdown fique sobre outros elementos */
+.dropdown-content {
+  z-index: 60;
+}
+
+/* Adiciona scroll suave */
+.form-control, .modal-box {
+  scrollbar-width: thin;
+  scrollbar-color: theme('colors.purple.500') theme('colors.gray.200');
+}
+
+/* Estiliza a scrollbar para navegadores webkit */
+.form-control::-webkit-scrollbar,
+.modal-box::-webkit-scrollbar {
+  width: 6px;
+}
+
+.form-control::-webkit-scrollbar-track,
+.modal-box::-webkit-scrollbar-track {
+  background: theme('colors.gray.200');
+  border-radius: 3px;
+}
+
+.form-control::-webkit-scrollbar-thumb,
+.modal-box::-webkit-scrollbar-thumb {
+  background-color: theme('colors.purple.500');
+  border-radius: 3px;
+}
+
+/* Ajusta o espaçamento do conteúdo do modal */
+.modal-dynamic-height :deep(.modal-box) {
+  padding: 1.5rem;
+}
+
+/* Garante que o modal se expanda com o dropdown */
+.modal-dynamic-height :deep(.modal-box) {
+  overflow: visible !important;
+}
+</style> 

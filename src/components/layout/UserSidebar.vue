@@ -2,9 +2,9 @@
     <aside class="flex h-screen w-16 flex-col justify-between border-r border-base-300 bg-base-200 px-1.5 py-4">
       <div class="space-y-8">
         <!-- Logo -->
-        <div class="flex justify-center text-smooth">
-          <div class="tooltip tooltip-right" :data-tip="t('navigation.chats')">
-            <MessageSquare class="h-5 w-5 text-primary" />
+        <div class="flex justify-center">
+          <div class="tooltip tooltip-right" :data-tip="t('app.name')">
+            <img src="/orbit.svg" alt="Logo" class="w-8 h-8 transition-all duration-200 hover:scale-110" />
           </div>
         </div>
   
@@ -338,6 +338,16 @@
   
   .relative:has(.absolute)::before {
     display: none;
+  }
+  
+  /* Adiciona efeito de hover no logo */
+  .tooltip img {
+    filter: brightness(1);
+    transition: all 0.2s ease;
+  }
+  
+  .tooltip:hover img {
+    filter: brightness(1.1);
   }
   </style>
   

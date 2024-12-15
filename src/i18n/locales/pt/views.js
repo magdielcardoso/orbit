@@ -192,12 +192,11 @@ export default {
           toggleActive: 'Clique para ativar/desativar o usuário'
         },
         organization: {
-          title: 'Organização',
-          select: 'Selecione uma organização',
-          permissions: 'Permissões na organização',
-          isAdmin: 'Administrador da organização',
-          isOwner: 'Proprietário da organização',
-          noOrganization: 'Sem organização'
+          title: 'Organizações',
+          select: 'Selecione as organizações',
+          search: 'Buscar organizações...',
+          noResults: 'Nenhuma organização encontrada',
+          selected: 'organizações selecionadas'
         },
         organization: 'Organização',
         selectOrganization: 'Selecione uma organização',
