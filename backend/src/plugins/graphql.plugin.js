@@ -1,4 +1,5 @@
 import mercurius from 'mercurius'
+import { AltairFastify } from 'altair-fastify-plugin'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { readdir, readFile } from 'fs/promises'
@@ -11,7 +12,12 @@ const __dirname = path.dirname(__filename)
 export default async function graphqlPlugin(fastify) {
   fastify.log.info('[GraphQL] Iniciando...')
   try {
-    return fastify.register(mercurius, {
+    await fastify.register(AltairFastify, {
+      path: '/altair',
+      baseURL: '/altair/',
+      endpointURL: '/graphql'
+    })
+    fastify.register(mercurius, {
       schema: makeExecutableSchema({
         typeDefs: await loadSchemas(fastify),
         resolvers: await loadResolvers(fastify)
@@ -38,8 +44,10 @@ export default async function graphqlPlugin(fastify) {
           app: fastify
         }
       },
-      graphiql: true
+      graphiql: false,
+      ide: false
     })
+    return
   } catch (error) {
     fastify.log.error('[Graphql] Erro ao carregar plugin GraphQL:', error)
     throw error

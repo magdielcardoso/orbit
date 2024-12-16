@@ -17,6 +17,7 @@
     "@graphql-tools/load": "^8.0.9",
     "@graphql-tools/schema": "^10.0.13",
     "@prisma/client": "^6.0.1",
+    "altair-fastify-plugin": "^8.0.5",
     "bcrypt": "^5.1.1",
     "dotenv": "^16.4.7",
     "dotenv-cli": "^7.4.1",

@@ -37,7 +37,6 @@ async function setup() {
     await fastify.register(jwt, {
       secret: process.env.JWT_SECRET
     })
-
     fastify.log.info('Registrando controladores...')
     await loadControllers(fastify)
     await fastify.register(prismaPlugin)
@@ -47,8 +46,8 @@ async function setup() {
     // Inicializa o logger depois que o Fastify está configurado
     loggerService.initialize(fastify.server, fastify)
 
-    fastify.log.info('[Graphql] Registrando GraphQL...')
-    await fastify.register(graphqlPlugin)
+    fastify.log.info('[Graphql] Registrando GraphQL e Altair...')
+    await graphqlPlugin(fastify);
 
     // Log de teste
     loggerService.log('info', 'Sistema iniciado com sucesso', {

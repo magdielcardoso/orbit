@@ -10,7 +10,7 @@ export default fp(async fastify => {
     await instance.prisma.$disconnect()
   })
 
-  fastify.addHook('preHandler', async (request) => {
+  fastify.addHook('preHandler', async request => {
     request.prisma = prismaInstance
   })
 })
@@ -21,13 +21,13 @@ const {
   DB_USERNAME = 'orbitchat',
   DB_PASSWORD = 'orbitchat',
   DB_PORT = '5432',
-  DB_SCHEMA = 'public',
-} = process.env;
+  DB_SCHEMA = 'public'
+} = process.env
 
-const isProduction = NODE_ENV === 'production';
+const isProduction = NODE_ENV === 'production'
 
-const databaseName = isProduction ? 'orbitchat' : 'orbitchat_dev';
-const databaseUrl = `postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${databaseName}?schema=${DB_SCHEMA}`;
+const databaseName = isProduction ? 'orbitchat' : 'orbitchat_dev'
+const databaseUrl = `postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${databaseName}?schema=${DB_SCHEMA}`
 
 // Cria a instância única do Prisma Client
 export const prismaInstance = new PrismaClient({
