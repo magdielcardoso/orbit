@@ -1,17 +1,40 @@
 // plugins/prisma.plugin.js
 import fp from 'fastify-plugin'
-import prisma from '../helpers/prisma.helper.js'
+import { PrismaClient } from '@prisma/client'
+import { config } from 'dotenv'
+import '../helpers/loadEnv.helper.js'
 
 export default fp(async fastify => {
-  fastify.decorate('prisma', prisma)
+  fastify.decorate('prisma', prismaInstance)
 
-  // Hook para desconectar ao fechar a aplicação
   fastify.addHook('onClose', async instance => {
     await instance.prisma.$disconnect()
   })
 
-  // Adicionar o Prisma ao contexto HTTP
   fastify.addHook('preHandler', async (request, reply) => {
-    request.prisma = prisma
+    request.prisma = prismaInstance
   })
+})
+
+const {
+  NODE_ENV,
+  DB_HOST = 'localhost',
+  DB_USERNAME = 'orbitchat',
+  DB_PASSWORD = 'orbitchat',
+  DB_PORT = '5432',
+  DB_SCHEMA = 'public',
+} = process.env;
+
+const isProduction = NODE_ENV === 'production';
+
+const databaseName = isProduction ? 'orbitchat' : 'orbitchat_dev';
+const databaseUrl = `postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${databaseName}?schema=${DB_SCHEMA}`;
+
+// Cria a instância única do Prisma Client
+export const prismaInstance = new PrismaClient({
+  datasources: {
+    db: {
+      url: databaseUrl
+    }
+  }
 })

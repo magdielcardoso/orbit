@@ -4,7 +4,7 @@ import { dirname, join } from 'path'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
-const rootEnvPath = join(__dirname, '../../.env')
+const rootEnvPath = join(__dirname, '../../../.env')
 
 config({ path: rootEnvPath })
 

@@ -1,10 +1,9 @@
 // models/user.model.js
-
-import prisma from '../helpers/prisma.helper.js'
+import { prismaInstance } from '../plugins/prisma.plugin.js'
 
 // USER
 export const createUser = async (name, email, passwordHash, userRole) => {
-  return await prisma.user.create({
+  return await prismaInstance.user.create({
     data: {
       email,
       password: passwordHash,
@@ -27,11 +26,11 @@ export const createUser = async (name, email, passwordHash, userRole) => {
 }
 
 export const findUserIfExists = async email => {
-  return await prisma.user.findUnique({ where: { email } })
+  return await prismaInstance.user.findUnique({ where: { email } })
 }
 
 export const findUserByEmail = async email => {
-  return await prisma.user.findUnique({
+  return await prismaInstance.user.findUnique({
     where: { email },
     include: {
       role: {
@@ -49,13 +48,13 @@ export const findUserByEmail = async email => {
 
 // ROLES
 export const findRole = async name => {
-  return await prisma.role.findUnique({
+  return await prismaInstance.role.findUnique({
     where: { name: name }
   })
 }
 
 export const createRole = async name => {
-  return await prisma.role.create({
+  return await prismaInstance.role.create({
     data: {
       name: name,
       description: 'Usuário padrão do sistema'
@@ -65,7 +64,7 @@ export const createRole = async name => {
 
 // PERMISSIONS
 export const createPermissionIfNotExists = async (name, description) => {
-  return await prisma.permission.upsert({
+  return await prismaInstance.permission.upsert({
     where: { name: name },
     update: {},
     create: {
@@ -76,7 +75,7 @@ export const createPermissionIfNotExists = async (name, description) => {
 }
 
 export const relatesRolePermission = async (userRole, useChat) => {
-  return await prisma.rolePermission.create({
+  return await prismaInstance.rolePermission.create({
     data: {
       roleId: userRole.id,
       permissionId: useChat.id
