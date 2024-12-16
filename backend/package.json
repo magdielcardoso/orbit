@@ -36,7 +36,7 @@
     "prisma": "^6.0.1"
   },
   "prisma": {
-    "seed": "node prisma/seed.js",
+    "seed": "node ./db/seed.js",
     "schema": "./db/schema.prisma"
   }
 }

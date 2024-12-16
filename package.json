@@ -60,7 +60,7 @@
     "vitest": "^1.6.0"
   },
   "prisma": {
-    "seed": "node prisma/seed.js",
+    "seed": "node /backend/db/seed.js",
     "schema": "./backend/db/schema.prisma"
   }
 }
