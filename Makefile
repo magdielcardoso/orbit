@@ -3,6 +3,11 @@ NODE = node
 NPM = pnpm
 PRISMA = npx prisma
 
+include .env
+export $(shell sed s/=.*// .env)
+
+DB_NAME = $(if $(filter production,$(NODE_ENV)),orbitchat,orbitchat_dev)
+
 # Comandos principais
 .PHONY: install dev build start clean migrate reinstall test test-watch test-coverage test-ui test-component test-component-watch
 
@@ -34,16 +39,16 @@ clean:
 .PHONY: migrate-dev migrate-deploy studio generate
 
 migrate-dev:
-	cd backend && DATABASE_URL="postgresql://orbitchat:orbitchat@localhost:5432/orbitchat?schema=public" npx prisma migrate dev
+	cd backend && DATABASE_URL=postgresql://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?schema=$(DB_SCHEMA) $(PRISMA) migrate dev
 
 migrate-deploy:
-	cd backend && DATABASE_URL="postgresql://orbitchat:orbitchat@localhost:5432/orbitchat?schema=public" npm run prisma:migrate
+	cd backend && DATABASE_URL=postgresql://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?schema=$(DB_SCHEMA) $(NPM) run prisma:migrate
 
 studio:
-	cd backend && DATABASE_URL="postgresql://orbitchat:orbitchat@localhost:5432/orbitchat?schema=public" npm run prisma:studio
+	cd backend && DATABASE_URL=postgresql://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?schema=$(DB_SCHEMA) $(NPM) run prisma:studio
 
 generate:
-	cd backend && DATABASE_URL="postgresql://orbitchat:orbitchat@localhost:5432/orbitchat?schema=public" npm run prisma:generate
+	cd backend && DATABASE_URL=postgresql://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?schema=$(DB_SCHEMA) $(NPM) run prisma:generate
 
 # Comandos compostos
 .PHONY: setup reset reinstall
@@ -61,19 +66,19 @@ reinstall:
 	cd backend && $(NPM) install
 
 seed:
-	cd backend && npx prisma db seed
+	cd backend && $(PRISMA) db seed
 
 setup-db:
-	cd backend && npx prisma generate && npx prisma migrate reset --force && npx prisma db seed
+	cd backend && $(PRISMA) generate && $(PRISMA) migrate reset --force && $(PRISMA) db seed
 
 # Comandos de banco de dados
 .PHONY: db-reset db-seed db-setup
 
 db-reset:
-	cd backend && DATABASE_URL="postgresql://orbitchat:orbitchat@localhost:5432/orbitchat?schema=public" npx prisma migrate reset --force
+	cd backend && DATABASE_URL=postgresql://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?schema=$(DB_SCHEMA) $(PRISMA) migrate reset --force
 
 db-seed:
-	cd backend && DATABASE_URL="postgresql://orbitchat:orbitchat@localhost:5432/orbitchat?schema=public" npx prisma db seed
+	cd backend && DATABASE_URL=postgresql://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?schema=$(DB_SCHEMA) $(PRISMA) db seed
 
 db-setup: generate db-reset db-seed
 

@@ -38,9 +38,6 @@ export default async function graphqlPlugin(fastify) {
       }
     }
 
-    // Verifica e loga o objeto resolvers antes de registrar o plugin
-    fastify.log.error('Resolvers finais:', resolvers)
-
     return fastify.register(mercurius, {
       schema: typeDefs,
       resolvers,

@@ -1,7 +1,6 @@
 // plugins/prisma.plugin.js
 import fp from 'fastify-plugin'
 import { PrismaClient } from '@prisma/client'
-import { config } from 'dotenv'
 import '../helpers/loadEnv.helper.js'
 
 export default fp(async fastify => {
