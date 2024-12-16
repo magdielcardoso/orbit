@@ -405,5 +405,22 @@ export default {
     save: 'Salvar',
     loading: 'Carregando...',
     actions: 'Ações'
+  },
+  kanban: {
+    title: 'Kanban',
+    description: 'Gerencie suas tarefas e projetos de forma visual',
+    columns: {
+      backlog: 'Backlog',
+      todo: 'A Fazer',
+      inProgress: 'Em Progresso',
+      review: 'Em Revisão',
+      done: 'Concluído'
+    },
+    actions: {
+      addCard: 'Adicionar Card',
+      filter: 'Filtrar',
+      sort: 'Ordenar',
+      newTask: 'Nova Tarefa'
+    }
   }
 } 

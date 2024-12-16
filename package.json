@@ -38,6 +38,7 @@
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
     "vue3-lottie": "^3.3.1",
+    "vuedraggable": "^4.1.0",
     "web-vitals": "^4.2.4",
     "zod": "^3.24.1"
   },

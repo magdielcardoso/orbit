@@ -8,6 +8,7 @@ export default {
     chats: 'Chats',
     contacts: 'Contacts',
     favorites: 'Favorites',
+    kanban: 'Kanban',
     settings: 'Settings',
     notifications: 'Notifications',
     profile: 'Profile'

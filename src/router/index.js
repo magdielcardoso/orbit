@@ -16,6 +16,7 @@ import { formatAccountUrl } from '../utils/string'
 import UserSettings from '@/views/user/UserSettings.vue'
 import InboxSettings from '@/views/user/InboxSettings.vue'
 import InboxSetup from '@/views/user/InboxSetup.vue'
+import KanbanView from '../views/user/KanbanView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -41,6 +42,12 @@ const router = createRouter({
           path: '',
           name: 'dashboard',
           component: HomeView
+        },
+        {
+          path: 'kanban',
+          name: 'kanban',
+          component: () => import('../views/user/KanbanView.vue'),
+          meta: { requiresAuth: true }
         },
         {
           path: 'chats',

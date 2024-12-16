@@ -20,6 +20,16 @@
             </button>
           </div>
   
+          <div class="tooltip tooltip-right" :data-tip="t('navigation.kanban')">
+            <button
+              @click="navigate('kanban')"
+              class="nav-button"
+              :class="{ 'active': currentRoute === 'kanban' }"
+            >
+              <Kanban class="h-4 w-4" />
+            </button>
+          </div>
+  
           <div class="tooltip tooltip-right" :data-tip="t('navigation.chats')">
             <button
               @click="navigate('chats')"
@@ -202,25 +212,36 @@
   <script setup>
   import { useRouter } from 'vue-router'
   import { ref, computed, onMounted, onUnmounted } from 'vue'
-  import { useI18n } from '@/i18n/plugin'
-  import { 
-    MessageCircle, 
-    Home, 
-    Users, 
+  import { useI18n } from '@/i18n'
+  import { useAuthStore } from '@/stores/auth.store'
+  import {
+    Home,
+    MessageCircle,
+    Users,
     Star,
     Settings,
-    MessageSquare,
     Bell,
     LogOut,
     User,
     Moon,
     Sun,
     HelpCircle,
-    ArrowRight
+    ChevronRight,
+    ArrowRight,
+    Plus,
+    Filter, 
+    SortDesc, 
+    Calendar, 
+    Tag,
+    UserPlus, 
+    MoreVertical, 
+    Archive,
+    Kanban,
+    AlertOctagon,
+    Share2
   } from 'lucide-vue-next'
   import ThemeModal from '../ui/ThemeModal.vue'
   import NotificationsMenu from '../ui/NotificationsMenu.vue'
-  import { useAuthStore } from '../../stores/auth.store'
   
   const { t } = useI18n()
   const router = useRouter()
@@ -262,8 +283,11 @@
   const showNotificationsMenu = ref(false)
   
   function handleClickOutside(event) {
-    if (showUserMenu.value && !event.target.closest('.relative')) {
+    if (showUserMenu.value && !event.target.closest('.user-menu-container')) {
       showUserMenu.value = false
+    }
+    if (showNotificationsMenu.value && !event.target.closest('.notifications-menu-container')) {
+      showNotificationsMenu.value = false
     }
   }
   
