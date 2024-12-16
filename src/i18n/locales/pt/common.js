@@ -161,6 +161,36 @@ export default {
       customers: 'Clientes',
       leads: 'Leads',
       archived: 'Arquivados'
+    },
+    details: {
+      startChat: 'Iniciar Conversa',
+      funnel: {
+        title: 'Status do Funil',
+        change: 'Mudar',
+        stages: {
+          lead: 'Lead',
+          contact: 'Primeiro Contato',
+          negotiation: 'Negociação',
+          proposal: 'Proposta',
+          closed: 'Fechado'
+        }
+      },
+      contactInfo: 'Informações de Contato',
+      notes: {
+        title: 'Notas',
+        empty: 'Nenhuma nota adicionada'
+      },
+      history: {
+        title: 'Histórico',
+        lastContact: 'Último contato',
+        created: 'Criado em',
+        updated: 'Atualizado em'
+      },
+      goals: {
+        title: 'Objetivos',
+        salesTarget: 'Meta de vendas',
+        proposals: 'Propostas enviadas'
+      }
     }
   },
   navbar: {

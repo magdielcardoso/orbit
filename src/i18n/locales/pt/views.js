@@ -50,7 +50,7 @@ export default {
   },
   contacts: {
     title: 'Contatos',
-    description: 'Gerencie seus contatos e mantenha seu relacionamento com clientes.',
+    description: 'Gerencie seus contatos e mantenha suas informações organizadas',
     noContacts: 'Nenhum contato encontrado',
     addContact: 'Adicionar Contato',
     newContact: 'Novo Contato',
@@ -82,9 +82,11 @@ export default {
       emailPlaceholder: 'Digite o e-mail do contato',
       phonePlaceholder: 'Digite o telefone do contato',
       tagsPlaceholder: 'Separe as tags por vírgula',
-      notesPlaceholder: 'Adicione observações sobre o contato'
+      notesPlaceholder: 'Adicione observações sobre o contato',
+      editDescription: 'Edite as informações do contato abaixo.'
     },
-    confirmDelete: 'Tem certeza que deseja excluir o contato {name}?',
+    confirmDelete: 'Excluir {name}?',
+    confirmDeleteDescription: 'Esta ação não pode ser desfeita.',
     createSuccess: 'Contato criado com sucesso!',
     updateSuccess: 'Contato atualizado com sucesso!',
     deleteSuccess: 'Contato excluído com sucesso!',
@@ -93,7 +95,47 @@ export default {
       updateError: 'Erro ao atualizar contato',
       deleteError: 'Erro ao excluir contato',
       notFound: 'Contato não encontrado',
-      nameRequired: 'O nome do contato é obrigatório'
+      nameRequired: 'O nome do contato é obrigatório',
+      duplicateContact: 'Já existe um contato com este telefone ou email',
+      organizationRequired: 'Selecione uma organização primeiro'
+    },
+    details: {
+      startChat: 'Iniciar Conversa',
+      funnel: {
+        title: 'Status do Funil',
+        change: 'Mudar',
+        stages: {
+          lead: 'Lead',
+          contact: 'Primeiro Contato',
+          negotiation: 'Negociação',
+          proposal: 'Proposta',
+          closed: 'Fechado'
+        }
+      },
+      contactInfo: 'Informações de Contato',
+      notes: {
+        title: 'Notas',
+        empty: 'Nenhuma nota adicionada'
+      },
+      history: {
+        title: 'Histórico',
+        lastContact: 'Último contato',
+        created: 'Criado em',
+        updated: 'Atualizado em'
+      },
+      goals: {
+        title: 'Objetivos',
+        salesTarget: 'Meta de vendas',
+        proposals: 'Propostas enviadas'
+      },
+      actions: {
+        edit: 'Editar',
+        delete: 'Excluir',
+        startChat: 'Iniciar Conversa',
+        filter: 'Filtrar',
+        sort: 'Ordenar',
+        newContact: 'Novo Contato'
+      }
     }
   },
   favorites: {
@@ -102,53 +144,45 @@ export default {
   },
   settings: {
     title: 'Configurações',
-    language: 'Idioma',
-    selectLanguage: 'Selecione o idioma',
-    selectTheme: 'Selecione o tema',
-    themes: {
-      light: 'Tema Claro',
-      dark: 'Tema Escuro'
+    profile: {
+      photo: 'Foto de Perfil',
+      changePhoto: 'Alterar Foto',
+      displayName: 'Nome de Exibição',
+      displayNamePlaceholder: 'Como você quer ser chamado?',
+      displayNameHelp: 'Este nome será exibido nas suas conversas e mensagens',
+      email: 'E-mail',
+      emailPlaceholder: 'Seu e-mail principal',
+      emailHelp: 'Usado para notificações e recuperação de conta',
+      messageSignature: 'Assinatura de Mensagem',
+      messageSignatureDescription: 'Crie uma assinatura personalizada para suas mensagens. Ela será adicionada automaticamente ao final de cada mensagem que você enviar.',
+      messageSignaturePlaceholder: 'Digite sua assinatura aqui...',
+      messageSignatureHelp: 'Você pode incluir uma imagem embutida, que é suportada em chat ao vivo, e-mail e caixas de entrada da API.'
     },
+    language: 'Idioma',
     languageHelp: 'O idioma selecionado será aplicado em toda a aplicação',
-    theme: 'Tema',
-    notifications: 'Notificações',
-    privacy: 'Privacidade',
+    selectLanguage: 'Selecione o idioma',
+    saveSuccess: 'Configurações salvas com sucesso!',
     sections: {
-      preferences: {
-        title: 'Preferências do Usuário',
-        general: {
-          title: 'Configurações Gerais',
-          description: 'Configure as configurações básicas da sua conta'
-        },
-        profile: {
-          title: 'Configurações de Perfil',
-          description: 'Gerencie suas informações de perfil'
-        }
-      },
-      notifications: {
-        title: 'Notificações',
-        preferences: {
-          title: 'Preferências de Notifica��ões',
-          description: 'Configure como você recebe notificações'
-        }
+      user: {
+        title: 'Usuário',
+        profile: 'Perfil',
+        general: 'Geral',
+        notifications: 'Notificações'
       },
       security: {
         title: 'Segurança',
-        settings: {
-          title: 'Configurações de Segurança',
-          description: 'Gerencie a segurança da sua conta'
-        },
-        apiTokens: {
-          title: 'Tokens de API',
-          description: 'Gerencie seus tokens de acesso à API'
-        }
+        settings: 'Configurações de Segurança',
+        apiTokens: 'Tokens de API'
       },
-      inbox: {
-        title: 'Caixas de Entrada',
-        inboxes: 'Caixas de Entrada',
-        addInbox: 'Adicionar Caixa de Entrada',
-        noInboxes: 'Nenhuma caixa de entrada encontrada',
-        addInboxHelp: 'Adicione sua primeira caixa de entrada para começar a gerenciar suas comunicações'
+      communication: {
+        title: 'Comunicação',
+        signature: 'Assinatura de Mensagem',
+        email: 'Configurações de E-mail'
+      },
+      preferences: {
+        profile: {
+          title: 'Configurações de Perfil'
+        }
       }
     }
   },
@@ -170,7 +204,7 @@ export default {
       hero: {
         title: 'Bem-vindo ao OrbitChat',
         feature1: {
-          title: 'Comunica��ão Simplificada',
+          title: 'Comunicação Simplificada',
           description: 'Gerencie todas as suas conversas em um só lugar de forma eficiente e organizada.'
         },
         feature2: {
@@ -362,5 +396,14 @@ export default {
         enterprise: 'Empresarial'
       }
     }
+  },
+  common: {
+    error: 'Erro',
+    success: 'Sucesso',
+    confirm: 'Confirmar',
+    cancel: 'Cancelar',
+    save: 'Salvar',
+    loading: 'Carregando...',
+    actions: 'Ações'
   }
 } 

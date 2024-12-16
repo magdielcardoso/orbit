@@ -49,7 +49,7 @@ export default {
   },
   contacts: {
     title: 'Contacts',
-    description: 'Manage your contacts and maintain customer relationships.',
+    description: 'Manage your contacts and keep your information organized',
     noContacts: 'No contacts found',
     addContact: 'Add Contact',
     newContact: 'New Contact',
@@ -81,9 +81,11 @@ export default {
       emailPlaceholder: 'Enter contact email',
       phonePlaceholder: 'Enter contact phone',
       tagsPlaceholder: 'Separate tags with commas',
-      notesPlaceholder: 'Add notes about the contact'
+      notesPlaceholder: 'Add notes about the contact',
+      editDescription: 'Edit contact information below.'
     },
-    confirmDelete: 'Are you sure you want to delete contact {name}?',
+    confirmDelete: 'Delete {name}?',
+    confirmDeleteDescription: 'This action cannot be undone.',
     createSuccess: 'Contact created successfully!',
     updateSuccess: 'Contact updated successfully!',
     deleteSuccess: 'Contact deleted successfully!',
@@ -92,7 +94,47 @@ export default {
       updateError: 'Error updating contact',
       deleteError: 'Error deleting contact',
       notFound: 'Contact not found',
-      nameRequired: 'Contact name is required'
+      nameRequired: 'Contact name is required',
+      duplicateContact: 'A contact with this phone or email already exists',
+      organizationRequired: 'Please select an organization first'
+    },
+    details: {
+      startChat: 'Start Chat',
+      funnel: {
+        title: 'Funnel Status',
+        change: 'Change',
+        stages: {
+          lead: 'Lead',
+          contact: 'First Contact',
+          negotiation: 'Negotiation',
+          proposal: 'Proposal',
+          closed: 'Closed'
+        }
+      },
+      contactInfo: 'Contact Information',
+      notes: {
+        title: 'Notes',
+        empty: 'No notes added'
+      },
+      history: {
+        title: 'History',
+        lastContact: 'Last contact',
+        created: 'Created at',
+        updated: 'Updated at'
+      },
+      goals: {
+        title: 'Goals',
+        salesTarget: 'Sales Target',
+        proposals: 'Sent Proposals'
+      },
+      actions: {
+        edit: 'Edit',
+        delete: 'Delete',
+        startChat: 'Start Chat',
+        filter: 'Filter',
+        sort: 'Sort',
+        newContact: 'New Contact'
+      }
     }
   },
   favorites: {
@@ -113,43 +155,59 @@ export default {
     notifications: 'Notifications',
     privacy: 'Privacy',
     sections: {
-      preferences: {
-        title: 'User Preferences',
-        general: {
-          title: 'General Settings',
-          description: 'Configure your basic account settings'
-        },
-        profile: {
-          title: 'Profile Settings',
-          description: 'Manage your profile information'
-        }
-      },
-      notifications: {
-        title: 'Notifications',
-        preferences: {
-          title: 'Notification Preferences',
-          description: 'Configure how you receive notifications'
-        }
+      user: {
+        title: 'User',
+        profile: 'Profile',
+        general: 'General',
+        notifications: 'Notifications'
       },
       security: {
         title: 'Security',
-        settings: {
-          title: 'Security Settings',
-          description: 'Manage your account security'
-        },
-        apiTokens: {
-          title: 'API Tokens',
-          description: 'Manage your API access tokens'
-        }
+        settings: 'Security Settings',
+        apiTokens: 'API Tokens'
       },
-      inbox: {
-        title: 'Inbox',
-        inboxes: 'Inboxes',
-        addInbox: 'Add Inbox',
-        noInboxes: 'No inboxes found',
-        addInboxHelp: 'Add your first inbox to start managing your communications'
+      communication: {
+        title: 'Communication',
+        signature: 'Message Signature',
+        email: 'Email Settings'
+      },
+      preferences: {
+        profile: {
+          title: 'Profile Settings'
+        }
       }
-    }
+    },
+    profile: {
+      title: 'Profile Settings',
+      description: 'Manage your profile information',
+      photo: 'Profile Photo',
+      changePhoto: 'Change Photo',
+      displayName: 'Display Name',
+      displayNamePlaceholder: 'How do you want to be called?',
+      displayNameHelp: 'This name will be shown in your conversations and messages',
+      email: 'Email',
+      emailPlaceholder: 'Your main email',
+      emailHelp: 'Used for notifications and account recovery',
+      messageSignature: 'Message Signature',
+      messageSignatureDescription: 'Create a personalized signature for your messages. It will be automatically added at the end of each message you send.',
+      messageSignaturePlaceholder: 'Type your signature here...',
+      messageSignatureHelp: 'You can include an embedded image, which is supported in live chat, email, and API inboxes.',
+      sections: {
+        preferences: {
+          title: 'Preferences',
+          general: {
+            title: 'General'
+          },
+          profile: {
+            title: 'Profile'
+          }
+        }
+      }
+    },
+    saveSuccess: 'Settings saved successfully!',
+    language: 'Language',
+    languageHelp: 'The selected language will be applied throughout the application',
+    selectLanguage: 'Select language'
   },
   auth: {
     login: {

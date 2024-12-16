@@ -11,12 +11,15 @@
     "preview": "vite preview",
     "install:all": "npm install && cd backend && npm install",
     "test": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "analyze": "vite build --mode analyze",
+    "build:modern": "vite build --modern"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.1",
     "@fastify/jwt": "^9.0.1",
     "@fastify/sensible": "^6.0.1",
+    "@vueuse/core": "^12.0.0",
     "@vueuse/motion": "^2.2.6",
     "bcrypt": "^5.1.1",
     "concurrently": "^8.2.2",
@@ -35,6 +38,7 @@
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
     "vue3-lottie": "^3.3.1",
+    "web-vitals": "^4.2.4",
     "zod": "^3.24.1"
   },
   "devDependencies": {
@@ -47,6 +51,8 @@
     "@vitest/coverage-v8": "^2.1.8",
     "@vue/test-utils": "^2.4.6",
     "autoprefixer": "^10.4.20",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "eslint": "^9.16.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-vue": "^9.32.0",
@@ -55,12 +61,17 @@
     "postcss": "^8.4.49",
     "prettier": "^3.4.2",
     "prisma": "^6.0.1",
+    "radix-vue": "^1.9.11",
+    "tailwind-merge": "^2.5.5",
     "tailwindcss": "^3.4.16",
+    "tailwindcss-animate": "^1.0.7",
     "vite": "^6.0.1",
+    "vite-plugin-imagemin": "^0.6.1",
     "vitest": "^1.6.0"
   },
   "prisma": {
     "seed": "node /backend/db/seed.js",
     "schema": "./backend/db/schema.prisma"
-  }
+  },
+  "packageManager": "pnpm@9.15.0+sha512.76e2379760a4328ec4415815bcd6628dee727af3779aaa4c914e3944156c4299921a89f976381ee107d41f12cfa4b66681ca9c718f0668fa0831ed4c6d8ba56c"
 }

@@ -149,6 +149,16 @@ export default {
       save: 'Save',
       cancel: 'Cancel',
       loading: 'Loading...'
+    },
+    actions: {
+      edit: 'Edit',
+      delete: 'Delete',
+      confirm: 'Confirm',
+      cancel: 'Cancel',
+      save: 'Save',
+      close: 'Close',
+      loading: 'Loading...',
+      search: 'Search'
     }
   },
   contacts: {
@@ -161,6 +171,36 @@ export default {
       customers: 'Customers',
       leads: 'Leads',
       archived: 'Archived'
+    },
+    details: {
+      startChat: 'Start Chat',
+      funnel: {
+        title: 'Funnel Status',
+        change: 'Change',
+        stages: {
+          lead: 'Lead',
+          contact: 'First Contact',
+          negotiation: 'Negotiation',
+          proposal: 'Proposal',
+          closed: 'Closed'
+        }
+      },
+      contactInfo: 'Contact Information',
+      notes: {
+        title: 'Notes',
+        empty: 'No notes added'
+      },
+      history: {
+        title: 'History',
+        lastContact: 'Last contact',
+        created: 'Created at',
+        updated: 'Updated at'
+      },
+      goals: {
+        title: 'Goals',
+        salesTarget: 'Sales Target',
+        proposals: 'Sent Proposals'
+      }
     }
   },
   navbar: {
