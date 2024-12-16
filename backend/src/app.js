@@ -1,20 +1,11 @@
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import jwt from '@fastify/jwt'
-import sensible from '@fastify/sensible'
 import prismaPlugin from './plugins/prisma.plugin.js'
 import loadControllers from './plugins/controllers.plugin.js'
 import graphqlPlugin from './plugins/graphql.plugin.js'
 import Auth from './controllers/auth.controller.js'
-import dotenv from 'dotenv'
-import path from 'path'
-import { fileURLToPath } from 'url'
-import Logger from './helpers/logger.helper.js'
-
-// Configura o path para o arquivo .env na raiz do projeto
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-dotenv.config({ path: path.join(__dirname, '../..', '.env') })
+import { loggerService } from './controllers/logger.controller.js'
 
 const fastify = Fastify({
   logger: {
@@ -54,13 +45,13 @@ async function setup() {
     fastify.decorate('auth', auth)
 
     // Inicializa o logger depois que o Fastify está configurado
-    Logger.initialize(fastify.server, fastify)
+    loggerService.initialize(fastify.server, fastify)
 
-    fastify.log.info('Registrando GraphQL...')
+    fastify.log.info('[Graphql] Registrando GraphQL...')
     await fastify.register(graphqlPlugin)
 
     // Log de teste
-    Logger.log('info', 'Sistema iniciado com sucesso', {
+    loggerService.log('info', 'Sistema iniciado com sucesso', {
       service: 'app',
       action: 'startup'
     })
@@ -94,10 +85,10 @@ const start = async () => {
   }
 }
 
-fastify.get('/', async (request, reply) => {
+fastify.get('/', async () => {
   return {
     status: 'ok',
-    version: process.env.APP_VERSION || '1.0.0'
+    version: process.env.APP_VERSION || '0.1.0'
   }
 })
 

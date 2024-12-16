@@ -1,47 +1,22 @@
 import mercurius from 'mercurius'
-import { typeDefs } from '../models/graphql/schema.js'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { readdir } from 'fs/promises'
+import { readdir, readFile } from 'fs/promises'
+import { makeExecutableSchema } from '@graphql-tools/schema'
+import gql from 'graphql-tag'
 
-// Emula __dirname no ESM
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 export default async function graphqlPlugin(fastify) {
+  fastify.log.info('[GraphQL] Iniciando...')
   try {
-    fastify.log.info('Registrando plugin GraphQL...')
-
-    const resolversPath = path.join(__dirname, '../routes/graphql')
-    const resolverFiles = await readdir(resolversPath)
-
-    // Inicializa o objeto resolvers no formato esperado
-    const resolvers = {
-      JSON: {},
-      Query: {},
-      Mutation: {}
-    }
-
-    for (const file of resolverFiles) {
-      if (file.endsWith('.resolver.js')) {
-        const resolverModule = await import(path.join(resolversPath, file))
-        const resolverDef = resolverModule.default || resolverModule
-
-        // Agrega diretamente no formato esperado
-        for (const [key, resolverObject] of Object.entries(resolverDef.resolvers || resolverDef)) {
-          if (key === 'JSON' || key === 'Query' || key === 'Mutation') {
-            Object.assign(resolvers[key], resolverObject)
-          } else {
-            fastify.log.warn(`Tipo desconhecido nos resolvers do arquivo ${file}: ${key}`)
-          }
-        }
-      }
-    }
-
     return fastify.register(mercurius, {
-      schema: typeDefs,
-      resolvers,
-      context: async (request, reply) => {
+      schema: makeExecutableSchema({
+        typeDefs: await loadSchemas(fastify),
+        resolvers: await loadResolvers(fastify)
+      }),
+      context: async request => {
         let user = null
         try {
           if (request.headers.authorization) {
@@ -66,7 +41,61 @@ export default async function graphqlPlugin(fastify) {
       graphiql: true
     })
   } catch (error) {
-    fastify.log.error('Erro ao registrar plugin GraphQL:', error)
+    fastify.log.error('[Graphql] Erro ao carregar plugin GraphQL:', error)
+    throw error
+  }
+}
+
+async function loadResolvers(fastify) {
+  try {
+    const resolversPath = path.join(__dirname, '../routes/graphql')
+    const resolverFiles = await readdir(resolversPath)
+
+    const resolvers = {
+      JSON: {},
+      Query: {},
+      Mutation: {}
+    }
+
+    for (const file of resolverFiles) {
+      if (file.endsWith('.resolver.js')) {
+        const resolverModule = await import(path.join(resolversPath, file))
+        const resolverDef = resolverModule.default || resolverModule
+
+        for (const [key, resolverObject] of Object.entries(resolverDef.resolvers || resolverDef)) {
+          if (key === 'JSON' || key === 'Query' || key === 'Mutation') {
+            Object.assign(resolvers[key], resolverObject)
+          } else {
+            fastify.log.warn(`[Graphql] Tipo desconhecido nos resolvers do arquivo ${file}: ${key}`)
+          }
+        }
+        fastify.log.info(`[Graphql] Resolver ${file} carregado...`)
+      }
+    }
+    return resolvers
+  } catch (error) {
+    fastify.log.error('[Graphql] Erro ao carregar os resolvers:', error)
+    throw error
+  }
+}
+
+async function loadSchemas(fastify) {
+  try {
+    const schemaPath = path.join(__dirname, '../models/graphql')
+    const schemaFiles = await readdir(schemaPath)
+    const typeDefs = []
+
+    for (const file of schemaFiles) {
+      if (file.endsWith('.graphql')) {
+        const schemaContent = await readFile(path.join(schemaPath, file), 'utf-8')
+        typeDefs.push(gql(schemaContent))
+        fastify.log.info(`[Graphql] Schema ${file} carregado...`)
+      }
+    }
+
+    return typeDefs
+  } catch (error) {
+    fastify.log.error('[Graphql] Erro ao carregar os Schemas:', error)
     throw error
   }
 }

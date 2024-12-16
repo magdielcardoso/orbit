@@ -10,7 +10,7 @@ export default fp(async fastify => {
     await instance.prisma.$disconnect()
   })
 
-  fastify.addHook('preHandler', async (request, reply) => {
+  fastify.addHook('preHandler', async (request) => {
     request.prisma = prismaInstance
   })
 })

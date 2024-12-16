@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import Logger from '../helpers/logger.helper.js'
+import { loggerService } from './logger.controller.js'
 import * as UserModel from '../models/user.model.js'
 export default class Auth {
   async register({ email, password }) {
@@ -70,7 +70,7 @@ export default class Auth {
         name: rp.permission.name
       }))
 
-      Logger.log('info', 'Login realizado com sucesso', {
+      loggerService.log('info', 'Login realizado com sucesso', {
         service: 'auth',
         action: 'login',
         userId: user.id,
@@ -100,7 +100,7 @@ export default class Auth {
         }
       }
     } catch (error) {
-      Logger.log('error', 'Erro no login', {
+      loggerService.log('error', 'Erro no login', {
         service: 'auth',
         action: 'login',
         error: error.message,
