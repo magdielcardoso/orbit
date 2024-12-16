@@ -409,6 +409,19 @@ export default {
   kanban: {
     title: 'Kanban',
     description: 'Gerencie suas tarefas e projetos de forma visual',
+    sidebar: {
+      views: 'Visualizações',
+      board: 'Quadro',
+      list: 'Lista',
+      organization: 'Organização',
+      teams: 'Times',
+      sprints: 'Sprints',
+      backlog: 'Backlog',
+      management: 'Gerenciamento',
+      settings: 'Configurações',
+      history: 'Histórico',
+      analytics: 'Análises'
+    },
     columns: {
       backlog: 'Backlog',
       todo: 'A Fazer',

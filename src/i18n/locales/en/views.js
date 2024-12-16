@@ -427,5 +427,30 @@ export default {
         enterprise: 'Enterprise'
       }
     }
+  },
+  kanban: {
+    title: 'Kanban',
+    description: 'Manage your tasks and projects visually',
+    sidebar: {
+      views: 'Views',
+      board: 'Board',
+      list: 'List',
+      organization: 'Organization',
+      teams: 'Teams',
+      sprints: 'Sprints',
+      backlog: 'Backlog',
+      management: 'Management',
+      settings: 'Settings',
+      history: 'History',
+      analytics: 'Analytics'
+    },
+    columns: {
+      backlog: 'Backlog',
+      todo: 'To Do',
+      inProgress: 'In Progress',
+      review: 'Review',
+      done: 'Done'
+    },
+    // ... resto das traduções ...
   }
 } 

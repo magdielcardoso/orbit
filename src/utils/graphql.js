@@ -1,8 +1,8 @@
-const GRAPHQL_URL = import.meta.env.VITE_API_URL 
-  ? `${import.meta.env.VITE_API_URL}/graphql`
-  : window.location.hostname === 'localhost' 
-    ? 'http://localhost:4000/graphql'
-    : 'https://orbit-api.stacklab.digital/graphql';
+const GRAPHQL_URL = import.meta.env.VITE_GRAPHQL_URL?.replace(/"/g, '') || 'http://localhost:4000/graphql';
+
+if (!GRAPHQL_URL) {
+  console.error('VITE_GRAPHQL_URL não está definida no ambiente');
+}
 
 export function setAuthToken(token) {
   if (token) {
@@ -29,15 +29,17 @@ export async function gqlRequest(query, variables = null, options = {}) {
     
     const response = await fetch(GRAPHQL_URL, {
       method: 'POST',
-      headers: {
-        ...headers
-      },
+      headers,
       body: JSON.stringify({
         query,
         variables
       }),
       credentials: 'include'
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
     const result = await response.json();
 

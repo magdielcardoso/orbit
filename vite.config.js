@@ -44,8 +44,11 @@ export default defineConfig({
     strictPort: true
   },
   define: {
-    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.API_URL || 'http://localhost:4000')
+    'process.env': {},
+    __VUE_PROD_DEVTOOLS__: false
   },
+  envPrefix: ['VITE_'],
+  envDir: '.',
   optimizeDeps: {
     include: ['vue', 'vue-router', 'pinia', '@vueuse/core'],
     exclude: ['vue-demi']
@@ -53,19 +56,15 @@ export default defineConfig({
   cacheDir: '.vite',
   build: {
     target: 'esnext',
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true
-      }
+    minify: 'esbuild',
+    esbuild: {
+      drop: ['console', 'debugger'],
     },
     rollupOptions: {
       output: {
         manualChunks: {
           'vue-vendor': ['vue', 'vue-router', 'pinia'],
-          'ui-vendor': ['@headlessui/vue', 'lucide-vue-next'],
-          'utils': ['./src/utils']
+            'ui-vendor': ['lucide-vue-next']
         }
       }
     },

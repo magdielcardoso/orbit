@@ -5,7 +5,7 @@ services:
     image: stacklabdigital/orbitchat:develop
     working_dir: /app
     environment:
-      - VITE_API_URL=https://orbit-api.stacklab.digital
+      - VITE_GRAPHQL_URL=https://api.orbitchat.io/graphql
       - NODE_ENV=production
       - HOST=0.0.0.0
     depends_on:
@@ -36,12 +36,15 @@ services:
     working_dir: /app/backend
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://postgres:PT99874166@postgres:5432/orbitchat?schema=public
+      - DATABASE_URL=postgresql://orbitchat:orbitchat@postgres:5432/orbitchat?schema=public
       - JWT_SECRET=1234
-      - FRONTEND_URL=https://orbit.stacklab.digital
+      - FRONTEND_URL=https://app.orbitchat.io
       - HOST=0.0.0.0
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
-    command: npm run dev
+    command: sh -c "npx prisma migrate deploy && npm run start"
     networks:
       - pedetudo
     deploy:
@@ -60,6 +63,29 @@ services:
         - traefik.http.services.orbitchat_backend.loadbalancer.passHostHeader=true
         - traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https
         - traefik.http.routers.orbitchat_backend.middlewares=sslheader@docker
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=orbitchat
+      - POSTGRES_PASSWORD=orbitchat
+      - POSTGRES_DB=orbitchat
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - pedetudo
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orbitchat"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+
+volumes:
+  postgres_data:
 
 networks:
   pedetudo:

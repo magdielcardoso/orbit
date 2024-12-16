@@ -17,8 +17,12 @@ app.use(router)
 app.mount('#app')
 
 if (import.meta.env.PROD) {
-  const webVitals = await import('web-vitals')
-  webVitals.getCLS(console.log)
-  webVitals.getFID(console.log)
-  webVitals.getLCP(console.log)
+  try {
+    const { onCLS, onFID, onLCP } = await import('web-vitals');
+    onCLS(console.log);
+    onFID(console.log);
+    onLCP(console.log);
+  } catch (error) {
+    console.warn('Erro ao carregar web-vitals:', error);
+  }
 }
