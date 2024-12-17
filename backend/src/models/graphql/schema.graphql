@@ -80,11 +80,15 @@ type Activity {
 }
 
 type Query {
+  # Queries do sistema
   me: User
   users: [User!]!
   roles: [Role!]!
   permissions: [Permission!]!
   systemStatus: SystemStatus!
+  systemMetrics: SystemMetrics!
+  systemLogs: [SystemLog!]!
+  exportSystemLogs: String!
   recentActivities: [Activity!]!
   adminStats: AdminStats!
   activities(
@@ -94,20 +98,25 @@ type Query {
     level: ActivityLevel
     source: String
   ): [Activity!]!
+
+  # Queries de organização
   organization(id: ID!): Organization
   myOrganizations: [Organization!]!
+  organizations: [Organization!]!
+  validateOrganizationSlug(slug: String!): OrganizationSlugValidation!
+
+  # Queries de inbox e conversas
   inboxes(organizationId: ID!): [Inbox!]!
   inbox(id: ID!): Inbox
   conversations(
     organizationId: ID!
-    status: ConversationStatus
-    priority: Priority
-    assigneeId: ID
-    inboxId: ID
+    filters: ConversationFilters
     limit: Int
     offset: Int
   ): [Conversation!]!
   conversation(id: ID!): Conversation
+
+  # Queries de contatos e times
   contacts(
     organizationId: ID!
     search: String
@@ -118,10 +127,10 @@ type Query {
   contact(id: ID!): Contact
   teams(organizationId: ID!): [Team!]!
   team(id: ID!): Team
+
+  # Queries de automação
   automations(organizationId: ID!): [Automation!]!
   automation(id: ID!): Automation
-  organizations: [Organization!]!
-  validateOrganizationSlug(slug: String!): OrganizationSlugValidation!
 }
 
 type AdminStats {
@@ -211,6 +220,11 @@ type Mutation {
   # Mutations de relação inbox-team
   addInboxToTeam(input: InboxTeamInput!): InboxTeam!
   removeInboxFromTeam(inboxId: ID!, teamId: ID!): Boolean!
+
+  # Mutations do sistema
+  initiateBackup: SystemActionResponse!
+  restartSystem: SystemActionResponse!
+  toggleSystemAccess: SystemActionResponse!
 }
 
 input SystemConfigInput {
@@ -279,14 +293,14 @@ type Inbox {
   id: ID!
   name: String!
   description: String
-  isEnabled: Boolean!
   channelType: ChannelSource!
-  channelConfig: JSON
+  isEnabled: Boolean!
   organization: Organization!
-  conversations: [Conversation!]!
   teams: [InboxTeam!]!
+  conversations: [Conversation!]!
+  channelConfig: JSON
   workingHours: JSON
-  autoAssignment: Boolean!
+  autoAssignment: Boolean
   assignmentRules: JSON
   welcomeMessage: String
   awayMessage: String
@@ -340,7 +354,7 @@ type Conversation {
   priority: Priority!
   subject: String
   inbox: Inbox!
-  messages: [Message!]!
+  messages(last: Int): [Message!]!
   assignee: User
   labels: [ConversationLabel!]!
   channelData: JSON
@@ -354,6 +368,8 @@ type Conversation {
   slaStatus: String
   rating: Int
   ratingComment: String
+  unreadCount: Int!
+  lastMessageAt: DateTime
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -414,11 +430,17 @@ enum Priority {
 }
 
 enum ChannelSource {
-  WEBCHAT
   WHATSAPP
+  INSTAGRAM
+  MESSENGER
+  TWITTER
+  MERCADOLIVRE
+  SHOPEE
   TELEGRAM
   EMAIL
   API
+  IFOOD
+  WEBCHAT
 }
 
 # Inputs
@@ -435,14 +457,9 @@ input OrganizationInput {
 input InboxInput {
   name: String!
   description: String
-  organizationId: ID!
   channelType: ChannelSource!
-  channelConfig: JSON
-  workingHours: JSON
-  autoAssignment: Boolean
-  assignmentRules: JSON
-  welcomeMessage: String
-  awayMessage: String
+  isEnabled: Boolean
+  organizationId: ID!
 }
 
 input ConversationInput {
@@ -567,4 +584,51 @@ type OrganizationPreview {
   slug: String!
   domain: String
   hash_id: String
+}
+
+input ConversationFilters {
+  status: ConversationStatus
+  priority: Priority
+  assigneeId: ID
+  inboxId: ID
+}
+
+type Message {
+  id: ID!
+  conversationId: ID!
+  conversation: Conversation!
+  content: String!
+  type: String!
+  isFromContact: Boolean!
+  userId: ID
+  user: User
+  contactId: ID
+  contact: Contact
+  metadata: JSON
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+# Tipos do Sistema
+type SystemMetrics {
+  status: String!
+  cpu: Float!
+  memory: Float!
+  uptime: Float!
+  onlineUsers: Int!
+  userGrowth: Float!
+  messagesPerSecond: Float!
+  errorsPerMinute: Float!
+}
+
+type SystemLog {
+  timestamp: String!
+  level: String!
+  message: String!
+}
+
+type SystemActionResponse {
+  success: Boolean!
+  message: String!
+  status: String
 }

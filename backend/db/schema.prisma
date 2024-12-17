@@ -70,35 +70,36 @@ model SystemConfig {
 }
 
 model Role {
-  id          String           @id @default(uuid())
-  name        String           @unique
+  id          String    @id @default(uuid())
+  name        String    @unique
   description String?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
   users       User[]
   permissions RolePermission[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model Permission {
-  id          String           @id @default(uuid())
-  name        String           @unique
+  id          String    @id @default(uuid())
+  name        String    @unique
   description String?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
   roles       RolePermission[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model RolePermission {
   id           String     @id @default(uuid())
   roleId       String
   permissionId String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
   role         Role       @relation(fields: [roleId], references: [id])
   permission   Permission @relation(fields: [permissionId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
   @@unique([roleId, permissionId])
 }
+
 model User {
   id        String    @id @default(uuid())
   email     String    @unique
@@ -138,20 +139,19 @@ model User {
 }
 
 model Message {
-  id        String   @id @default(uuid())
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  
-  // Novos campos
-  conversationId      String
-  conversation        Conversation    @relation(fields: [conversationId], references: [id])
-  type               String          @default("text") // text, image, file, etc
-  metadata           Json?           // Para dados adicionais como status de entrega
-  private            Boolean         @default(false)  // Para notas internas
-  attachments        Json?           // URLs de arquivos anexados
+  id              String       @id @default(uuid())
+  conversationId  String
+  conversation    Conversation @relation(fields: [conversationId], references: [id])
+  content         String
+  type           String       @default("text") // text, image, file, etc
+  isFromContact   Boolean     @default(false)
+  userId         String?
+  user           User?        @relation(fields: [userId], references: [id])
+  contactId      String?
+  contact        Contact?     @relation(fields: [contactId], references: [id])
+  metadata       Json?        // Para dados adicionais específicos do tipo
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }
 
 model Activity {
@@ -272,7 +272,7 @@ enum Priority {
   URGENT
 }
 
-// Nova enum para origem da conversa
+// Nova enum para fontes de canal
 enum ChannelSource {
   WHATSAPP
   INSTAGRAM
@@ -289,17 +289,18 @@ enum ChannelSource {
 
 // Nova model para Inbox (caixas de entrada)
 model Inbox {
-  id            String      @id @default(cuid())
-  name          String
-  description   String?
-  channelType   ChannelSource
-  isEnabled     Boolean     @default(true)
-  organization  Organization @relation(fields: [organizationId], references: [id])
-  organizationId String
-  teams         InboxTeam[]
-  conversations Conversation[]
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id              String       @id @default(uuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  name            String
+  description     String?
+  channelType     ChannelSource
+  isEnabled       Boolean      @default(true)
+  settings        Json?
+  conversations   Conversation[]
+  teams          InboxTeam[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 }
 
 // Nova model para Times
@@ -352,37 +353,25 @@ model InboxTeam {
 
 // Nova model para Conversas
 model Conversation {
-  id            String            @id @default(uuid())
-  status        ConversationStatus @default(OPEN)
-  priority      Priority          @default(MEDIUM)
-  subject       String?
-  
-  // Relações
-  inboxId       String
-  inbox         Inbox             @relation(fields: [inboxId], references: [id])
-  messages      Message[]
-  assigneeId    String?
-  assignee      User?             @relation("AssignedConversations", fields: [assigneeId], references: [id])
-  labels        ConversationLabel[]
-  
-  // Metadados
-  channelData   Json?            // Dados específicos do canal
-  customFields  Json?            // Campos personalizados
-  
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  
-  organizationId   String
-  organization     Organization      @relation(fields: [organizationId], references: [id])
-  contactId        String?          // Referência ao contato
-  contact          Contact?         @relation(fields: [contactId], references: [id])
-  firstResponseAt  DateTime?        // Tempo primeira resposta
-  resolvedAt       DateTime?        // Quando foi resolvido
-  reopenedAt       DateTime?        // Quando foi reaberto
-  closedAt         DateTime?        // Quando foi fechado
-  slaStatus        String?          // Status do SLA
-  rating           Int?             // Avaliação do atendimento
-  ratingComment    String?          // Comentário da avaliação
+  id              String       @id @default(uuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  inboxId         String
+  inbox           Inbox        @relation(fields: [inboxId], references: [id])
+  contactId       String
+  contact         Contact      @relation(fields: [contactId], references: [id])
+  assigneeId      String?
+  assignee        User?        @relation("AssignedConversations", fields: [assigneeId], references: [id])
+  status          String       @default("OPEN") // OPEN, PENDING, RESOLVED, etc
+  priority        String       @default("MEDIUM") // LOW, MEDIUM, HIGH
+  subject         String?
+  messages        Message[]
+  metadata        Json?
+  unreadCount     Int          @default(0)
+  lastMessageAt   DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  labels          ConversationLabel[]
 }
 
 // Nova model para Etiquetas
@@ -511,6 +500,9 @@ model Contact {
 
   @@unique([organizationId, email])
   @@unique([organizationId, phone])
+
+  // Adicionamos esta linha
+  messages      Message[]
 }
 
 // Nova model para Automações

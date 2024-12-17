@@ -26,6 +26,13 @@ function generateRoutes() {
       name: 'login',
       component: () => import('../views/LoginView.vue'),
       meta: { requiresAuth: false }
+    },
+    // Adiciona rota de setup explicitamente
+    {
+      path: '/setup',
+      name: 'system-setup',
+      component: () => import('../views/SystemSetup.vue'),
+      meta: { requiresAuth: false }
     }
   ]
 

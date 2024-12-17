@@ -119,15 +119,15 @@ CREATE TABLE "User" (
 -- CreateTable
 CREATE TABLE "Message" (
     "id" TEXT NOT NULL,
+    "conversationId" TEXT NOT NULL,
     "content" TEXT NOT NULL,
+    "type" TEXT NOT NULL DEFAULT 'text',
+    "isFromContact" BOOLEAN NOT NULL DEFAULT false,
+    "userId" TEXT,
+    "contactId" TEXT,
+    "metadata" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "userId" TEXT NOT NULL,
-    "conversationId" TEXT NOT NULL,
-    "type" TEXT NOT NULL DEFAULT 'text',
-    "metadata" JSONB,
-    "private" BOOLEAN NOT NULL DEFAULT false,
-    "attachments" JSONB,
 
     CONSTRAINT "Message_pkey" PRIMARY KEY ("id")
 );
@@ -209,11 +209,12 @@ CREATE TABLE "BrandConfig" (
 -- CreateTable
 CREATE TABLE "Inbox" (
     "id" TEXT NOT NULL,
+    "organizationId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
     "channelType" "ChannelSource" NOT NULL,
     "isEnabled" BOOLEAN NOT NULL DEFAULT true,
-    "organizationId" TEXT NOT NULL,
+    "settings" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -262,24 +263,18 @@ CREATE TABLE "InboxTeam" (
 -- CreateTable
 CREATE TABLE "Conversation" (
     "id" TEXT NOT NULL,
-    "status" "ConversationStatus" NOT NULL DEFAULT 'OPEN',
-    "priority" "Priority" NOT NULL DEFAULT 'MEDIUM',
-    "subject" TEXT,
+    "organizationId" TEXT NOT NULL,
     "inboxId" TEXT NOT NULL,
+    "contactId" TEXT NOT NULL,
     "assigneeId" TEXT,
-    "channelData" JSONB,
-    "customFields" JSONB,
+    "status" TEXT NOT NULL DEFAULT 'OPEN',
+    "priority" TEXT NOT NULL DEFAULT 'MEDIUM',
+    "subject" TEXT,
+    "metadata" JSONB,
+    "unreadCount" INTEGER NOT NULL DEFAULT 0,
+    "lastMessageAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "organizationId" TEXT NOT NULL,
-    "contactId" TEXT,
-    "firstResponseAt" TIMESTAMP(3),
-    "resolvedAt" TIMESTAMP(3),
-    "reopenedAt" TIMESTAMP(3),
-    "closedAt" TIMESTAMP(3),
-    "slaStatus" TEXT,
-    "rating" INTEGER,
-    "ratingComment" TEXT,
 
     CONSTRAINT "Conversation_pkey" PRIMARY KEY ("id")
 );
@@ -441,10 +436,13 @@ ALTER TABLE "User" ADD CONSTRAINT "User_parentUserId_fkey" FOREIGN KEY ("parentU
 ALTER TABLE "User" ADD CONSTRAINT "User_currentOrgId_fkey" FOREIGN KEY ("currentOrgId") REFERENCES "Organization"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Message" ADD CONSTRAINT "Message_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Message" ADD CONSTRAINT "Message_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Message" ADD CONSTRAINT "Message_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Message" ADD CONSTRAINT "Message_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Message" ADD CONSTRAINT "Message_contactId_fkey" FOREIGN KEY ("contactId") REFERENCES "Contact"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Activity" ADD CONSTRAINT "Activity_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -471,16 +469,16 @@ ALTER TABLE "InboxTeam" ADD CONSTRAINT "InboxTeam_inboxId_fkey" FOREIGN KEY ("in
 ALTER TABLE "InboxTeam" ADD CONSTRAINT "InboxTeam_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Conversation" ADD CONSTRAINT "Conversation_inboxId_fkey" FOREIGN KEY ("inboxId") REFERENCES "Inbox"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Conversation" ADD CONSTRAINT "Conversation_assigneeId_fkey" FOREIGN KEY ("assigneeId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "Conversation" ADD CONSTRAINT "Conversation_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Conversation" ADD CONSTRAINT "Conversation_contactId_fkey" FOREIGN KEY ("contactId") REFERENCES "Contact"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Conversation" ADD CONSTRAINT "Conversation_inboxId_fkey" FOREIGN KEY ("inboxId") REFERENCES "Inbox"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Conversation" ADD CONSTRAINT "Conversation_contactId_fkey" FOREIGN KEY ("contactId") REFERENCES "Contact"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Conversation" ADD CONSTRAINT "Conversation_assigneeId_fkey" FOREIGN KEY ("assigneeId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ConversationLabel" ADD CONSTRAINT "ConversationLabel_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
