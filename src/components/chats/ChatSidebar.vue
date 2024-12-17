@@ -71,9 +71,9 @@ watch(props.activeTab, async (newTab) => {
 </script>
 
 <template>
-  <div class="w-96 border-r border-base-300 flex flex-col">
+  <div class="w-96 border-r border-base-300 flex flex-col overflow-hidden">
     <!-- Header -->
-    <div class="p-4 border-b border-base-300">
+    <div class="shrink-0 p-4 border-b border-base-300">
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-3">
           <button 
@@ -112,7 +112,7 @@ watch(props.activeTab, async (newTab) => {
     </div>
 
     <!-- Tabs -->
-    <div class="border-b border-base-300">
+    <div class="shrink-0 border-b border-base-300">
       <div class="flex">
         <button
           v-for="tab in tabs"
@@ -137,11 +137,13 @@ watch(props.activeTab, async (newTab) => {
     </div>
 
     <!-- Lista de Chats -->
-    <ChatList
-      :conversations="filteredConversations"
-      :loading="chatStore.loading"
-      :error="chatStore.error"
-      @select="handleChatSelect"
-    />
+    <div class="flex-1 overflow-auto">
+      <ChatList
+        :conversations="filteredConversations"
+        :loading="chatStore.loading"
+        :error="chatStore.error"
+        @select="handleChatSelect"
+      />
+    </div>
   </div>
 </template> 

@@ -1,16 +1,16 @@
 <template>
-  <div class="flex h-screen">
+  <div class="flex h-screen overflow-hidden">
     <!-- Sidebar -->
     <UserSidebar />
 
     <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto bg-base-100">
+    <main class="flex-1 flex flex-col overflow-hidden bg-base-100">
       <!-- Navbar -->
-      <Navbar />
+      <Navbar class="shrink-0" />
 
       <!-- Conteúdo da página -->
-      <div class="w-full h-full">
-        <router-view />
+      <div class="flex-1 overflow-hidden h-[calc(100vh-4rem)]">
+        <router-view class="h-full" />
       </div>
     </main>
   </div>
@@ -23,3 +23,17 @@ import Navbar from '../components/layout/Navbar.vue'
 
 const authStore = useAuthStore()
 </script>
+
+<style scoped>
+/* Garante que os elementos flex não cresçam além do necessário */
+:deep(.flex) {
+  min-height: 0;
+}
+
+/* Garante que o router-view ocupe toda a altura disponível */
+:deep(.router-view-container) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+</style>
