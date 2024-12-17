@@ -13,6 +13,9 @@
         <router-view class="h-full" />
       </div>
     </main>
+
+    <!-- Floating Button -->
+    <FloatingButton />
   </div>
 </template>
 
@@ -20,6 +23,7 @@
 import { useAuthStore } from '../stores/auth.store'
 import UserSidebar from '../components/layout/UserSidebar.vue'
 import Navbar from '../components/layout/Navbar.vue'
+import FloatingButton from '../components/ui/FloatingButton.vue'
 
 const authStore = useAuthStore()
 </script>
