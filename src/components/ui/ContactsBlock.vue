@@ -7,7 +7,10 @@
         <button class="btn btn-ghost btn-sm px-2">
           <Search class="h-4 w-4" />
         </button>
-        <button class="btn btn-ghost btn-sm px-2">
+        <button 
+          class="btn btn-ghost btn-sm px-2"
+          @click="showNewContactModal = true"
+        >
           <Plus class="h-4 w-4" />
         </button>
       </div>
@@ -72,16 +75,171 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de Novo Contato -->
+    <Dialog v-model:open="showNewContactModal">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{{ t('contacts.newContact') }}</DialogTitle>
+        </DialogHeader>
+        
+        <form @submit.prevent="handleCreateContact" class="space-y-4">
+          <div class="space-y-2">
+            <Label for="name">{{ t('contacts.form.name') }}</Label>
+            <Input
+              id="name"
+              v-model="newContact.name"
+              type="text"
+              required
+              :placeholder="t('contacts.form.namePlaceholder')"
+            />
+          </div>
+
+          <div class="space-y-2">
+            <Label for="email">{{ t('contacts.form.email') }}</Label>
+            <Input
+              id="email"
+              v-model="newContact.email"
+              type="email"
+              :placeholder="t('contacts.form.emailPlaceholder')"
+            />
+          </div>
+
+          <div class="space-y-2">
+            <Label for="phone">{{ t('contacts.form.phone') }}</Label>
+            <Input
+              id="phone"
+              v-model="newContact.phone"
+              type="tel"
+              :placeholder="t('contacts.form.phonePlaceholder')"
+            />
+          </div>
+
+          <div class="space-y-2">
+            <Label for="tags">{{ t('contacts.form.tags') }}</Label>
+            <Input
+              id="tags"
+              v-model="newContact.tags"
+              :placeholder="t('contacts.form.tagsPlaceholder')"
+            />
+          </div>
+
+          <div class="space-y-2">
+            <Label for="notes">{{ t('contacts.form.notes') }}</Label>
+            <Textarea
+              id="notes"
+              v-model="newContact.notes"
+              rows="3"
+              :placeholder="t('contacts.form.notesPlaceholder')"
+            />
+          </div>
+        </form>
+
+        <DialogFooter>
+          <Button variant="outline" @click="showNewContactModal = false">
+            {{ t('common.cancel') }}
+          </Button>
+          <Button 
+            type="submit" 
+            :disabled="loading"
+            @click="handleCreateContact"
+          >
+            {{ loading ? t('common.loading') : t('common.save') }}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { Plus, Search, Calendar, Clock, MessageSquare } from 'lucide-vue-next'
 import { useI18n } from '@/i18n/plugin'
 import UserAvatar from '@/components/chats/UserAvatar.vue'
 import Badge from './badge/Badge.vue'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './dialog'
+import { Button } from './button'
+import { Input } from './input'
+import { Label } from './label'
+import { Textarea } from './textarea'
+import { showToast } from '@/utils/toast'
+import { useAuthStore } from '@/stores/auth.store'
+import { gqlRequest } from '@/utils/graphql'
 
 const { t } = useI18n()
+const authStore = useAuthStore()
+
+// Estado
+const showNewContactModal = ref(false)
+const loading = ref(false)
+const newContact = ref({
+  name: '',
+  email: '',
+  phone: '',
+  tags: '',
+  notes: ''
+})
+
+// Função para criar novo contato
+async function handleCreateContact() {
+  try {
+    if (!newContact.value.name) {
+      showToast(t('contacts.errors.nameRequired'), 'error')
+      return
+    }
+
+    loading.value = true
+    
+    const input = {
+      name: newContact.value.name.trim(),
+      email: newContact.value.email ? newContact.value.email.trim() : null,
+      phone: newContact.value.phone && newContact.value.phone.trim() !== '' 
+        ? newContact.value.phone.trim() 
+        : null,
+      tags: newContact.value.tags 
+        ? newContact.value.tags.split(',').map(tag => tag.trim()).filter(Boolean)
+        : [],
+      notes: newContact.value.notes ? newContact.value.notes.trim() : null,
+      organizationId: authStore.currentOrganization.id
+    }
+
+    const mutation = `
+      mutation CreateContact($input: ContactInput!) {
+        createContact(input: $input) {
+          id
+          name
+          email
+          phone
+          tags
+          notes
+          lastContactedAt
+          createdAt
+          updatedAt
+        }
+      }
+    `
+
+    await gqlRequest(mutation, { input })
+    showNewContactModal.value = false
+    newContact.value = { name: '', email: '', phone: '', tags: '', notes: '' }
+    showToast(t('contacts.createSuccess'))
+    
+    // Emite evento para atualizar a lista de contatos
+    emit('contact-created')
+  } catch (error) {
+    console.error('Erro ao criar contato:', error)
+    if (error.message.includes('Unique constraint failed')) {
+      showToast(t('contacts.errors.duplicateContact'), 'error')
+    } else {
+      showToast(error.message, 'error')
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+const emit = defineEmits(['contact-created'])
 
 // Mock de dados - depois virá de uma store
 const contacts = [
