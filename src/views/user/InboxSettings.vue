@@ -12,8 +12,8 @@
                 Um canal é o modo de comunicação que seu cliente escolhe para interagir com você.
               </p>
             </div>
-            <button class="btn btn-primary" @click="router.push('/settings/inbox/new')">
-              <span class="i-lucide-plus mr-2" />
+            <button class="btn btn-primary" @click="router.push(`/dashboard/${accountName}/settings/inbox/new`)">
+              <Plus class="h-5 w-5 mr-2" />
               {{ t('settings.sections.inbox.addInbox') }}
             </button>
           </div>
@@ -60,8 +60,17 @@
                     <tr v-for="inbox in inboxes" :key="inbox.id">
                       <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
                         <div class="flex items-center">
-                          <div class="h-8 w-8 rounded-full bg-orbit-100 flex items-center justify-center">
-                            <span class="i-lucide-inbox h-4 w-4 text-orbit-600" />
+                          <div class="h-8 w-8 rounded-full bg-base-100 flex items-center justify-center overflow-hidden">
+                            <img 
+                              :src="channelIcons[inbox.channelType]" 
+                              :alt="formatChannelType(inbox.channelType)"
+                              :class="[
+                                'object-contain',
+                                inbox.channelType === 'WHATSAPP' ? 'h-8 w-8' : 
+                                inbox.channelType === 'WEBCHAT' || inbox.channelType === 'API' ? 'h-7 w-7' :
+                                'h-6 w-6'
+                              ]"
+                            />
                           </div>
                           <div class="ml-4">
                             <div class="font-medium text-gray-900">{{ inbox.name }}</div>
@@ -189,6 +198,9 @@ import { useRouter } from 'vue-router'
 import { gqlRequest } from '@/utils/graphql'
 import SecondarySidebar from '@/components/layout/SecondarySidebar.vue'
 import Modal from '@/components/Modal.vue'
+import { formatAccountUrl } from '@/utils/string'
+import { Plus } from 'lucide-vue-next'
+import channels from '@/../config/channels.yml'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
@@ -203,6 +215,10 @@ const inboxForm = ref({
   description: '',
   channelType: 'WEBCHAT',
   isEnabled: true
+})
+
+const accountName = computed(() => {
+  return authStore.user?.name ? formatAccountUrl(authStore.user.name) : ''
 })
 
 // Configuração da sidebar
@@ -486,6 +502,35 @@ async function deleteInbox(inbox) {
     loading.value = false
   }
 }
+
+// Adicione o mapeamento de tipos de canais
+const channelTypeMap = {
+  WHATSAPP: 'WHATSAPP',
+  INSTAGRAM: 'INSTAGRAM',
+  MESSENGER: 'MESSENGER',
+  TWITTER: 'API',
+  MERCADOLIVRE: 'MERCADOLIVRE',
+  SHOPEE: 'SHOPEE',
+  TELEGRAM: 'TELEGRAM',
+  EMAIL: 'EMAIL',
+  API: 'API',
+  IFOOD: 'IFOOD',
+  WEBCHAT: 'WEBCHAT'
+}
+
+// Modifique a computed property para os ícones
+const channelIcons = computed(() => {
+  const icons = {}
+  for (const [key, channel] of Object.entries(channels.channels)) {
+    // Se for WEBCHAT, use o ícone de API do channels.yml
+    if (key === 'WEBCHAT') {
+      icons[channelTypeMap[key]] = channels.channels.API.icon
+    } else {
+      icons[channelTypeMap[key] || key] = channel.icon
+    }
+  }
+  return icons
+})
 
 onMounted(fetchInboxes)
 </script> 

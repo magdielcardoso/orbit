@@ -130,6 +130,7 @@ function generateDashboardRoutes(views) {
       } else if (routeName === 'inboxsetup') {
         route.path = 'settings/inbox/new'
         route.name = 'inbox-setup'
+        route.component = () => import('../views/user/InboxSetup.vue')
       }
 
       dashboardRoutes.push(route)
