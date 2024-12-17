@@ -376,13 +376,12 @@ type Conversation {
 
 type Message {
   id: ID!
+  conversationId: ID!
   content: String!
-  conversation: Conversation!
-  user: User!
   type: String!
-  metadata: JSON
-  private: Boolean!
-  attachments: JSON
+  isFromContact: Boolean!
+  user: User
+  contact: Contact
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -474,9 +473,8 @@ input ConversationInput {
 input MessageInput {
   conversationId: ID!
   content: String!
-  type: String
-  private: Boolean
-  attachments: JSON
+  type: String = "text"
+  isFromContact: Boolean = false
 }
 
 input ContactInput {

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
-import { chatService } from '@/services/chat.service'
+import chatService from '@/services/chat.service.js'
 import { useAuthStore } from './auth.store'
+import { showToast } from '@/utils/toast'
 
 export const useChatStore = defineStore('chat', {
   state: () => ({
@@ -25,13 +26,15 @@ export const useChatStore = defineStore('chat', {
 
       try {
         this.loading = true
-        this.conversations = await chatService.getConversations(
+        this.error = null
+        const conversations = await chatService.getConversations(
           authStore.currentOrganizationId,
           filters
         )
+        this.conversations = conversations
       } catch (error) {
-        this.error = error.message
         console.error('Erro ao buscar conversas:', error)
+        this.error = error.message
       } finally {
         this.loading = false
       }
@@ -39,23 +42,19 @@ export const useChatStore = defineStore('chat', {
 
     async sendMessage(conversationId, content) {
       try {
-        const message = await chatService.sendMessage({
-          conversationId,
-          content,
-          type: 'text'
-        })
-
+        const response = await chatService.sendMessage(conversationId, content)
+        
         // Atualiza a conversa localmente
         const conversation = this.conversations.find(c => c.id === conversationId)
         if (conversation) {
-          conversation.messages.push(message)
-          conversation.lastMessage = {
-            content: message.content,
-            createdAt: message.createdAt
+          if (!conversation.messages) {
+            conversation.messages = []
           }
+          conversation.messages.push(response)
+          conversation.updatedAt = new Date().toISOString()
         }
-
-        return message
+        
+        return response
       } catch (error) {
         console.error('Erro ao enviar mensagem:', error)
         throw error

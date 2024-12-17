@@ -1,6 +1,6 @@
 import { gqlRequest } from '@/utils/graphql'
 
-class ChatService {
+export class ChatService {
   async getConversations(organizationId, filters = {}) {
     const query = `
       query GetConversations($organizationId: ID!, $filters: ConversationFilters) {
@@ -56,14 +56,23 @@ class ChatService {
     return response.conversations
   }
 
-  async sendMessage(input) {
+  async sendMessage(conversationId, content) {
     const mutation = `
       mutation SendMessage($input: MessageInput!) {
-        createMessage(input: $input) {
+        sendMessage(input: $input) {
           id
+          conversationId
           content
+          type
+          isFromContact
           createdAt
-          sender {
+          updatedAt
+          user {
+            id
+            name
+            avatar
+          }
+          contact {
             id
             name
             avatar
@@ -72,9 +81,16 @@ class ChatService {
       }
     `
 
-    const response = await gqlRequest(mutation, { input })
-    return response.createMessage
+    const variables = {
+      input: {
+        conversationId,
+        content
+      }
+    }
+
+    const response = await gqlRequest(mutation, variables)
+    return response.sendMessage
   }
 }
 
-export const chatService = new ChatService() 
+export default new ChatService() 

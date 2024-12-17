@@ -25,6 +25,7 @@ import {
   UserCheck
 } from 'lucide-vue-next'
 import BetaTag from '../ui/BetaTag.vue'
+import ContactsBlock from '../ui/ContactsBlock.vue'
 
 // Definição das props
 const props = defineProps({
@@ -35,6 +36,10 @@ const props = defineProps({
   showSidebar: {
     type: Boolean,
     default: true
+  },
+  hasBlocks: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -182,6 +187,9 @@ const navigate = (itemId) => {
       class="w-64 border-r border-base-300 bg-base-100 overflow-y-auto flex flex-col h-full shrink-0"
     >
       <div class="flex h-full flex-col">
+        <!-- Bloco de Contatos -->
+        <ContactsBlock v-if="hasBlocks" />
+
         <!-- Seções do Menu -->
         <div class="flex-1 space-y-2 overflow-y-auto p-4">
           <div v-for="section in menuItems" :key="section.id" class="mb-6">

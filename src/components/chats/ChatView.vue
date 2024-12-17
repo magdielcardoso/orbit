@@ -32,8 +32,12 @@ const sendMessage = async () => {
   
   try {
     loading.value = true
-    await chatStore.sendMessage(props.chat.id, newMessage.value)
-    newMessage.value = ''
+    const response = await chatStore.sendMessage(props.chat.id, newMessage.value)
+    
+    // Limpa o input apenas se a mensagem foi enviada com sucesso
+    if (response) {
+      newMessage.value = ''
+    }
   } catch (error) {
     showToast(error.message, 'error')
   } finally {
@@ -51,7 +55,7 @@ const formatTime = (dateString) => {
 
 // Computed para verificar se a mensagem é do usuário atual
 const isCurrentUser = (message) => {
-  return !message.isFromContact && message.userId === authStore.user?.id
+  return !message.isFromContact && message.user?.id === authStore.user?.id
 }
 
 // Monitora mudanças na conversa selecionada
@@ -97,14 +101,14 @@ onMounted(() => {
           isCurrentUser(message) ? 'chat-end' : 'chat-start'
         ]"
       >
-        <div class="chat-header opacity-50">
-          {{ message.isFromContact ? chat.contact?.name : message.user?.name }}
+        <div class="chat-header opacity-50 text-sm">
+          {{ isCurrentUser(message) ? authStore.user?.name : chat.contact?.name }}
           <time class="text-xs opacity-50 ml-1">{{ formatTime(message.createdAt) }}</time>
         </div>
         <div 
           :class="[
             'chat-bubble max-w-[80%]',
-            isCurrentUser(message) ? 'chat-bubble-accent' : 'chat-bubble-primary'
+            isCurrentUser(message) ? 'chat-bubble-user' : 'chat-bubble-contact'
           ]"
         >
           {{ message.content }}
@@ -135,4 +139,31 @@ onMounted(() => {
       </div>
     </div>
   </div>
-</template> 
+</template>
+
+<style scoped>
+.chat-bubble-user {
+  @apply bg-gradient-to-r from-indigo-600 to-purple-600 text-white;
+  border-radius: 16px;
+  padding: 10px 16px;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.15);
+}
+
+.chat-bubble-contact {
+  @apply bg-base-300 text-base-content;
+  border-radius: 16px;
+  padding: 10px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Ajusta o tamanho do texto do cabeçalho */
+.chat-header {
+  @apply text-sm mb-1;
+}
+
+/* Remove o estilo padrão de bubble do DaisyUI */
+.chat-bubble::before,
+.chat-bubble::after {
+  display: none !important;
+}
+</style> 
