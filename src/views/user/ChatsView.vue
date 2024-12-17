@@ -126,20 +126,12 @@ watch(activeTab, async (newTab) => {
 
 <template>
   <div class="flex overflow-hidden">
-    <Transition
-      enter-active-class="transition-all duration-300 ease-in-out"
-      leave-active-class="transition-all duration-300 ease-in-out"
-      enter-from-class="-ml-64 opacity-0"
-      enter-to-class="ml-0 opacity-100"
-      leave-from-class="ml-0 opacity-100"
-      leave-to-class="-ml-64 opacity-0"
-    >
-      <SecondarySidebar 
-        v-if="showSecondarySidebar" 
-        :sections="sidebarSections" 
-        class="w-64 shrink-0" 
-      />
-    </Transition>
+    <SecondarySidebar 
+      v-if="showSecondarySidebar" 
+      :sections="sidebarSections" 
+      :has-blocks="true"
+      class="w-64 shrink-0" 
+    />
 
     <div class="flex-1 flex overflow-hidden">
       <ChatSidebar

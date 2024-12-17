@@ -136,6 +136,13 @@ export default {
         sort: 'Ordenar',
         newContact: 'Novo Contato'
       }
+    },
+    quickContacts: 'Contatos Rápidos',
+    searchPlaceholder: 'Buscar contato...',
+    actions: {
+      meeting: 'Reunião',
+      schedule: 'Agendar',
+      chat: 'Chat'
     }
   },
   favorites: {

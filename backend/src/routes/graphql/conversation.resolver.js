@@ -31,9 +31,8 @@ const resolvers = {
             inbox: true,
             messages: {
               orderBy: {
-                createdAt: 'desc'
+                createdAt: 'asc'
               },
-              take: 1,
               include: {
                 user: true,
                 contact: true
@@ -48,7 +47,7 @@ const resolvers = {
         return conversations.map(conversation => ({
           ...conversation,
           unreadCount: 0, // Implementar lógica de contagem depois
-          lastMessageAt: conversation.messages[0]?.createdAt || conversation.createdAt
+          lastMessageAt: conversation.messages[conversation.messages.length - 1]?.createdAt || conversation.createdAt
         }))
       } catch (error) {
         console.error('Erro ao buscar conversas:', error)
@@ -61,7 +60,7 @@ const resolvers = {
     messages: async (parent, { last }, { prisma }) => {
       const messages = await prisma.message.findMany({
         where: { conversationId: parent.id },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: 'asc' },
         take: last || undefined,
         include: {
           user: true,
