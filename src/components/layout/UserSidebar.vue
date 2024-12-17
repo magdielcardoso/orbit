@@ -214,6 +214,7 @@
   import { ref, computed, onMounted, onUnmounted } from 'vue'
   import { useI18n } from '@/i18n'
   import { useAuthStore } from '@/stores/auth.store'
+  import { formatAccountUrl } from '@/utils/string'
   import {
     Home,
     MessageCircle,
@@ -249,8 +250,40 @@
   const currentRoute = computed(() => router.currentRoute.value.name)
   
   const navigate = (route) => {
-    if (route === currentRoute.value) return // Evita renavegar para a mesma rota
-    router.push({ name: route })
+    if (route === currentRoute.value) return 
+    
+    const accountName = formatAccountUrl(authStore.user?.name)
+    
+    // Mapeamento de rotas para nomes corretos
+    const routeMap = {
+      'home': 'dashboard',
+      'settings': 'user-settings',
+      'profile': 'user-settings', // Assumindo que profile redireciona para settings
+      'help': 'help',
+      'kanban': 'kanban',
+      'chats': 'chats',
+      'contacts': 'contacts',
+      'favorites': 'favorites'
+    }
+
+    // Verifica se a rota existe no mapeamento
+    const routeName = routeMap[route] || route
+
+    try {
+      router.push({
+        name: routeName,
+        params: {
+          accountName
+        }
+      })
+    } catch (error) {
+      console.error(`Erro ao navegar para ${routeName}:`, error)
+      // Fallback para dashboard em caso de erro
+      router.push({
+        name: 'dashboard',
+        params: { accountName }
+      })
+    }
   }
   
   // Mock de notificações - depois pode vir de um store
@@ -362,7 +395,7 @@
     filter: brightness(1.1);
   }
   
-  /* Estilo dos botões de navegação */
+  /* Estilo dos bot��es de navegação */
   .nav-button {
     @apply h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-200;
     @apply text-base-content/70 hover:text-base-content dark:hover:text-orbit-200;

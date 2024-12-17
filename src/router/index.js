@@ -1,26 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth.store'
-import HomeView from '../views/HomeView.vue'
-import LoginView from '../views/LoginView.vue'
-import RegisterView from '../views/RegisterView.vue'
-import SystemSetup from '../views/SystemSetup.vue'
-import AdminLayout from '../views/admin/AdminLayout.vue'
-import DefaultLayout from '../layouts/DefaultLayout.vue'
-import SuperAdminPanel from '../views/SuperAdminPanel.vue'
-import UsersManagement from '../views/admin/UsersManagement.vue'
-import RolesManagement from '../views/admin/RolesManagement.vue'
-import SystemSettings from '../views/admin/SystemSettings.vue'
-import BrandingSettings from '../views/admin/settings/BrandingSettings.vue'
 import { checkSystemStatus } from '@/utils/system'
 import { formatAccountUrl } from '../utils/string'
-import UserSettings from '@/views/user/UserSettings.vue'
-import InboxSettings from '@/views/user/InboxSettings.vue'
-import InboxSetup from '@/views/user/InboxSetup.vue'
-import KanbanView from '../views/user/KanbanView.vue'
 
-const router = createRouter({
-  history: createWebHistory(),
-  routes: [
+// Função para gerar rotas automaticamente
+function generateRoutes() {
+  const views = import.meta.glob('../views/**/*.vue')
+  const routes = [
+    // Rota raiz com redirecionamento
     {
       path: '/',
       name: 'home',
@@ -33,134 +20,178 @@ const router = createRouter({
         return `/dashboard/${formatAccountUrl(authStore.user?.name)}`;
       }
     },
-    {
-      path: '/dashboard/:accountName',
-      component: DefaultLayout,
-      meta: { requiresAuth: true },
-      children: [
-        {
-          path: '',
-          name: 'dashboard',
-          component: HomeView
-        },
-        {
-          path: 'kanban',
-          name: 'kanban',
-          component: () => import('../views/user/KanbanView.vue'),
-          meta: { requiresAuth: true }
-        },
-        {
-          path: 'chats',
-          name: 'chats',
-          component: () => import('../views/user/ChatsView.vue')
-        },
-        {
-          path: 'contacts',
-          name: 'contacts',
-          component: () => import('../views/user/ContactsView.vue')
-        },
-        {
-          path: 'favorites',
-          name: 'favorites',
-          component: () => import('../views/user/FavoritesView.vue')
-        },
-        {
-          path: 'settings',
-          name: 'user-settings',
-          component: () => import('../views/user/UserSettings.vue')
-        },
-        {
-          path: 'settings/inbox',
-          name: 'inbox-settings',
-          component: InboxSettings,
-          meta: {
-            requiresAuth: true
-          }
-        }
-      ]
-    },
+    // Adiciona rota de login explicitamente
     {
       path: '/login',
       name: 'login',
-      component: LoginView
-    },
-    {
-      path: '/register',
-      name: 'register',
-      component: RegisterView
-    },
-    {
-      path: '/setup',
-      name: 'system-setup',
-      component: SystemSetup,
+      component: () => import('../views/LoginView.vue'),
       meta: { requiresAuth: false }
-    },
+    }
+  ]
+
+  // Processa todos os arquivos .vue
+  for (const path in views) {
+    const componentPath = path.replace('../views/', '').replace('.vue', '')
+    const segments = componentPath.split('/')
+    const name = segments.pop().toLowerCase().replace('view', '')
+
+    // Ignora arquivos que começam com _ ou . e o LoginView que já foi adicionado
+    if (name.startsWith('_') || name.startsWith('.') || componentPath === 'LoginView') continue
+
+    // Configurações especiais baseadas no caminho
+    if (path.includes('/user/')) {
+      // Arquivos na pasta user viram filhos do dashboard
+      continue // Serão tratados separadamente
+    } else if (path.includes('/admin/')) {
+      // Arquivos admin serão tratados separadamente
+      continue
+    } else if (componentPath === 'HomeView') {
+      // Redireciona /homeview para dashboard
+      routes.push({
+        path: '/homeview',
+        redirect: to => {
+          const authStore = useAuthStore();
+          if (!authStore.isAuthenticated) {
+            return '/login';
+          }
+          return `/dashboard/${formatAccountUrl(authStore.user?.name)}`;
+        }
+      })
+    } else {
+      // Rotas públicas e outras
+      routes.push({
+        path: `/${componentPath.toLowerCase()}`,
+        name,
+        component: views[path],
+        meta: {
+          requiresAuth: !['register', 'system-setup'].includes(name)
+        }
+      })
+    }
+  }
+
+  // Adiciona rota do dashboard com filhos dinâmicos
+  routes.push({
+    path: '/dashboard/:accountName',
+    component: () => import('../layouts/DefaultLayout.vue'),
+    meta: { requiresAuth: true },
+    children: generateDashboardRoutes(views)
+  })
+
+  // Adiciona rota admin com filhos dinâmicos
+  routes.push({
+    path: '/admin',
+    component: () => import('../views/admin/AdminLayout.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true },
+    children: generateAdminRoutes(views)
+  })
+
+  return routes
+}
+
+// Função auxiliar para gerar rotas do dashboard
+function generateDashboardRoutes(views) {
+  const dashboardRoutes = [
     {
-      path: '/admin',
-      component: AdminLayout,
-      meta: { requiresAuth: true, requiresAdmin: true },
+      path: '',
+      name: 'dashboard',
+      component: () => import('../views/HomeView.vue')
+    }
+  ]
+
+  // Processa arquivos da pasta user
+  for (const path in views) {
+    if (path.includes('/user/')) {
+      const fileName = path.split('/').pop().replace('.vue', '')
+      const routeName = fileName.toLowerCase().replace('view', '')
+      
+      // Configura rota baseada no nome do arquivo
+      const route = {
+        path: routeName,
+        name: routeName,
+        component: views[path],
+        meta: { requiresAuth: true }
+      }
+
+      // Configurações especiais para rotas específicas
+      if (routeName === 'settings' || routeName === 'usersettings') {
+        route.path = 'settings'
+        route.name = 'user-settings'
+      } else if (routeName === 'inboxsettings') {
+        route.path = 'settings/inbox'
+        route.name = 'inbox-settings'
+      } else if (routeName === 'inboxsetup') {
+        route.path = 'settings/inbox/new'
+        route.name = 'inbox-setup'
+      }
+
+      dashboardRoutes.push(route)
+    }
+  }
+
+  return dashboardRoutes
+}
+
+// Função auxiliar para gerar rotas admin
+function generateAdminRoutes(views) {
+  const adminRoutes = [
+    {
+      path: '',
+      name: 'admin',
+      component: () => import('../views/SuperAdminPanel.vue')
+    },
+    // Adiciona a rota de settings como um objeto separado
+    {
+      path: 'settings',
+      name: 'admin-settings',
+      component: () => import('../views/admin/SystemSettings.vue'),
       children: [
         {
           path: '',
-          name: 'admin',
-          component: SuperAdminPanel
+          name: 'admin-settings-general',
+          component: () => import('../views/admin/SystemSettings.vue')
         },
         {
-          path: 'organizations',
-          name: 'organizations-management',
-          component: () => import('../views/admin/OrganizationsManagement.vue')
-        },
-        {
-          path: 'users',
-          name: 'users-management',
-          component: UsersManagement
-        },
-        {
-          path: 'roles',
-          name: 'roles-management',
-          component: RolesManagement
-        },
-        {
-          path: 'settings',
-          children: [
-            {
-              path: '',
-              component: () => import('../views/admin/SystemSettings.vue'),
-              meta: { requiresAuth: true, requiresAdmin: true }
-            },
-            {
-              path: 'branding',
-              component: BrandingSettings,
-              meta: { 
-                requiresAuth: true, 
-                requiresAdmin: true,
-                title: 'Configurações de Marca'
-              }
-            },
-          ]
-        }
-      ]
-    },
-    {
-      path: '/settings',
-      component: DefaultLayout,
-      meta: { requiresAuth: true },
-      children: [
-        {
-          path: 'inbox',
-          component: InboxSettings,
-          name: 'inbox-settings'
-        },
-        {
-          path: 'inbox/new',
-          component: InboxSetup,
-          name: 'inbox-setup'
+          path: 'branding',
+          name: 'admin-branding',
+          component: () => import('../views/admin/settings/BrandingSettings.vue'),
+          meta: { title: 'Configurações de Marca' }
         }
       ]
     }
   ]
+
+  // Processa arquivos da pasta admin
+  for (const path in views) {
+    if (path.includes('/admin/')) {
+      const segments = path.split('/')
+      const fileName = segments.pop().replace('.vue', '')
+      const routeName = fileName.toLowerCase().replace('view', '')
+      
+      // Pula arquivos de settings pois já foram configurados acima
+      if (segments.includes('settings') || routeName === 'systemsettings') {
+        continue
+      }
+
+      // Adiciona outras rotas admin
+      adminRoutes.push({
+        path: routeName.replace('management', ''),
+        name: routeName,
+        component: views[path]
+      })
+    }
+  }
+
+  return adminRoutes
+}
+
+// Cria o router
+const router = createRouter({
+  history: createWebHistory(),
+  routes: generateRoutes()
 })
 
+// Guard de navegação
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   const isAuthenticated = authStore.isAuthenticated
@@ -177,18 +208,18 @@ router.beforeEach(async (to, from, next) => {
 
     // Verifica o status do sistema usando GraphQL
     const systemStatus = await checkSystemStatus()
-    console.log('System status:', systemStatus) // Debug
+    console.log('System status:', systemStatus)
 
     // Se o sistema não estiver configurado e não estiver indo para setup
     if (!systemStatus.configured && to.name !== 'system-setup') {
-      console.log('Sistema não configurado, redirecionando para setup') // Debug
+      console.log('Sistema não configurado, redirecionando para setup')
       localStorage.removeItem('systemConfigured')
       return next('/setup')
     }
 
     // Se o sistema estiver configurado e estiver tentando acessar setup
     if (systemStatus.configured && to.name === 'system-setup') {
-      console.log('Sistema já configurado, redirecionando para home') // Debug
+      console.log('Sistema já configurado, redirecionando para home')
       return next('/')
     }
 
@@ -214,10 +245,11 @@ router.beforeEach(async (to, from, next) => {
       }
     }
 
-    // Apenas verifica permissão para rotas admin, sem redirecionamento automático
+    // Verifica permissão para rotas admin e redireciona para o dashboard do usuário
     if (requiresAdmin && !authStore.hasPermission('manage_system')) {
       console.log('Acesso negado: requer permissão manage_system')
-      return next('/dashboard')
+      const userName = formatAccountUrl(authStore.user?.name)
+      return next(`/dashboard/${userName}`)
     }
 
     next()
