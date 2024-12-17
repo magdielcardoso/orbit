@@ -285,6 +285,26 @@ enum ChannelSource {
   API
   IFOOD
   WEBCHAT
+  WHATSAPP_API
+  WHATSAPP_EVOLUTION
+  SMS
+  TWILIO
+}
+
+// Nova enum para status de canal
+enum ChannelStatus {
+  ACTIVE
+  INACTIVE
+  ERROR
+  PENDING_SETUP
+}
+
+// Nova enum para status de conector
+enum ConnectorStatus {
+  CONNECTED
+  DISCONNECTED
+  ERROR
+  PENDING_SETUP
 }
 
 // Nova model para Inbox (caixas de entrada)
@@ -450,7 +470,8 @@ model Organization {
   contacts      Contact[]        // Adicionando relação inversa para Contact
   automations   Automation[]     // Adicionando relação inversa para Automation
   currentUsers User[] @relation("CurrentOrg") // Adiciona relação inversa
-  
+  channels     OrganizationChannel[]
+  connectors   OrganizationConnector[]
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   deletedAt     DateTime?       // Soft delete
@@ -524,3 +545,71 @@ model Automation {
   updatedAt       DateTime     @updatedAt
 }
 
+// Nova model para Canal
+model Channel {
+  id              String        @id @default(uuid())
+  name            String
+  description     String?
+  source          ChannelSource
+  status          ChannelStatus @default(PENDING_SETUP)
+  isEnabled       Boolean       @default(true)
+  
+  // Relationships
+  organizations   OrganizationChannel[]
+  connector       Connector?    @relation(fields: [connectorId], references: [id])
+  connectorId     String?
+  
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+// Nova model para Conector
+model Connector {
+  id              String          @id @default(uuid())
+  name            String
+  source          ChannelSource
+  config          Json            // Store connector-specific configuration
+  isEnabled       Boolean         @default(true)
+  status          ConnectorStatus @default(PENDING_SETUP)
+  
+  // Relationships
+  channels        Channel[]
+  organizations   OrganizationConnector[]
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+// Relação entre Organização e Canal
+model OrganizationChannel {
+  id              String       @id @default(uuid())
+  organizationId  String
+  channelId       String
+  isEnabled       Boolean      @default(true)
+  
+  // Relationships
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  channel         Channel      @relation(fields: [channelId], references: [id])
+  
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@unique([organizationId, channelId])
+}
+
+// Relação entre Organização e Conector
+model OrganizationConnector {
+  id              String       @id @default(uuid())
+  organizationId  String
+  connectorId     String
+  isEnabled       Boolean      @default(true)
+  
+  // Relationships
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  connector       Connector    @relation(fields: [connectorId], references: [id])
+  
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@unique([organizationId, connectorId])
+}
