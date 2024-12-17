@@ -3,6 +3,7 @@ import { createPinia } from 'pinia'
 import './style.css'
 import App from './App.vue'
 import router from './router'
+import ComponentsPlugin from './plugins/components'
 
 // Inicializa o tema
 const savedTheme = localStorage.getItem('theme') || 'light'
@@ -13,6 +14,7 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
+app.use(ComponentsPlugin)
 
 app.mount('#app')
 

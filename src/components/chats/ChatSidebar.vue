@@ -1,35 +1,18 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from '@/i18n/plugin'
 import { Search, Command, Keyboard, PanelLeftClose, PanelLeft } from 'lucide-vue-next'
 import UserAvatar from './UserAvatar.vue'
+import ChatList from './ChatList.vue'
+import { useChatStore } from '@/stores/chat.store'
+import { useAuthStore } from '@/stores/auth.store'
 
 const { t } = useI18n()
+const chatStore = useChatStore()
+const authStore = useAuthStore()
 
 // Estado
 const searchQuery = ref('')
-
-// Mock de dados para exemplo
-const chats = [
-  {
-    id: 1,
-    name: 'João Silva',
-    avatar: null,
-    lastMessage: 'Olá, preciso de ajuda com meu pedido',
-    time: '10:30',
-    unread: 2,
-    status: 'online'
-  },
-  {
-    id: 2,
-    name: 'Maria Santos',
-    avatar: 'https://i.pravatar.cc/150?u=maria',
-    lastMessage: 'Quando meu pedido será entregue?',
-    time: '09:45',
-    unread: 0,
-    status: 'offline'
-  }
-]
 
 const props = defineProps({
   activeTab: {
@@ -47,6 +30,44 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['select', 'update:activeTab', 'toggle-sidebar'])
+
+// Computed para filtrar conversas baseado na tab ativa
+const filteredConversations = computed(() => {
+  const conversations = chatStore.sortedConversations
+  
+  switch (props.activeTab) {
+    case 'mine':
+      return conversations.filter(c => c.assigneeId === authStore.user?.id)
+    case 'unassigned':
+      return conversations.filter(c => !c.assigneeId)
+    default:
+      return conversations
+  }
+})
+
+// Handler para seleção de chat
+const handleChatSelect = (chat) => {
+  chatStore.setSelectedConversation(chat)
+  emit('select', chat)
+}
+
+// Carrega as conversas ao montar o componente
+onMounted(async () => {
+  if (authStore.currentOrganizationId) {
+    await chatStore.fetchConversations()
+  }
+})
+
+// Observa mudanças na tab ativa para atualizar filtros
+watch(props.activeTab, async (newTab) => {
+  const filters = {
+    mine: { assigneeId: authStore.user?.id },
+    unassigned: { assigneeId: null },
+    all: {}
+  }
+
+  await chatStore.fetchConversations(filters[newTab])
+})
 </script>
 
 <template>
@@ -57,7 +78,7 @@ const emit = defineEmits(['select', 'update:activeTab', 'toggle-sidebar'])
         <div class="flex items-center gap-3">
           <button 
             class="btn btn-sm btn-ghost"
-            @click="$emit('toggle-sidebar')"
+            @click="emit('toggle-sidebar')"
           >
             <component 
               :is="showSecondarySidebar ? PanelLeftClose : PanelLeft" 
@@ -79,14 +100,13 @@ const emit = defineEmits(['select', 'update:activeTab', 'toggle-sidebar'])
         </div>
       </div>
 
-      <!-- Barra de pesquisa -->
       <div class="relative">
         <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-base-content/50" />
         <input
-          type="text"
           v-model="searchQuery"
-          :placeholder="t('chats.searchPlaceholder')"
+          type="text"
           class="input input-bordered w-full pl-10"
+          :placeholder="t('chats.searchPlaceholder')"
         />
       </div>
     </div>
@@ -97,15 +117,15 @@ const emit = defineEmits(['select', 'update:activeTab', 'toggle-sidebar'])
         <button
           v-for="tab in tabs"
           :key="tab.id"
-          @click="$emit('update:activeTab', tab.id)"
+          class="flex-1 px-4 py-2 border-b-2 transition-colors flex items-center gap-2 justify-center"
           :class="[
-            'px-4 py-2 border-b-2 transition-colors flex items-center gap-2',
             activeTab === tab.id
               ? 'border-primary text-primary'
               : 'border-transparent hover:border-base-300'
           ]"
+          @click="emit('update:activeTab', tab.id)"
         >
-          {{ t(`chats.tabs.${tab.id}`) }}
+          {{ tab.label }}
           <span
             v-if="tab.count > 0"
             class="px-1.5 py-0.5 text-xs rounded-full bg-base-200"
@@ -117,38 +137,11 @@ const emit = defineEmits(['select', 'update:activeTab', 'toggle-sidebar'])
     </div>
 
     <!-- Lista de Chats -->
-    <div class="flex-1 overflow-y-auto">
-      <div class="divide-y divide-base-300">
-        <button
-          v-for="chat in chats"
-          :key="chat.id"
-          @click="emit('select', chat)"
-          class="w-full p-4 hover:bg-base-200 transition-colors text-left flex items-center gap-3"
-        >
-          <UserAvatar 
-            :name="chat.name"
-            :avatar="chat.avatar"
-            size="sm"
-          />
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center justify-between">
-              <span class="font-medium">{{ chat.name }}</span>
-              <span class="text-xs text-base-content/60">{{ chat.time }}</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <p class="text-sm text-base-content/70 truncate">
-                {{ chat.lastMessage }}
-              </p>
-              <span
-                v-if="chat.unread > 0"
-                class="px-1.5 py-0.5 text-xs rounded-full bg-primary text-primary-content shrink-0 ml-2"
-              >
-                {{ chat.unread }}
-              </span>
-            </div>
-          </div>
-        </button>
-      </div>
-    </div>
+    <ChatList
+      :conversations="filteredConversations"
+      :loading="chatStore.loading"
+      :error="chatStore.error"
+      @select="handleChatSelect"
+    />
   </div>
 </template> 
