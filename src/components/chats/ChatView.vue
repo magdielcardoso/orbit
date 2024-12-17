@@ -49,6 +49,11 @@ const formatTime = (dateString) => {
   })
 }
 
+// Computed para verificar se a mensagem é do usuário atual
+const isCurrentUser = (message) => {
+  return !message.isFromContact && message.userId === authStore.user?.id
+}
+
 // Monitora mudanças na conversa selecionada
 watch(() => props.chat, async (newChat) => {
   if (newChat?.id) {
@@ -64,9 +69,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex-1 flex flex-col h-full">
+  <div class="flex flex-col overflow-hidden">
     <!-- Header do Chat -->
-    <div class="p-4 border-b border-base-300 flex items-center justify-between">
+    <div class="shrink-0 p-4 border-b border-base-300 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <UserAvatar 
           :name="chat.contact?.name"
@@ -89,17 +94,17 @@ onMounted(() => {
         :key="message.id"
         :class="[
           'chat',
-          message.sender.id === authStore.user?.id ? 'chat-end' : 'chat-start'
+          isCurrentUser(message) ? 'chat-end' : 'chat-start'
         ]"
       >
         <div class="chat-header opacity-50">
-          {{ message.sender.name }}
+          {{ message.isFromContact ? chat.contact?.name : message.user?.name }}
           <time class="text-xs opacity-50 ml-1">{{ formatTime(message.createdAt) }}</time>
         </div>
         <div 
           :class="[
             'chat-bubble max-w-[80%]',
-            message.sender.id === authStore.user?.id ? 'chat-bubble-accent' : 'chat-bubble-primary'
+            isCurrentUser(message) ? 'chat-bubble-accent' : 'chat-bubble-primary'
           ]"
         >
           {{ message.content }}
@@ -108,7 +113,7 @@ onMounted(() => {
     </div>
 
     <!-- Input de Mensagem -->
-    <div class="p-4 border-t border-base-300">
+    <div class="shrink-0 p-4 border-t border-base-300">
       <div class="flex items-center gap-2">
         <button class="btn btn-ghost btn-circle">
           <Paperclip class="h-5 w-5" />

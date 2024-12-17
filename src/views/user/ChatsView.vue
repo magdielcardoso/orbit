@@ -125,7 +125,7 @@ watch(activeTab, async (newTab) => {
 </script>
 
 <template>
-  <div class="flex h-full overflow-hidden">
+  <div class="flex overflow-hidden">
     <Transition
       enter-active-class="transition-all duration-300 ease-in-out"
       leave-active-class="transition-all duration-300 ease-in-out"
@@ -134,9 +134,14 @@ watch(activeTab, async (newTab) => {
       leave-from-class="ml-0 opacity-100"
       leave-to-class="-ml-64 opacity-0"
     >
-      <SecondarySidebar v-if="showSecondarySidebar" :sections="sidebarSections" class="w-64 shrink-0" />
+      <SecondarySidebar 
+        v-if="showSecondarySidebar" 
+        :sections="sidebarSections" 
+        class="w-64 shrink-0" 
+      />
     </Transition>
-    <div class="flex-1 flex">
+
+    <div class="flex-1 flex overflow-hidden">
       <ChatSidebar
         v-model:activeTab="activeTab"
         :tabs="tabs"
@@ -145,12 +150,20 @@ watch(activeTab, async (newTab) => {
         @toggle-sidebar="toggleSecondarySidebar"
       />
 
-      <template v-if="selectedChat">
-        <ChatView :chat="selectedChat" />
-      </template>
-      <template v-else>
-        <ChatEmptyState />
-      </template>
+      <div class="flex-1 flex overflow-hidden">
+        <template v-if="selectedChat">
+          <ChatView :chat="selectedChat" class="flex-1" />
+        </template>
+        <template v-else>
+          <ChatEmptyState class="flex-1" />
+        </template>
+      </div>
     </div>
   </div>
-</template> 
+</template>
+
+<style scoped>
+:deep(.flex) {
+  min-height: 0;
+}
+</style> 
