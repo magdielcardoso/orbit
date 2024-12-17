@@ -179,67 +179,9 @@ export default {
         email: 'Email Settings'
       },
       preferences: {
-        title: 'Preferences',
-        general: {
-          title: 'General Settings'
-        },
         profile: {
           title: 'Profile Settings'
         }
-      },
-      notifications: {
-        title: 'Notifications',
-        preferences: {
-          title: 'Notification Preferences'
-        },
-        description: 'Manage how and when you receive notifications'
-      },
-      inbox: {
-        title: 'Inboxes',
-        description: 'Manage your communication channels with customers',
-        inboxes: 'Inboxes',
-        addInbox: 'Add Inbox',
-        noInboxes: 'No inboxes found',
-        addInboxHelp: 'Add your first inbox to start communicating with your customers',
-        channelTypes: {
-          WEBCHAT: 'Website Chat',
-          WHATSAPP: 'WhatsApp',
-          TELEGRAM: 'Telegram',
-          EMAIL: 'Email',
-          API: 'API'
-        },
-        form: {
-          name: 'Name',
-          namePlaceholder: 'Ex: Website Chat',
-          description: 'Description',
-          descriptionPlaceholder: 'A brief description of this inbox',
-          channelType: 'Channel Type',
-          isEnabled: 'Active',
-          teams: 'Teams'
-        },
-        table: {
-          name: 'Name',
-          channelType: 'Channel Type',
-          status: 'Status',
-          teams: 'Teams',
-          actions: 'Actions'
-        },
-        status: {
-          active: 'Active',
-          inactive: 'Inactive'
-        },
-        actions: {
-          edit: 'Edit',
-          delete: 'Delete'
-        },
-        modal: {
-          editTitle: 'Edit Inbox',
-          newTitle: 'New Inbox',
-          cancel: 'Cancel',
-          save: 'Save',
-          saving: 'Saving...'
-        },
-        description: 'A channel is how your customer chooses to communicate with you'
       }
     },
     profile: {
