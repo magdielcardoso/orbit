@@ -33,8 +33,8 @@ export default defineConfig({
     cors: true,
     hmr: {
       overlay: true,
-      clientPort: 443,
-      protocol: 'wss',
+      clientPort: 5173,
+      protocol: 'ws',
       timeout: 30000
     }
   },

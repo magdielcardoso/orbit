@@ -9,7 +9,7 @@ export $(shell sed s/=.*// .env)
 DB_NAME = $(if $(filter production,$(NODE_ENV)),orbitchat,orbitchat_dev)
 
 # Comandos principais
-.PHONY: install dev build start clean migrate reinstall test test-watch test-coverage test-ui test-component test-component-watch
+.PHONY: install dev build start clean migrate reinstall test test-watch test-coverage test-ui test-component test-component-watch kill-ports
 
 install:
 	$(NPM) install
@@ -34,6 +34,19 @@ clean:
 	rm -rf node_modules
 	rm -rf dist
 	cd backend && rm -rf node_modules
+
+kill-ports:
+	@echo "Encerrando processos nas portas 4000 e 5173..."
+	@for port in 4000 5173; do \
+		pids=$$(sudo lsof -t -i :$$port); \
+		if [ -n "$$pids" ]; then \
+			echo "Matando processos na porta $$port (PID: $$pids)..."; \
+			sudo kill -9 $$pids; \
+		else \
+			echo "Nenhum processo encontrado na porta $$port."; \
+		fi \
+	done
+	@echo "Processos encerrados."
 
 # Comandos do Prisma
 .PHONY: migrate-dev migrate-deploy studio generate

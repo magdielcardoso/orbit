@@ -1,4 +1,4 @@
-export default async function authRoutes(fastify) {
+export default async function adminRoute(fastify) {
   fastify.post('/auth/register', async (request, reply) => {
     try {
       const result = await fastify.auth.register(request.body)

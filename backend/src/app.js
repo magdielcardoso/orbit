@@ -2,24 +2,33 @@ import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import jwt from '@fastify/jwt'
 import prismaPlugin from './plugins/prisma.plugin.js'
-import loadControllers from './plugins/controllers.plugin.js'
+import loadServices from './plugins/services.plugin.js'
 import graphqlPlugin from './plugins/graphql.plugin.js'
-import Auth from './controllers/auth.controller.js'
-import { loggerService } from './controllers/logger.controller.js'
-
-const fastify = Fastify({
-  logger: {
+import websocketPlugin from './plugins/websocket.plugin.js'
+import Auth from './services/auth.service.js'
+import { loggerService } from './services/logger.service.js'
+const envToLogger = {
+  development: {
     transport: {
-      target: 'pino-pretty'
-    }
-  }
+      target: 'pino-pretty',
+      options: {
+        translateTime: 'HH:MM:ss Z',
+        ignore: 'pid,hostname',
+      },
+    },
+  },
+  production: true,
+  test: false,
+}
+const fastify = Fastify({
+  logger: envToLogger[process.env.NODE_ENV] ?? true
 })
 
 // Setup do servidor
 async function setup() {
   try {
     // Primeiro registra os plugins básicos
-    fastify.log.info('Registrando CORS...')
+    fastify.log.info('[MAIN] Registrando CORS...')
     await fastify.register(cors, {
       origin: [
         'https://orbit.stacklab.digital',
@@ -33,29 +42,31 @@ async function setup() {
       exposedHeaders: ['Content-Range', 'X-Content-Range']
     })
 
-    fastify.log.info('Registrando JWT...')
+    fastify.log.info('[MAIN] Registrando JWT...')
     await fastify.register(jwt, {
       secret: process.env.JWT_SECRET
     })
-    fastify.log.info('Registrando controladores...')
-    await loadControllers(fastify)
+    fastify.log.info('[MAIN] Registrando controladores...')
+    await loadServices(fastify)
     await fastify.register(prismaPlugin)
     const auth = new Auth(fastify.prisma)
     fastify.decorate('auth', auth)
+    // Inicializa o WebSocket
+    await fastify.register(websocketPlugin)
 
     // Inicializa o logger depois que o Fastify está configurado
-    loggerService.initialize(fastify.server, fastify)
+    loggerService.initialize(fastify)
 
-    fastify.log.info('[Graphql] Registrando GraphQL e Altair...')
+    fastify.log.info('[MAIN] Registrando GraphQL e Altair...')
     await graphqlPlugin(fastify);
 
     // Log de teste
-    loggerService.log('info', 'Sistema iniciado com sucesso', {
+   /* loggerService.log('info', 'Sistema iniciado com sucesso', {
       service: 'app',
       action: 'startup'
-    })
+    })*/
   } catch (err) {
-    fastify.log.error('Erro durante o setup:', err)
+    fastify.log.error('[MAIN] Erro durante o setup:', err)
     throw err
   }
 }
@@ -71,12 +82,12 @@ const start = async () => {
     })
 
     const baseUrl = `http://localhost:${port}`
-    fastify.log.info(`Servidor rodando em ${baseUrl}`)
-    fastify.log.info(`GraphQL endpoint: ${baseUrl}/graphql`)
-    fastify.log.info(`GraphiQL interface: ${baseUrl}/graphql`)
+    fastify.log.info(`[MAIN] Servidor rodando em ${baseUrl}`)
+    fastify.log.info(`[MAIN] GraphQL endpoint: ${baseUrl}/graphql`)
+    fastify.log.info(`[MAIN] GraphiQL interface: ${baseUrl}/altair`)
 
     // Lista todas as rotas registradas
-    fastify.log.info('Rotas disponíveis:')
+    fastify.log.info('[MAIN] Rotas disponíveis:')
     fastify.printRoutes()
   } catch (err) {
     fastify.log.error(err)

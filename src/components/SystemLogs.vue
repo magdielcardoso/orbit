@@ -123,10 +123,16 @@
                 <!-- Metadados -->
                 <div v-if="hasMetadata(log)" class="metadata-section mt-3">
                   <div class="metadata-header">
-                    <span class="text-sm font-semibold text-gray-400">Metadados</span>
+                    <span class="text-sm font-semibold text-gray-400">REQUEST</span>
                   </div>
                   <div class="metadata-content">
-                    <pre>{{ formatMetadata(log) }}</pre>
+                    <pre>{{ formatMetadata(log.request) }}</pre>
+                  </div>
+                  <div class="metadata-header">
+                    <span class="text-sm font-semibold text-gray-400">RESPONSE</span>
+                  </div>
+                  <div class="metadata-content">
+                    <pre>{{ formatMetadata(log.response) }}</pre>
                   </div>
                 </div>
 
@@ -465,9 +471,9 @@ function handleDragEnd() {
 
 onMounted(() => {
   // Conecta ao WebSocket
-  socket = io(import.meta.env.VITE_API_URL, {
-    path: '/logs'
-  });
+  socket = io(`${import.meta.env.VITE_API_URL}/logs`, {
+    path: '/socket'
+  })
 
   socket.on('connect', () => {
     console.log('Conectado ao serviço de logs');
