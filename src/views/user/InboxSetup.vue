@@ -87,7 +87,7 @@
           <div>
             <h2 class="text-xl font-semibold mb-2">Selecione seu provedor de email</h2>
             <p class="text-sm text-base-content/70 mb-6">
-              Selecione um provedor de email da lista abaixo. Se você n��o vir seu provedor de email na lista, pode selecionar a opção de outro provedor e fornecer as Credenciais IMAP e SMTP.
+              Selecione um provedor de email da lista abaixo. Se você não vir seu provedor de email na lista, pode selecionar a opção de outro provedor e fornecer as Credenciais IMAP e SMTP.
             </p>
 
             <div class="grid grid-cols-3 gap-6">
@@ -339,26 +339,35 @@
         </div>
       </div>
 
-      <!-- Step 4: QR Code -->
+      <!-- Step 4: QR Code do WhatsApp -->
       <div v-else-if="currentStep === 3" class="max-w-2xl">
-        <div class="p-6 bg-white rounded-lg border-2 border-orbit-100">
-          <div class="flex flex-col items-center gap-4">
-            <h3 class="text-lg font-medium text-gray-900">Conecte seu WhatsApp</h3>
-            <p class="text-sm text-gray-500 text-center">
-              Abra o WhatsApp no seu celular e escaneie o QR code abaixo
-            </p>
-            
-            <img 
-              v-if="qrCodeData"
-              :src="qrCodeData" 
-              alt="QR Code WhatsApp"
-              class="w-64 h-64"
-            />
-            
-            <p class="text-xs text-gray-400">
-              Este QR code expira em 1 minuto. Se expirar, crie uma nova caixa de entrada.
+        <div class="flex flex-col items-center gap-6">
+          <div class="text-center">
+            <h2 class="text-xl font-semibold mb-2">Conecte seu WhatsApp</h2>
+            <p class="text-sm text-base-content/70">
+              Abra o WhatsApp no seu celular e escaneie o QR Code abaixo para conectar sua conta
             </p>
           </div>
+
+          <!-- QR Code Container -->
+          <div class="p-8 bg-white rounded-lg shadow-lg">
+            <img 
+              v-if="qrCodeData" 
+              :src="qrCodeData" 
+              alt="WhatsApp QR Code" 
+              class="w-64 h-64 invert"
+            />
+            <div 
+              v-else 
+              class="w-64 h-64 flex items-center justify-center bg-base-200"
+            >
+              <span class="loading loading-spinner loading-lg text-orbit-500"></span>
+            </div>
+          </div>
+
+          <p class="text-sm text-base-content/70 mt-4">
+            O QR Code será atualizado automaticamente a cada 20 segundos
+          </p>
         </div>
       </div>
 
@@ -405,7 +414,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import { useI18n } from '@/i18n/plugin'
@@ -738,7 +747,6 @@ async function createEvolutionInstance() {
 
     const result = await gqlRequest(mutation, { input })
     
-    // Como gqlRequest já retorna result.data, verificamos direto createInbox
     if (!result?.createInbox) {
       console.error('Resposta inválida:', result)
       showToast('Erro ao criar instância: resposta inválida do servidor', 'error')
@@ -746,11 +754,9 @@ async function createEvolutionInstance() {
     }
 
     try {
-      const settings = JSON.parse(result.createInbox.settings)
+      // O settings vem como string dentro de string, precisamos fazer parse duas vezes
+      const settings = JSON.parse(JSON.parse(result.createInbox.settings))
       console.log('Settings parseados:', settings)
-      
-      // Marca como sucesso
-      instanceCreated.value = true
       
       if (settings?.qrcode?.base64) {
         qrCodeData.value = settings.qrcode.base64
@@ -758,16 +764,19 @@ async function createEvolutionInstance() {
       } else {
         showToast('Instância criada com sucesso!')
       }
+
+      // Marca como sucesso e avança para próximo step
+      instanceCreated.value = true
+      nextStep()
       
       return true
     } catch (parseError) {
       console.error('Erro ao parsear settings:', parseError)
-      // Mesmo com erro no parse, a instância foi criada
       instanceCreated.value = true
       showToast('Instância criada com sucesso!')
+      nextStep()
       return true
     }
-    
   } catch (error) {
     console.error('Erro ao criar instância:', error)
     showToast(error.message || 'Erro ao criar instância', 'error')
@@ -781,10 +790,20 @@ async function createEvolutionInstance() {
 function handleStepAction() {
   console.log('handleStepAction chamado', {
     canProceed: canProceed.value,
-    currentStep: currentStep.value
+    currentStep: currentStep.value,
+    qrCodeData: !!qrCodeData.value
   })
+
   if (canProceed.value) {
-    nextStep()
+    // Se estiver no step 2 e tiver QR code, vai para o step 4
+    if (currentStep.value === 2 && 
+        selectedChannel.value === 'WHATSAPP' && 
+        inboxForm.value.provider === 'evolution_api' && 
+        qrCodeData.value) {
+      currentStep.value = 3 // Step 4 (índice 3)
+    } else {
+      nextStep()
+    }
   }
 }
 </script> 
