@@ -27,7 +27,7 @@ OrbitChat.io é uma plataforma de atendimento ao cliente omnichannel de código 
 ## 🛠️ Tecnologias
 
 - Frontend: Vue.js 3 + Vite
-- Backend: Node.js + Express
+- Backend: Node.js + Fastify
 - Banco de dados: PostgreSQL
 - ORM: Prisma
 - Realtime: Socket.io
