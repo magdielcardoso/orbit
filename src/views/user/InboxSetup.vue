@@ -87,7 +87,7 @@
           <div>
             <h2 class="text-xl font-semibold mb-2">Selecione seu provedor de email</h2>
             <p class="text-sm text-base-content/70 mb-6">
-              Selecione um provedor de email da lista abaixo. Se você não vir seu provedor de email na lista, pode selecionar a opção de outro provedor e fornecer as Credenciais IMAP e SMTP.
+              Selecione um provedor de email da lista abaixo. Se você n��o vir seu provedor de email na lista, pode selecionar a opção de outro provedor e fornecer as Credenciais IMAP e SMTP.
             </p>
 
             <div class="grid grid-cols-3 gap-6">
@@ -496,15 +496,21 @@ onMounted(async () => {
   await fetchUsers()
 })
 
+const instanceCreated = ref(false)
+
 const canProceed = computed(() => {
+  if (currentStep.value === 0) return !!selectedChannel.value
+  if (currentStep.value === 1) {
+    if (selectedChannel.value === 'EMAIL') {
+      return !!inboxForm.value.name && !!inboxForm.value.emailProvider
+    }
+    return !!inboxForm.value.name
+  }
   if (currentStep.value === 2 && 
       selectedChannel.value === 'WHATSAPP' && 
       inboxForm.value.provider === 'evolution_api') {
-    return !!qrCodeData.value
+    return instanceCreated.value
   }
-  
-  if (currentStep.value === 0) return !!selectedChannel.value
-  if (currentStep.value === 1) return !!inboxForm.value.name
   return true
 })
 
@@ -672,6 +678,27 @@ const canConnectEvolution = computed(() => {
   )
 })
 
+// Adicione a função showToast
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div')
+  toast.className = `toast toast-top toast-end z-50`
+
+  const alert = document.createElement('div')
+  alert.className = `alert ${type === 'success' ? 'alert-success' : 'alert-error'} shadow-lg`
+
+  const content = document.createElement('div')
+  content.className = 'flex items-center gap-2'
+  content.textContent = message
+
+  alert.appendChild(content)
+  toast.appendChild(alert)
+  document.body.appendChild(toast)
+
+  setTimeout(() => {
+    toast.remove()
+  }, 3000)
+}
+
 // Função para criar apenas a instância da Evolution API
 async function createEvolutionInstance() {
   try {
@@ -711,21 +738,39 @@ async function createEvolutionInstance() {
 
     const result = await gqlRequest(mutation, { input })
     
-    if (result.data?.createInbox) {
-      const settings = JSON.parse(result.data.createInbox.settings)
+    // Como gqlRequest já retorna result.data, verificamos direto createInbox
+    if (!result?.createInbox) {
+      console.error('Resposta inválida:', result)
+      showToast('Erro ao criar instância: resposta inválida do servidor', 'error')
+      return false
+    }
+
+    try {
+      const settings = JSON.parse(result.createInbox.settings)
       console.log('Settings parseados:', settings)
+      
+      // Marca como sucesso
+      instanceCreated.value = true
       
       if (settings?.qrcode?.base64) {
         qrCodeData.value = settings.qrcode.base64
         showToast('Instância criada com sucesso! Escaneie o QR Code para conectar.')
-        return true
+      } else {
+        showToast('Instância criada com sucesso!')
       }
-      console.log('QR Code não encontrado nos settings')
+      
+      return true
+    } catch (parseError) {
+      console.error('Erro ao parsear settings:', parseError)
+      // Mesmo com erro no parse, a instância foi criada
+      instanceCreated.value = true
+      showToast('Instância criada com sucesso!')
+      return true
     }
-    return false
+    
   } catch (error) {
     console.error('Erro ao criar instância:', error)
-    showToast(error.message, 'error')
+    showToast(error.message || 'Erro ao criar instância', 'error')
     return false
   } finally {
     loading.value = false
