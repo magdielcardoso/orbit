@@ -87,7 +87,7 @@
           <div>
             <h2 class="text-xl font-semibold mb-2">Selecione seu provedor de email</h2>
             <p class="text-sm text-base-content/70 mb-6">
-              Selecione um provedor de email da lista abaixo. Se você não vir seu provedor de email na lista, pode selecionar a opção de outro provedor e fornecer as Credenciais IMAP e SMTP.
+              Selecione um provedor de email da lista abaixo. Se você n��o vir seu provedor de email na lista, pode selecionar a opção de outro provedor e fornecer as Credenciais IMAP e SMTP.
             </p>
 
             <div class="grid grid-cols-3 gap-6">
@@ -365,9 +365,29 @@
             </div>
           </div>
 
-          <p class="text-sm text-base-content/70 mt-4">
-            O QR Code será atualizado automaticamente a cada 20 segundos
-          </p>
+          <div class="flex flex-col items-center gap-2">
+            <p class="text-sm text-base-content/70">
+              O QR Code será atualizado automaticamente a cada 20 segundos
+            </p>
+            
+            <!-- Status da Conexão -->
+            <div class="flex items-center gap-2 text-sm" :class="{
+              'text-success': connectionStatus === 'connected',
+              'text-warning': connectionStatus === 'connecting',
+              'text-error': connectionStatus === 'disconnected' || connectionStatus === 'error'
+            }">
+              <div class="w-2 h-2 rounded-full" :class="{
+                'bg-success': connectionStatus === 'connected',
+                'bg-warning': connectionStatus === 'connecting',
+                'bg-error': connectionStatus === 'disconnected' || connectionStatus === 'error'
+              }"></div>
+              <span>{{ connectionStatusText }}</span>
+            </div>
+            
+            <div v-if="pairingCode" class="text-sm font-mono bg-base-200 px-3 py-1 rounded">
+              Código de pareamento: {{ pairingCode }}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -422,6 +442,7 @@ import { gqlRequest } from '@/utils/graphql'
 import channels from '@/../config/channels.yml'
 import SecondarySidebar from '@/components/layout/SecondarySidebar.vue'
 import { PanelLeftClose, PanelLeft } from 'lucide-vue-next'
+import { io } from 'socket.io-client'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -658,6 +679,9 @@ const agentsDropdownRef = ref(null)
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  socket = io(import.meta.env.VITE_API_URL, {
+    path: '/inbox_status'
+  });
 })
 
 onUnmounted(() => {
@@ -806,4 +830,111 @@ function handleStepAction() {
     }
   }
 }
+
+const connectionStatus = ref('connecting')
+const pairingCode = ref(null)
+const qrCodeUpdateCount = ref(0)
+
+// Computed para texto do status
+const connectionStatusText = computed(() => {
+  switch (connectionStatus.value) {
+    case 'connected':
+      return 'Conectado'
+    case 'connecting':
+      return 'Conectando...'
+    case 'disconnected':
+      return 'Desconectado'
+    case 'error':
+      return 'Erro na conexão'
+    default:
+      return 'Aguardando...'
+  }
+})
+
+// Socket ref para manter a referência
+let socket = null
+
+// Função para atualizar QR code
+async function updateQRCode() {
+  if (!inboxForm.value?.evolutionApi?.instanceName) return
+  
+  try {
+    // Desconecta socket anterior se existir
+    if (socket) {
+      socket.disconnect()
+    }
+
+    // Conecta ao socket da mesma forma que o SystemLogs
+    socket = io(import.meta.env.VITE_API_URL || 'http://localhost:4000', {
+      auth: {
+        token: authStore.token // Usa o token do authStore
+      },
+      transports: ['websocket', 'polling'], // Permite fallback para polling
+      path: '/socket.io', // Especifica o path
+      reconnection: true, // Habilita reconexão automática
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000
+    })
+
+    socket.on('connect', () => {
+      console.log('Socket conectado')
+      connectionStatus.value = 'connecting'
+      
+      // Emite evento para subscrever aos logs da inbox específica
+      socket.emit('subscribe:inbox', {
+        inboxId: inboxForm.value.evolutionApi.instanceName
+      })
+    })
+
+    socket.on('inbox:status', (data) => {
+      console.log('Status da inbox atualizado:', data)
+      if (data.inboxId === inboxForm.value.evolutionApi.instanceName) {
+        connectionStatus.value = data.status
+        
+        if (data.qrcode) {
+          qrCodeData.value = data.qrcode.base64
+          pairingCode.value = data.qrcode.pairingCode
+          qrCodeUpdateCount.value = data.qrcode.count || 0
+        }
+      }
+    })
+
+    socket.on('connect_error', (error) => {
+      console.error('Erro na conexão Socket:', error)
+      connectionStatus.value = 'error'
+      showToast('Erro na conexão com o servidor', 'error')
+    })
+
+    socket.on('disconnect', () => {
+      console.log('Socket desconectado')
+      connectionStatus.value = 'disconnected'
+    })
+
+    socket.on('reconnect', (attemptNumber) => {
+      console.log('Socket reconectado após', attemptNumber, 'tentativas')
+      connectionStatus.value = 'connecting'
+    })
+
+  } catch (error) {
+    console.error('Erro ao inicializar socket:', error)
+    connectionStatus.value = 'error'
+  }
+}
+
+// Cleanup na desmontagem do componente
+onUnmounted(() => {
+  if (socket) {
+    console.log('Desconectando socket...')
+    socket.disconnect()
+    socket = null
+  }
+})
+
+// Observar mudanças no step
+watch(currentStep, (newStep) => {
+  if (newStep === 3) {
+    updateQRCode()
+  }
+})
 </script> 

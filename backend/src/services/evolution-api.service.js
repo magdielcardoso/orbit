@@ -54,8 +54,15 @@ export class EvolutionApiService {
 
   async getInstanceStatus(instanceName) {
     try {
-      const response = await this.axios.get(`instance/connectionState/${instanceName}`)
-      return response.data
+      const [connectionState, qrCode] = await Promise.all([
+        this.axios.get(`instance/connectionState/${instanceName}`),
+        this.getInstanceQRCode(instanceName).catch(() => null)
+      ])
+
+      return {
+        ...connectionState.data,
+        qrcode: qrCode
+      }
     } catch (error) {
       loggerService.error('Erro ao buscar status da instância:', {
         error: error.message,
@@ -77,6 +84,20 @@ export class EvolutionApiService {
         response: error.response?.data
       })
       throw new Error('Falha ao deletar instância')
+    }
+  }
+
+  async getInstanceQRCode(instanceName) {
+    try {
+      const response = await this.axios.get(`instance/connect/${instanceName}`)
+      return response.data
+    } catch (error) {
+      loggerService.error('Erro ao buscar QR code:', {
+        error: error.message,
+        instanceName,
+        response: error.response?.data
+      })
+      throw new Error('Falha ao obter QR code')
     }
   }
 } 
