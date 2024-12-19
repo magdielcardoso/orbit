@@ -859,23 +859,11 @@ async function updateQRCode() {
   if (!inboxForm.value?.evolutionApi?.instanceName) return
   
   try {
-    // Desconecta socket anterior se existir
-    if (socket) {
-      socket.disconnect()
-    }
 
     // Conecta ao socket da mesma forma que o SystemLogs
-    socket = io(import.meta.env.VITE_API_URL || 'http://localhost:4000', {
-      auth: {
-        token: authStore.token // Usa o token do authStore
-      },
-      transports: ['websocket', 'polling'], // Permite fallback para polling
-      path: '/socket.io', // Especifica o path
-      reconnection: true, // Habilita reconexão automática
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      timeout: 20000
-    })
+    socket = io(import.meta.env.VITE_API_URL, {
+      path: '/inbox_status'
+    });
 
     socket.on('connect', () => {
       console.log('Socket conectado')
