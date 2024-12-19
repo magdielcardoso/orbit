@@ -1,6 +1,12 @@
 import { prismaInstance } from '../plugins/prisma.plugin.js'
 
 export default class InboxModel {
+  /**
+   * Cria uma nova inbox.
+   * 
+   * @param {Object} input
+   * @returns {Promise<Object>}
+   */
   static async createInbox(input) {
     return await prismaInstance.inbox.create({
       data: {
@@ -22,6 +28,12 @@ export default class InboxModel {
     })
   }
 
+  /**
+   * Encontra uma inbox pelo ID.
+   * 
+   * @param {number} id
+   * @returns {Promise<Object>}
+   */
   static async findInboxById(id) {
     return await prismaInstance.inbox.findUnique({
       where: { id },
@@ -31,6 +43,13 @@ export default class InboxModel {
     })
   }
 
+  /**
+   * Atualiza uma inbox existente.
+   * 
+   * @param {number} id
+   * @param {Object} input
+   * @returns {Promise<Object>}
+   */
   static async updateInbox(id, input) {
     return await prismaInstance.inbox.update({
       where: { id },
@@ -50,6 +69,12 @@ export default class InboxModel {
     })
   }
 
+  /**
+   * Deleta uma inbox pelo ID.
+   * 
+   * @param {number} id
+   * @returns {Promise<Object>}
+   */
   static async deleteInbox(id) {
     return await prismaInstance.inbox.delete({
       where: { id }

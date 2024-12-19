@@ -1,3 +1,5 @@
+import { getUserWithPermissions } from '../models/user.model.js';
+
 export const authenticate = async (request, reply) => {
   try {
     await request.jwtVerify()
@@ -11,18 +13,7 @@ export const authenticate = async (request, reply) => {
 
 export const requireSuperAdmin = async (request, reply) => {
   try {
-    const user = await request.prisma.user.findUnique({
-      where: { id: request.user.id },
-      include: {
-        role: {
-          include: {
-            permissions: {
-              include: { permission: true }
-            }
-          }
-        }
-      }
-    })
+    const user = await getUserWithPermissions(request.user.id);
 
     const hasPermission = user.role?.permissions.some(p => p.permission.name === 'manage_system')
 

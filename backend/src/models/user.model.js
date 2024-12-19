@@ -366,4 +366,25 @@ export default class UserModel {
       }
     })
   }
+
+  /**
+   * Encontra um usuário com permissões.
+   * 
+   * @param {number} userId
+   * @returns {Promise<object|null>}
+   */
+  static async getUserWithPermissions(userId) {
+    return await prismaInstance.user.findUnique({
+      where: { id: userId },
+      include: {
+        role: {
+          include: {
+            permissions: {
+              include: { permission: true }
+            }
+          }
+        }
+      }
+    })
+  }
 }
