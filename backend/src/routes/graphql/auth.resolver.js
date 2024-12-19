@@ -1,5 +1,5 @@
 import { Kind } from 'graphql';
-import InboxService from '../../services/inbox.service.js';
+import AuthService from '../../services/auth.service.js';
 
 export const resolvers = {
   JSON: {
@@ -27,14 +27,11 @@ export const resolvers = {
   Query: {},
 
   Mutation: {
-    createInbox: async (_, { input }, { user }) => {
-      return await InboxService.createInbox(user, input);
+    registerSuperAdmin: async (_, args, { app }) => {
+      return AuthService.registerSuperAdmin(args, app);
     },
-    updateInbox: async (_, { id, input }, { user }) => {
-      return await InboxService.updateInbox(user, id, input);
-    },
-    deleteInbox: async (_, { id }, { user }) => {
-      return await InboxService.deleteInbox(user, id);
+    login: async (_, args, { auth }) => {
+      return AuthService.login(args, auth);
     },
   },
 };

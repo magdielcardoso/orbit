@@ -1,0 +1,67 @@
+scalar JSON
+scalar DateTime
+
+type Inbox {
+  id: ID!
+  name: String!
+  description: String
+  isEnabled: Boolean!
+  channelType: ChannelSource!
+  channelConfig: JSON
+  organization: Organization!
+  conversations: [Conversation!]!
+  teams: [InboxTeam!]!
+  workingHours: JSON
+  autoAssignment: Boolean!
+  assignmentRules: JSON
+  welcomeMessage: String
+  awayMessage: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Query {
+  inboxes(organizationId: ID!): [Inbox!]!
+  inbox(id: ID!): Inbox
+}
+
+type Mutation {
+  createInbox(input: InboxInput!): Inbox!
+  updateInbox(id: ID!, input: InboxInput!): Inbox!
+  deleteInbox(id: ID!): Boolean!
+}
+
+input InboxInput {
+  name: String!
+  description: String
+  organizationId: ID!
+  channelType: ChannelSource!
+  channelConfig: JSON
+  workingHours: JSON
+  autoAssignment: Boolean
+  assignmentRules: JSON
+  welcomeMessage: String
+  awayMessage: String
+}
+
+enum ChannelSource {
+  WHATSAPP
+  INSTAGRAM
+  MESSENGER
+  TWITTER
+  MERCADOLIVRE
+  SHOPEE
+  TELEGRAM
+  EMAIL
+  API
+  IFOOD
+  WEBCHAT
+}
+
+type InboxTeam {
+  id: ID!
+  inbox: Inbox!
+  team: Team!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}

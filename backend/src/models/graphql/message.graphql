@@ -1,0 +1,29 @@
+scalar JSON
+scalar DateTime
+
+type Message {
+  id: ID!
+  conversationId: ID!
+  conversation: Conversation!
+  content: String!
+  type: String!
+  isFromContact: Boolean!
+  userId: ID
+  user: User
+  contactId: ID
+  contact: Contact
+  metadata: JSON
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Mutation {
+  sendMessage(input: MessageInput!): Message!
+}
+
+input MessageInput {
+  conversationId: ID!
+  content: String!
+  type: String = "text"
+  isFromContact: Boolean = false
+}

@@ -1,7 +1,7 @@
 export const authenticate = async (request, reply) => {
   try {
     await request.jwtVerify()
-  } catch (err) {
+  } catch {
     reply.status(401).send({
       error: 'Unauthorized',
       message: 'Token inválido ou expirado'
@@ -32,7 +32,7 @@ export const requireSuperAdmin = async (request, reply) => {
         message: 'Acesso negado'
       })
     }
-  } catch (err) {
+  } catch {
     reply.status(500).send({
       error: 'Internal Server Error',
       message: 'Erro ao verificar permissões'

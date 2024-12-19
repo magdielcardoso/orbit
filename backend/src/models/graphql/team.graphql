@@ -1,0 +1,92 @@
+scalar JSON
+scalar DateTime
+
+type User {
+  id: ID!
+  email: String!
+  name: String!
+  role: Role
+  active: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  parentUser: User
+  parentUserId: String
+  agents: [User!]
+  avatar: String
+  status: String
+  lastActivityAt: DateTime
+  organizations: [OrganizationUser!]
+  currentOrgId: String
+  preferences: JSON
+  lastSeenAt: DateTime
+  assignedConversations: [Conversation!]
+  teams: [TeamMember!]
+}
+
+type Role {
+  id: ID!
+  name: String!
+  description: String
+  permissions: [Permission!]
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Permission {
+  id: ID!
+  name: String!
+  description: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
+type Team {
+  id: ID!
+  name: String!
+  description: String
+  isEnabled: Boolean!
+  organization: Organization!
+  members: [TeamMember!]!
+  inboxes: [InboxTeam!]!
+  color: String!
+  icon: String
+  settings: JSON
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type TeamMember {
+  id: ID!
+  team: Team!
+  user: User!
+  isLeader: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Query {
+  teams(organizationId: ID!): [Team!]!
+  team(id: ID!): Team
+}
+
+type Mutation {
+  createTeam(input: TeamInput!): Team!
+  updateTeam(id: ID!, input: TeamInput!): Team!
+  deleteTeam(id: ID!): Boolean!
+  addTeamMember(teamId: ID!, userId: ID!, isLeader: Boolean): TeamMember!
+  removeTeamMember(teamId: ID!, userId: ID!): Boolean!
+}
+
+input TeamInput {
+  name: String!
+  description: String
+  organizationId: ID!
+  color: String
+  icon: String
+  settings: JSON
+}

@@ -18,16 +18,27 @@ class LoggerService {
     this.websocket = null
   }
 
+  /**
+   * Configura o logger.
+   */
   setupLogger() {
     this.logger = setupLogger(this)
   }
 
+  /**
+   * Intercepta as saídas do console.
+   */
   interceptOutputs() {
     interceptOutputs(this)
   }
 
+  /**
+   * Inicializa o serviço de logger.
+   * 
+   * @param {object} app
+   */
   initialize(app) {
-    this.app =  app
+    this.app = app
     addFastifyHooks(app, this)
     this.startSystemLogs()
 
@@ -43,30 +54,43 @@ class LoggerService {
     })
   }
 
+  /**
+   * Transmite um log para os clientes conectados.
+   * 
+   * @param {object} logEntry
+   */
   broadcastLog(logEntry) {
     this.recentLogs.push(logEntry)
     if (this.recentLogs.length > this.maxRecentLogs) {
       this.recentLogs.shift()
     }
     if (this.websocket) {
-      this.websocket.of('/logs').on('connection', socket => {
-        socket.emit('new-log', logEntry)
-    })
+      const clients = this.websocket.of('/logs').sockets
+      for (const clientId in clients) {
+        const client = clients[clientId]
+        if (client) {
+          client.emit('new-log', logEntry)
+        }
+      }
+    }
   }
-}
 
-
+  /**
+   * Registra uma mensagem de log.
+   * 
+   * @param {string} level
+   * @param {string} message
+   * @param {object} [metadata={}]
+   */
   log(level, message, metadata = {}) {
     const timestamp = new Date().toISOString()
 
-    // Adiciona informações do processo
     const processInfo = {
       pid: process.pid,
       memory: process.memoryUsage(),
       uptime: process.uptime()
     }
 
-    // Captura stack trace para erros
     const stack = metadata.error?.stack || new Error().stack
 
     const logEntry = {
@@ -78,7 +102,6 @@ class LoggerService {
       ...metadata
     }
 
-    // Adiciona ao histórico de logs
     this.recentLogs.push(logEntry)
     if (this.recentLogs.length > this.maxRecentLogs) {
       this.recentLogs.shift()
@@ -86,37 +109,76 @@ class LoggerService {
 
     this.logger.log(level, message, logEntry)
 
-    // Envia para clientes conectados
     this.broadcastLog(logEntry)
   }
 
-  // Métodos de conveniência
+  /**
+   * Registra uma mensagem de erro.
+   * 
+   * @param {string} message
+   * @param {object} [metadata={}]
+   */
   error(message, metadata = {}) {
     this.log('error', message, metadata)
   }
 
+  /**
+   * Registra uma mensagem de aviso.
+   * 
+   * @param {string} message
+   * @param {object} [metadata={}]
+   */
   warn(message, metadata = {}) {
     this.log('warn', message, metadata)
   }
 
+  /**
+   * Registra uma mensagem informativa.
+   * 
+   * @param {string} message
+   * @param {object} [metadata={}]
+   */
   info(message, metadata = {}) {
     this.log('info', message, metadata)
   }
 
+  /**
+   * Registra uma mensagem de depuração.
+   * 
+   * @param {string} message
+   * @param {object} [metadata={}]
+   */
   debug(message, metadata = {}) {
     this.log('debug', message, metadata)
   }
 
+  /**
+   * Registra uma mensagem detalhada.
+   * 
+   * @param {string} message
+   * @param {object} [metadata={}]
+   */
   verbose(message, metadata = {}) {
     this.log('verbose', message, metadata)
   }
 
+  /**
+   * Registra uma mensagem HTTP.
+   * 
+   * @param {string} message
+   * @param {object} [metadata={}]
+   */
   http(message, metadata = {}) {
     this.log('http', message, metadata)
   }
 
+  /**
+   * Inicia a captura de logs do sistema.
+   */
   startSystemLogs() {
-    // Log de erros não tratados
+    process.removeAllListeners('uncaughtException')
+    process.removeAllListeners('unhandledRejection')
+
     process.on('uncaughtException', error => {
       this.error('Uncaught Exception', { error })
     })
@@ -125,7 +187,6 @@ class LoggerService {
       this.error('Unhandled Rejection', { reason, promise })
     })
 
-    // Logs periódicos do sistema
     setInterval(() => {
       const memory = process.memoryUsage()
       const stats = {
@@ -137,21 +198,31 @@ class LoggerService {
         uptime: process.uptime()
       }
 
-      // Emite para todos os clientes conectados
       const io = getWebSocketServer()
       io.emit('system-stats', stats)
 
-      // Também registra como log
       this.info('System Status', stats)
-    }, 60000) // A cada minuto
+    }, 60000)
   }
 
+  /**
+   * Manipula a saída do console.
+   * 
+   * @param {string} type
+   * @param {...any} args
+   */
   handleConsoleOutput(type, ...args) {
     const formattedArgs = formatArgs(args)
     const logEntry = createLogEntry(type, formattedArgs.join(' '), 'console')
     this.broadcastLog(logEntry)
   }
 
+  /**
+   * Manipula a saída do stream.
+   * 
+   * @param {string} stream
+   * @param {Buffer|string} chunk
+   */
   handleStreamOutput(stream, chunk) {
     const logEntry = createLogEntry(stream === 'stderr' ? 'error' : 'log', chunk.toString(), stream)
     this.broadcastLog(logEntry)

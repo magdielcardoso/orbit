@@ -1,0 +1,32 @@
+scalar JSON
+scalar DateTime
+
+type Label {
+  id: ID!
+  name: String!
+  color: String!
+  description: String
+  conversations: [ConversationLabel!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Mutation {
+  createLabel(input: LabelInput!): Label!
+  updateLabel(id: ID!, input: LabelInput!): Label!
+  deleteLabel(id: ID!): Boolean!
+}
+
+input LabelInput {
+  name: String!
+  color: String
+  description: String
+}
+
+type ConversationLabel {
+  id: ID!
+  conversation: Conversation!
+  label: Label!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}

@@ -4,6 +4,12 @@ class MessageService {
     this.pubsub = pubsub
   }
 
+  /**
+   * Cria uma nova mensagem.
+   * 
+   * @param {object} data
+   * @returns {Promise<object>}
+   */
   async createMessage(data) {
     const message = await this.prisma.message.create({
       data,
@@ -19,6 +25,12 @@ class MessageService {
     return message
   }
 
+  /**
+   * Obtém mensagens com base nas opções fornecidas.
+   * 
+   * @param {object} options
+   * @returns {Promise<object[]>}
+   */
   async getMessages(options = {}) {
     return this.prisma.message.findMany({
       ...options,

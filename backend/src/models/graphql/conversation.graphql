@@ -1,0 +1,75 @@
+scalar JSON
+scalar DateTime
+
+type Conversation {
+  id: ID!
+  status: ConversationStatus!
+  priority: Priority!
+  subject: String
+  inbox: Inbox!
+  messages(last: Int): [Message!]!
+  assignee: User
+  labels: [ConversationLabel!]!
+  channelData: JSON
+  customFields: JSON
+  organization: Organization!
+  contact: Contact
+  firstResponseAt: DateTime
+  resolvedAt: DateTime
+  reopenedAt: DateTime
+  closedAt: DateTime
+  slaStatus: String
+  rating: Int
+  ratingComment: String
+  unreadCount: Int!
+  lastMessageAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum ConversationStatus {
+  OPEN
+  PENDING
+  RESOLVED
+  CLOSED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+input ConversationInput {
+  subject: String
+  inboxId: ID!
+  organizationId: ID!
+  priority: Priority
+  contactId: ID
+  customFields: JSON
+}
+
+input ConversationFilters {
+  status: ConversationStatus
+  priority: Priority
+  assigneeId: ID
+  inboxId: ID
+}
+
+type Query {
+  conversations(
+    organizationId: ID!
+    filters: ConversationFilters
+    limit: Int
+    offset: Int
+  ): [Conversation!]!
+  conversation(id: ID!): Conversation
+}
+
+type Mutation {
+  createConversation(input: ConversationInput!): Conversation!
+  updateConversation(id: ID!, input: ConversationInput!): Conversation!
+  assignConversation(id: ID!, assigneeId: ID): Conversation!
+  changeConversationStatus(id: ID!, status: ConversationStatus!): Conversation!
+}

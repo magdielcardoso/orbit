@@ -1,0 +1,46 @@
+scalar JSON
+scalar DateTime
+
+type Contact {
+  id: ID!
+  organization: Organization!
+  name: String!
+  email: String
+  phone: String
+  avatar: String
+  customFields: JSON
+  tags: [String!]!
+  notes: String
+  lastContactedAt: DateTime
+  conversations: [Conversation!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+input ContactInput {
+  organizationId: ID!
+  name: String!
+  email: String
+  phone: String
+  avatar: String
+  customFields: JSON
+  tags: [String!]
+  notes: String
+}
+
+type Query {
+  contacts(
+    organizationId: ID!
+    search: String
+    tags: [String!]
+    limit: Int
+    offset: Int
+  ): [Contact!]!
+  contact(id: ID!): Contact
+}
+
+type Mutation {
+  createContact(input: ContactInput!): Contact!
+  updateContact(id: ID!, input: ContactInput!): Contact!
+  deleteContact(id: ID!): Boolean!
+}

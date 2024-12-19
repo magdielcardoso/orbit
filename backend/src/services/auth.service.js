@@ -1,9 +1,18 @@
 import bcrypt from 'bcrypt'
+import { logActivity } from '../utils/activity.js'
 import jwt from 'jsonwebtoken'
 import { loggerService } from './logger.service.js'
-import * as UserModel from '../models/user.model.js'
+import UserModel from '../models/user.model.js'
 
-export default class Auth {
+export default class AuthService {
+  /**
+   * Registra um novo usuário.
+   * 
+   * @param {object}
+   * @param {string} email
+   * @param {string} password.
+   * @returns {object}
+   */
   async register({ email, password }) {
     try {
       const existingUser = await UserModel.findUserIfExists(email)
@@ -23,7 +32,7 @@ export default class Auth {
       }
 
       const passwordHash = await bcrypt.hash(password, 10)
-      const user = UserModel.createUser(name, email, passwordHash, userRole)
+      const user = await UserModel.createUser(name, email, passwordHash, userRole)
 
       const token = jwt.sign(
         {
@@ -52,11 +61,71 @@ export default class Auth {
     }
   }
 
+  /**
+   * Registra um superadministrador.
+   * 
+   * @param {object} args
+   * @param {object} app
+   * @returns {object}
+   */
+  static async registerSuperAdmin(args, app) {
+    const existingSuperAdmin = await UserModel.findUserIfExists('superadmin')
+
+    if (existingSuperAdmin) {
+      throw new Error('Já existe um superadmin registrado')
+    }
+
+    const superadminRole = await UserModel.findRole('superadmin')
+
+    if (!superadminRole) {
+      throw new Error('Role de superadmin não encontrada')
+    }
+
+    const hashedPassword = await bcrypt.hash(args.password, 10)
+    const user = await UserModel.createUser(args.name, args.email, hashedPassword, superadminRole)
+
+    const systemConfig = await UserModel.createSystemConfig(args.systemConfig)
+
+    await logActivity({
+      type: 'SYSTEM_EVENT',
+      level: 'INFO',
+      source: 'SYSTEM',
+      action: 'SYSTEM_SETUP',
+      description: 'Sistema configurado com sucesso',
+      userId: user.id,
+      metadata: {
+        systemName: args.systemConfig.systemName,
+        timezone: args.systemConfig.timezone
+      }
+    })
+
+    const token = await app.jwt.sign({
+      id: user.id,
+      email: user.email,
+      role: user.role?.name,
+      permissions: user.role?.permissions.map(p => p.permission.name)
+    })
+
+    return {
+      token,
+      user,
+      systemConfig
+    }
+  }
+
+  /**
+   * Realiza o login de um usuário.
+   * 
+   * @param {object}
+   * @param {string} email
+   * @param {string} password
+   * @returns {object}
+   */
   async login({ email, password }) {
     try {
       const user = await UserModel.findUserByEmail(email)
 
-      console.log('Found user:', JSON.stringify(user, null, 2)) // Debug
+      console.log('Found user:', JSON.stringify(user, null, 2))
 
       if (!user) {
         throw new Error('Usuário não encontrado')

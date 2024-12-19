@@ -1,3 +1,6 @@
+scalar JSON
+scalar DateTime
+
 type SystemMetrics {
   status: String!
   cpu: Float!
@@ -21,10 +24,80 @@ type SystemActionResponse {
   status: String
 }
 
+type SystemStatus {
+  configured: Boolean!
+  version: String!
+  status: String!
+}
+
+type AdminStats {
+  totalUsers: Int!
+  totalRoles: Int!
+  roles: [Role!]!
+}
+
+enum ActivityType {
+  USER_ACTION
+  SYSTEM_EVENT
+  ERROR
+  AUTH
+  API_CALL
+}
+
+enum ActivityLevel {
+  INFO
+  WARNING
+  ERROR
+  DEBUG
+}
+
+type Activity {
+  id: ID!
+  type: ActivityType!
+  level: ActivityLevel!
+  source: String!
+  action: String!
+  description: String!
+  user: User!
+  metadata: JSON
+  createdAt: String!
+}
+
+input SystemConfigInput {
+  systemName: String!
+  timezone: String!
+}
+
+type SuperAdminRegistrationResponse {
+  token: String!
+  user: User!
+  systemConfig: SystemConfig!
+}
+
+type SystemConfig {
+  id: ID!
+  systemName: String!
+  timezone: String!
+  status: SystemStatus!
+  setupCompletedAt: String
+  createdAt: String!
+  updatedAt: String!
+}
+
 type Query {
   systemMetrics: SystemMetrics!
   systemLogs: [SystemLog!]!
   exportSystemLogs: String!
+  systemStatus: SystemStatus!
+  recentActivities: [Activity!]!
+  adminStats: AdminStats!
+  activities(
+    limit: Int
+    offset: Int
+    type: ActivityType
+    level: ActivityLevel
+    source: String
+  ): [Activity!]!
 }
 
 type Mutation {

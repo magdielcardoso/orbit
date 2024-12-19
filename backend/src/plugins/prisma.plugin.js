@@ -1,19 +1,6 @@
-// plugins/prisma.plugin.js
 import fp from 'fastify-plugin'
 import { PrismaClient } from '@prisma/client'
 import '../helpers/loadEnv.helper.js'
-
-export default fp(async fastify => {
-  fastify.decorate('prisma', prismaInstance)
-
-  fastify.addHook('onClose', async instance => {
-    await instance.prisma.$disconnect()
-  })
-
-  fastify.addHook('preHandler', async request => {
-    request.prisma = prismaInstance
-  })
-})
 
 const {
   NODE_ENV,
@@ -25,7 +12,6 @@ const {
 } = process.env
 
 const isProduction = NODE_ENV === 'production'
-
 const databaseName = isProduction ? 'orbitchat' : 'orbitchat_dev'
 const databaseUrl = `postgresql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${databaseName}?schema=${DB_SCHEMA}`
 
@@ -36,4 +22,16 @@ export const prismaInstance = new PrismaClient({
       url: databaseUrl
     }
   }
+})
+
+export default fp(async fastify => {
+  fastify.decorate('prisma', prismaInstance)
+
+  fastify.addHook('onClose', async instance => {
+    await instance.prisma.$disconnect()
+  })
+
+  fastify.addHook('preHandler', async request => {
+    request.prisma = prismaInstance
+  })
 })

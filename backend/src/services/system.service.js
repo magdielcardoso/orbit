@@ -1,14 +1,28 @@
-import os from 'os'
+import SystemModel from '../models/system.model.js'
 
-export async function getSystemMetrics() {
-  const cpuUsage = os.loadavg()[0]
-  const totalMemory = os.totalmem()
-  const freeMemory = os.freemem()
-  const memoryUsage = ((totalMemory - freeMemory) / totalMemory) * 100
+export default class SystemService {
+  /**
+   * Obtém o status do sistema.
+   * 
+   * @param {object} prisma
+   * @returns {Promise<object>}
+   */
+  static async getSystemStatus(prisma) {
+    try {
+      const systemConfig = await SystemModel.findConfiguredSystem(prisma)
 
-  return {
-    cpu: Math.round(cpuUsage * 100) / 100,
-    memory: Math.round(memoryUsage * 100) / 100,
-    uptime: os.uptime()
+      return {
+        configured: !!systemConfig,
+        version: process.env.APP_VERSION || '1.0.0',
+        status: systemConfig ? 'online' : 'PENDING_SETUP'
+      }
+    } catch (error) {
+      console.error('Erro ao verificar status do sistema:', error)
+      return {
+        configured: false,
+        version: process.env.APP_VERSION || '1.0.0',
+        status: 'error'
+      }
+    }
   }
 }

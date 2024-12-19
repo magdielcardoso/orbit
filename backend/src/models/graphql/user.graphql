@@ -1,0 +1,87 @@
+scalar JSON
+scalar DateTime
+
+type User {
+  id: ID!
+  email: String!
+  name: String!
+  role: Role
+  active: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  parentUser: User
+  parentUserId: String
+  agents: [User!]
+  avatar: String
+  status: String
+  lastActivityAt: DateTime
+  organizations: [OrganizationUser!]
+  currentOrgId: String
+  preferences: JSON
+  lastSeenAt: DateTime
+  assignedConversations: [Conversation!]
+  teams: [TeamMember!]
+}
+
+type Role {
+  id: ID!
+  name: String!
+  description: String
+  permissions: [Permission!]
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Permission {
+  id: ID!
+  name: String!
+  description: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
+input UserInput {
+  name: String
+  email: String
+  roleId: String
+  active: Boolean
+  parentUserId: String
+  currentOrgId: String
+}
+
+type Query {
+  me: User
+  users: [User!]!
+  roles: [Role!]!
+  permissions: [Permission!]!
+}
+
+type Mutation {
+  register(
+    email: String!
+    password: String!
+    name: String!
+    organizationHashId: String
+  ): AuthPayload!
+  login(email: String!, password: String!): AuthPayload!
+  registerSuperAdmin(
+    name: String!
+    email: String!
+    password: String!
+    systemConfig: SystemConfigInput!
+  ): SuperAdminRegistrationResponse!
+  createUser(
+    email: String!
+    password: String!
+    name: String!
+    roleId: String!
+    parentUserId: String
+  ): User!
+  updateUser(id: ID!, input: UserInput!): User!
+  deleteUser(id: ID!): Boolean!
+}

@@ -1,0 +1,90 @@
+scalar JSON
+scalar DateTime
+
+type Organization {
+  id: ID!
+  name: String!
+  slug: String!
+  domain: String
+  plan: SubscriptionPlan!
+  paymentStatus: PaymentStatus!
+  maxUsers: Int!
+  maxTeams: Int!
+  maxInboxes: Int!
+  timezone: String!
+  locale: String!
+  features: JSON
+  billingEmail: String
+  billingName: String
+  billingAddress: JSON
+  taxId: String
+  users: [OrganizationUser!]!
+  teams: [Team!]!
+  inboxes: [Inbox!]!
+  conversations: [Conversation!]!
+  contacts: [Contact!]!
+  automations: [Automation!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  deletedAt: DateTime
+}
+
+type OrganizationUser {
+  id: ID!
+  organization: Organization!
+  user: User!
+  isAdmin: Boolean!
+  isOwner: Boolean!
+  status: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type OrganizationSlugValidation {
+  available: Boolean!
+  organization: OrganizationPreview
+}
+
+type OrganizationPreview {
+  name: String!
+  slug: String!
+  domain: String
+  hash_id: String
+}
+
+enum SubscriptionPlan {
+  FREE
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum PaymentStatus {
+  ACTIVE
+  PENDING
+  OVERDUE
+  CANCELLED
+}
+
+input OrganizationInput {
+  name: String!
+  slug: String!
+  plan: SubscriptionPlan!
+  domain: String
+  timezone: String
+  locale: String
+  features: JSON
+}
+
+type Query {
+  organization(id: ID!): Organization
+  myOrganizations: [Organization!]!
+  organizations: [Organization!]!
+  validateOrganizationSlug(slug: String!): OrganizationSlugValidation!
+}
+
+type Mutation {
+  createOrganization(input: OrganizationInput!): Organization!
+  updateOrganization(id: ID!, input: OrganizationInput!): Organization!
+  deleteOrganization(id: ID!): Boolean!
+}

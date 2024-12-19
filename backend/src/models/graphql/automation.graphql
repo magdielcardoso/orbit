@@ -1,0 +1,36 @@
+scalar JSON
+scalar DateTime
+
+type Automation {
+  id: ID!
+  name: String!
+  description: String
+  isActive: Boolean!
+  organization: Organization!
+  trigger: JSON!
+  conditions: JSON!
+  actions: JSON!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+input AutomationInput {
+  name: String!
+  description: String
+  organizationId: ID!
+  trigger: JSON!
+  conditions: JSON!
+  actions: JSON!
+}
+
+type Query {
+  automations(organizationId: ID!): [Automation!]!
+  automation(id: ID!): Automation
+}
+
+type Mutation {
+  createAutomation(input: AutomationInput!): Automation!
+  updateAutomation(id: ID!, input: AutomationInput!): Automation!
+  deleteAutomation(id: ID!): Boolean!
+  toggleAutomation(id: ID!): Automation!
+}
