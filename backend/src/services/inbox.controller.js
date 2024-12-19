@@ -7,6 +7,7 @@ class InboxController {
     this.io = null
     this.connectedClients = new Set()
     this.app = null
+    this.instanceStatuses = new Map() // Para armazenar status das instâncias
   }
 
   initialize(server, app) {
@@ -94,22 +95,37 @@ class InboxController {
     loggerService.info('Serviço de Inbox inicializado')
   }
 
+  // Método para atualizar status de uma inbox
+  updateInboxStatus(inboxId, status) {
+    this.instanceStatuses.set(inboxId, status)
+    this.emitInboxStatus(inboxId, status)
+  }
+
   // Método para emitir atualizações de status
   emitInboxStatus(inboxId, status) {
     if (this.io) {
-      this.io.to(`inbox:${inboxId}`).emit('inbox:status', status)
-      loggerService.info('Status da inbox atualizado', { inboxId, status })
+      this.io.to(`inbox:${inboxId}`).emit('inbox:status', {
+        inboxId,
+        status: status.status,
+        qrcode: status.qrcode,
+        timestamp: new Date().toISOString()
+      })
+      
+      loggerService.info('Status da inbox atualizado', { 
+        inboxId, 
+        status: status.status 
+      })
     }
   }
 
   // Método para buscar status atual de uma inbox
   async getInboxStatus(inboxId) {
     try {
-      // TODO: Implementar busca real do status
-      return {
+      const status = this.instanceStatuses.get(inboxId) || {
         status: 'connecting',
         qrcode: null
       }
+      return status
     } catch (error) {
       loggerService.error('Erro ao buscar status da inbox:', {
         error: error.message,

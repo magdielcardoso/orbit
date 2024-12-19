@@ -350,12 +350,12 @@
           </div>
 
           <!-- QR Code Container -->
-          <div class="p-8 bg-white rounded-lg shadow-lg">
+          <div class="p-8 bg-black rounded-lg shadow-lg">
             <img 
               v-if="qrCodeData" 
               :src="qrCodeData" 
               alt="WhatsApp QR Code" 
-              class="w-64 h-64 invert"
+              class="w-64 h-64"
             />
             <div 
               v-else 
@@ -365,18 +365,14 @@
             </div>
           </div>
 
+          <!-- Status da Conexão -->
           <div class="flex flex-col items-center gap-2">
-            <p class="text-sm text-base-content/70">
-              O QR Code será atualizado automaticamente a cada 20 segundos
-            </p>
-            
-            <!-- Status da Conexão -->
             <div class="flex items-center gap-2 text-sm" :class="{
               'text-success': connectionStatus === 'connected',
               'text-warning': connectionStatus === 'connecting',
               'text-error': connectionStatus === 'disconnected' || connectionStatus === 'error'
             }">
-              <div class="w-2 h-2 rounded-full" :class="{
+              <div class="w-2 h-2 rounded-full animate-pulse" :class="{
                 'bg-success': connectionStatus === 'connected',
                 'bg-warning': connectionStatus === 'connecting',
                 'bg-error': connectionStatus === 'disconnected' || connectionStatus === 'error'
@@ -384,9 +380,15 @@
               <span>{{ connectionStatusText }}</span>
             </div>
             
+            <!-- Código de Pareamento -->
             <div v-if="pairingCode" class="text-sm font-mono bg-base-200 px-3 py-1 rounded">
               Código de pareamento: {{ pairingCode }}
             </div>
+
+            <!-- Contador de Atualizações do QR Code -->
+            <p v-if="qrCodeUpdateCount > 0" class="text-sm text-base-content/70">
+              QR Code atualizado {{ qrCodeUpdateCount }} vezes
+            </p>
           </div>
         </div>
       </div>
@@ -839,9 +841,9 @@ const qrCodeUpdateCount = ref(0)
 const connectionStatusText = computed(() => {
   switch (connectionStatus.value) {
     case 'connected':
-      return 'Conectado'
+      return 'WhatsApp Conectado'
     case 'connecting':
-      return 'Conectando...'
+      return 'Aguardando conexão...'
     case 'disconnected':
       return 'Desconectado'
     case 'error':
@@ -854,55 +856,61 @@ const connectionStatusText = computed(() => {
 // Socket ref para manter a referência
 let socket = null
 
-// Função para atualizar QR code
-async function updateQRCode() {
-  if (!inboxForm.value?.evolutionApi?.instanceName) return
-  
+// Função para inicializar socket e monitorar status
+async function initializeSocketMonitoring() {
   try {
+    // Inicializa socket apenas se não existir
+    if (!socket) {
+      socket = io(import.meta.env.VITE_API_URL, {
+        path: '/inbox_status',
+        auth: {
+          token: authStore.token
+        }
+      })
+    }
 
-    // Conecta ao socket da mesma forma que o SystemLogs
-    socket = io(import.meta.env.VITE_API_URL, {
-      path: '/inbox_status'
-    });
+    // Limpa listeners anteriores para evitar duplicação
+    socket.removeAllListeners()
 
     socket.on('connect', () => {
       console.log('Socket conectado')
       connectionStatus.value = 'connecting'
-      
-      // Emite evento para subscrever aos logs da inbox específica
-      socket.emit('subscribe:inbox', {
-        inboxId: inboxForm.value.evolutionApi.instanceName
-      })
-    })
-
-    socket.on('inbox:status', (data) => {
-      console.log('Status da inbox atualizado:', data)
-      if (data.inboxId === inboxForm.value.evolutionApi.instanceName) {
-        connectionStatus.value = data.status
-        
-        if (data.qrcode) {
-          qrCodeData.value = data.qrcode.base64
-          pairingCode.value = data.qrcode.pairingCode
-          qrCodeUpdateCount.value = data.qrcode.count || 0
-        }
-      }
     })
 
     socket.on('connect_error', (error) => {
-      console.error('Erro na conexão Socket:', error)
+      console.error('Erro na conexão socket:', error)
       connectionStatus.value = 'error'
-      showToast('Erro na conexão com o servidor', 'error')
     })
 
-    socket.on('disconnect', () => {
-      console.log('Socket desconectado')
-      connectionStatus.value = 'disconnected'
+    socket.on('inbox:status', (data) => {
+      console.log('Status atualizado:', data)
+      if (data.status) {
+        connectionStatus.value = data.status
+        
+        // Se conectado, avança para próximo step
+        if (data.status === 'connected' && currentStep.value === 3) {
+          nextStep()
+        }
+      }
+      if (data.qrcode) {
+        qrCodeData.value = data.qrcode
+        qrCodeUpdateCount.value++
+      }
+      if (data.pairingCode) {
+        pairingCode.value = data.pairingCode
+      }
     })
 
-    socket.on('reconnect', (attemptNumber) => {
-      console.log('Socket reconectado após', attemptNumber, 'tentativas')
-      connectionStatus.value = 'connecting'
-    })
+    // Entra na sala da inbox
+    const instanceName = inboxForm.value.evolutionApi.instanceName
+    socket.emit('join:inbox', instanceName)
+
+    // Inicia o polling de status na Evolution API
+    evolutionApi = new EvolutionApiService(
+      inboxForm.value.evolutionApi.serverUrl,
+      inboxForm.value.evolutionApi.apiKey
+    )
+    evolutionApi.startStatusPolling(instanceName)
 
   } catch (error) {
     console.error('Erro ao inicializar socket:', error)
@@ -910,19 +918,18 @@ async function updateQRCode() {
   }
 }
 
-// Cleanup na desmontagem do componente
-onUnmounted(() => {
-  if (socket) {
-    console.log('Desconectando socket...')
-    socket.disconnect()
-    socket = null
+// Observa mudanças no step atual
+watch(currentStep, (newStep) => {
+  if (newStep === 3) {
+    initializeSocketMonitoring()
   }
 })
 
-// Observar mudanças no step
-watch(currentStep, (newStep) => {
-  if (newStep === 3) {
-    updateQRCode()
+// Cleanup na desmontagem do componente
+onUnmounted(() => {
+  // Para o polling de status
+  if (evolutionApi) {
+    evolutionApi.stopStatusPolling()
   }
 })
 </script> 

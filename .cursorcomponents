@@ -1,0 +1,29 @@
+{
+  "components": {
+    "ui": {
+      "Button": {
+        "props": ["variant", "size", "disabled"],
+        "events": ["click"]
+      },
+      "Modal": {
+        "props": ["open", "title"],
+        "events": ["close"],
+        "slots": ["content", "footer"]
+      },
+      "FloatingButton": {
+        "props": ["position", "icon"],
+        "events": ["click"]
+      }
+    },
+    "layout": {
+      "Navbar": {
+        "state": ["isMenuOpen", "currentOrganization"],
+        "components": ["OrganizationSelector", "Search"]
+      },
+      "Sidebar": {
+        "variants": ["UserSidebar", "SuperAdminSidebar"],
+        "state": ["showUserMenu", "showNotificationsMenu"]
+      }
+    }
+  }
+} 

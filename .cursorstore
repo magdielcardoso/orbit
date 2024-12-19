@@ -1,0 +1,29 @@
+{
+  "stores": {
+    "auth": {
+      "state": {
+        "user": "User | null",
+        "isAuthenticated": "boolean",
+        "currentOrganization": "Organization | null"
+      },
+      "actions": [
+        "login",
+        "logout",
+        "updateUser",
+        "switchOrganization"
+      ]
+    },
+    "ui": {
+      "state": {
+        "theme": "string",
+        "sidebar": "boolean",
+        "notifications": "Notification[]"
+      },
+      "actions": [
+        "toggleTheme",
+        "toggleSidebar",
+        "addNotification"
+      ]
+    }
+  }
+} 

@@ -1,0 +1,75 @@
+{
+  "project": {
+    "name": "OrbitChat.io",
+    "type": "fullstack",
+    "stack": {
+      "frontend": "vue",
+      "backend": "node",
+      "database": "postgresql"
+    }
+  },
+  "rules": {
+    "language": "pt-BR",
+    "codeStyle": {
+      "vue": {
+        "template": "composition-api",
+        "scriptSetup": true,
+        "styleScoped": true
+      },
+      "javascript": {
+        "semi": true,
+        "quotes": "single",
+        "trailingComma": "none"
+      }
+    },
+    "conventions": {
+      "components": {
+        "naming": "PascalCase",
+        "structure": [
+          "template",
+          "script",
+          "style"
+        ]
+      },
+      "files": {
+        "views": "PascalCase",
+        "components": "PascalCase",
+        "utils": "camelCase"
+      }
+    },
+    "preferences": {
+      "imports": {
+        "vue": ["ref", "computed", "onMounted", "watch"],
+        "stores": ["useAuthStore"],
+        "components": ["Button", "Modal"],
+        "utils": ["formatDate", "showToast"]
+      },
+      "styling": {
+        "framework": "tailwindcss",
+        "darkMode": true,
+        "customClasses": {
+          "button": "btn",
+          "input": "input",
+          "modal": "modal"
+        }
+      }
+    }
+  },
+  "contextRules": {
+    "components": {
+      "path": "src/components",
+      "subfolders": ["layout", "ui", "chats", "contacts"]
+    },
+    "views": {
+      "path": "src/views",
+      "subfolders": ["user", "admin"]
+    },
+    "stores": {
+      "path": "src/stores"
+    },
+    "i18n": {
+      "path": "src/i18n",
+      "defaultLocale": "pt-BR"
+    }
+  }
+} 

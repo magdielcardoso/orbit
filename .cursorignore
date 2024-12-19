@@ -1,0 +1,12 @@
+# Arquivos e diretórios a serem ignorados pelo Cursor AI
+node_modules/
+dist/
+.git/
+*.log
+.env
+.env.*
+coverage/
+temp/
+logs/
+*.min.js
+*.min.css 

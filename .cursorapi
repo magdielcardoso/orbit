@@ -1,0 +1,23 @@
+{
+  "graphql": {
+    "path": "/graphql",
+    "ide": {
+      "altair": "/altair",
+      "enabled": true
+    },
+    "context": {
+      "prisma": true,
+      "auth": true,
+      "user": true
+    }
+  },
+  "websocket": {
+    "path": "/logs",
+    "events": [
+      "connect",
+      "recent-logs",
+      "new-log",
+      "system-stats"
+    ]
+  }
+} 

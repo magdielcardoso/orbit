@@ -1,0 +1,16 @@
+{
+  "theme": {
+    "colors": {
+      "primary": "orbit",
+      "secondary": "gray",
+      "accent": "purple",
+      "background": "base",
+      "foreground": "base-content"
+    },
+    "darkMode": {
+      "enabled": true,
+      "class": "dark",
+      "attribute": "data-theme"
+    }
+  }
+} 
