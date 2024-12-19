@@ -87,7 +87,7 @@
           <div>
             <h2 class="text-xl font-semibold mb-2">Selecione seu provedor de email</h2>
             <p class="text-sm text-base-content/70 mb-6">
-              Selecione um provedor de email da lista abaixo. Se você n��o vir seu provedor de email na lista, pode selecionar a opção de outro provedor e fornecer as Credenciais IMAP e SMTP.
+              Selecione um provedor de email da lista abaixo. Se você não vir seu provedor de email na lista, pode selecionar a opção de outro provedor e fornecer as Credenciais IMAP e SMTP.
             </p>
 
             <div class="grid grid-cols-3 gap-6">
@@ -264,49 +264,101 @@
                 <option value="">Selecione um provedor</option>
                 <option value="whatsapp_cloud">WhatsApp Cloud</option>
                 <option value="360dialog">360dialog</option>
+                <option value="evolution_api">Evolution API</option>
               </select>
             </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Número de telefone</label>
-              <input
-                v-model="inboxForm.phoneNumber"
-                type="text"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
-                placeholder="Por favor, insira o número de telefone do qual a mensagem será enviada."
-              />
-            </div>
+            <!-- Campos específicos da Evolution API -->
+            <template v-if="inboxForm.provider === 'evolution_api'">
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">URL do Servidor</label>
+                  <input
+                    v-model="inboxForm.evolutionApi.serverUrl"
+                    type="url"
+                    required
+                    placeholder="https://seu-servidor-evolution.com"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+                  />
+                </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700">ID do número de telefone</label>
-              <input
-                v-model="inboxForm.phoneNumberId"
-                type="text"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
-                placeholder="Por favor, insira o ID do número de telefone obtido no painel de desenvolvedores do Facebook."
-              />
-            </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">API Key</label>
+                  <input
+                    v-model="inboxForm.evolutionApi.apiKey"
+                    type="password"
+                    required
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+                  />
+                </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700">ID da conta comercial</label>
-              <input
-                v-model="inboxForm.businessAccountId"
-                type="text"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
-                placeholder="Por favor, insira o ID da conta comercial obtido no painel de desenvolvedores do Facebook."
-              />
-            </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">Nome da Instância</label>
+                  <input
+                    v-model="inboxForm.evolutionApi.instanceName"
+                    type="text"
+                    required
+                    placeholder="minha-instancia"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+                  />
+                </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Chave API</label>
-              <input
-                v-model="inboxForm.apiKey"
-                type="password"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
-                placeholder="Chave API"
-              />
-            </div>
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-gray-700">Configurações Adicionais</label>
+                  
+                  <div class="flex items-center gap-2">
+                    <input
+                      v-model="inboxForm.evolutionApi.readMessages"
+                      type="checkbox"
+                      class="rounded border-gray-300 text-orbit-500 focus:ring-orbit-500"
+                    />
+                    <span class="text-sm text-gray-600">Marcar mensagens como lidas</span>
+                  </div>
+
+                  <div class="flex items-center gap-2">
+                    <input
+                      v-model="inboxForm.evolutionApi.alwaysOnline"
+                      type="checkbox"
+                      class="rounded border-gray-300 text-orbit-500 focus:ring-orbit-500"
+                    />
+                    <span class="text-sm text-gray-600">Manter sempre online</span>
+                  </div>
+
+                  <div class="flex items-center gap-2">
+                    <input
+                      v-model="inboxForm.evolutionApi.rejectCalls"
+                      type="checkbox"
+                      class="rounded border-gray-300 text-orbit-500 focus:ring-orbit-500"
+                    />
+                    <span class="text-sm text-gray-600">Rejeitar chamadas</span>
+                  </div>
+                </div>
+              </div>
+            </template>
           </template>
+        </div>
+      </div>
+
+      <!-- Step 4: QR Code -->
+      <div v-else-if="currentStep === 3" class="max-w-2xl">
+        <div class="p-6 bg-white rounded-lg border-2 border-orbit-100">
+          <div class="flex flex-col items-center gap-4">
+            <h3 class="text-lg font-medium text-gray-900">Conecte seu WhatsApp</h3>
+            <p class="text-sm text-gray-500 text-center">
+              Abra o WhatsApp no seu celular e escaneie o QR code abaixo
+            </p>
+            
+            <img 
+              v-if="qrCodeData"
+              :src="qrCodeData" 
+              alt="QR Code WhatsApp"
+              class="w-64 h-64"
+            />
+            
+            <p class="text-xs text-gray-400">
+              Este QR code expira em 1 minuto. Se expirar, crie uma nova caixa de entrada.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -320,9 +372,21 @@
           Voltar
         </button>
         <div class="flex-1"></div>
+        
+        <!-- Botão Conectar (apenas no step 2 e quando for Evolution API) -->
         <button
-          v-if="currentStep < steps.length - 1"
-          @click="nextStep"
+          v-if="currentStep === 2 && selectedChannel === 'WHATSAPP' && inboxForm.provider === 'evolution_api'"
+          @click="createEvolutionInstance"
+          :disabled="loading || !canConnectEvolution"
+          class="btn btn-secondary mr-2"
+        >
+          {{ loading ? 'Conectando...' : 'Conectar' }}
+        </button>
+
+        <!-- Botão Próximo -->
+        <button
+          v-if="currentStep < totalSteps - 1"
+          @click="handleStepAction"
           :disabled="!canProceed"
           class="btn btn-primary"
         >
@@ -330,11 +394,10 @@
         </button>
         <button
           v-else
-          @click="handleSubmit"
-          :disabled="loading"
+          @click="finishSetup"
           class="btn btn-primary"
         >
-          {{ loading ? 'Salvando...' : 'Concluir' }}
+          Concluir
         </button>
       </div>
     </div>
@@ -342,7 +405,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import { useI18n } from '@/i18n/plugin'
@@ -356,20 +419,24 @@ const authStore = useAuthStore()
 const { t } = useI18n()
 const showSecondarySidebar = ref(true)
 
-const steps = [
+const steps = ref([
   {
-    title: 'Escolha o Canal',
-    description: 'Selecione o tipo de canal que você deseja configurar'
+    title: 'Escolha do Canal',
+    description: 'Selecione o tipo de canal que deseja configurar'
   },
   {
-    title: 'Agentes',
-    description: 'Selecione os agentes que terão acesso a este canal'
+    title: 'Informações Básicas',
+    description: 'Configure as informações básicas da caixa de entrada'
   },
   {
-    title: 'Configuração',
-    description: 'Configure as informações específicas do canal'
+    title: 'Configuração do Canal',
+    description: 'Configure as opções específicas do canal selecionado'
+  },
+  {
+    title: 'Conectar WhatsApp',
+    description: 'Escaneie o QR Code para conectar sua conta'
   }
-]
+])
 
 const currentStep = ref(0)
 const loading = ref(false)
@@ -378,16 +445,17 @@ const inboxForm = ref({
   name: '',
   description: '',
   channelType: '',
-  organizationId: authStore.currentOrganization?.id,
-  agents: [],
-  // Campos específicos do Email
-  emailProvider: '',
-  // Campos específicos do WhatsApp
   provider: '',
-  phoneNumber: '',
-  phoneNumberId: '',
-  businessAccountId: '',
-  apiKey: ''
+  evolutionApi: {
+    serverUrl: '',
+    apiKey: '',
+    instanceName: '',
+    readMessages: true,
+    alwaysOnline: true,
+    rejectCalls: false,
+    webhookEvents: ['messages', 'status', 'qrcode', 'connection', 'presence'],
+    syncFullHistory: false
+  }
 })
 
 const selectedChannelConfig = computed(() => {
@@ -429,31 +497,14 @@ onMounted(async () => {
 })
 
 const canProceed = computed(() => {
-  if (currentStep.value === 0) {
-    return selectedChannel.value !== null
+  if (currentStep.value === 2 && 
+      selectedChannel.value === 'WHATSAPP' && 
+      inboxForm.value.provider === 'evolution_api') {
+    return !!qrCodeData.value
   }
-  if (currentStep.value === 1) {
-    if (selectedChannel.value === 'EMAIL') {
-      return inboxForm.value.emailProvider !== ''
-    }
-    return inboxForm.value.name.trim() !== '' && selectedAgents.value.length > 0
-  }
-  if (currentStep.value === 2) {
-    if (selectedChannel.value === 'EMAIL') {
-      return inboxForm.value.name.trim() !== '' && selectedAgents.value.length > 0
-    }
-    // Validação específica para WhatsApp
-    if (selectedChannel.value === 'WHATSAPP') {
-      return (
-        inboxForm.value.provider &&
-        inboxForm.value.phoneNumber &&
-        inboxForm.value.phoneNumberId &&
-        inboxForm.value.businessAccountId &&
-        inboxForm.value.apiKey
-      )
-    }
-    return true
-  }
+  
+  if (currentStep.value === 0) return !!selectedChannel.value
+  if (currentStep.value === 1) return !!inboxForm.value.name
   return true
 })
 
@@ -476,48 +527,32 @@ function selectChannel(channel) {
   inboxForm.value.channelType = channelTypeMap[channel] || 'API'
 }
 
+// Computed para total de steps
+const totalSteps = computed(() => steps.value.length)
+
+// Função nextStep atualizada
 function nextStep() {
-  if (currentStep.value < steps.length - 1 && canProceed.value) {
+  if (currentStep.value < totalSteps.value - 1) {
     currentStep.value++
   }
 }
 
-async function handleSubmit() {
-  try {
-    loading.value = true
-    
-    // Atualiza o inboxForm com os agentes selecionados
-    inboxForm.value.agents = selectedAgents.value
+// Adicione o ref para o QR code
+const qrCodeData = ref(null)
 
-    const mutation = `
-      mutation CreateInbox($input: InboxInput!) {
-        createInbox(input: $input) {
-          id
-          name
-          description
-          channelType
-          isEnabled
-          teams {
-            id
-            team {
-              name
-            }
-          }
-        }
-      }
-    `
+// Observar mudanças no qrCodeData
+watch(qrCodeData, (newValue) => {
+  console.log('qrCodeData mudou:', {
+    value: !!newValue,
+    currentStep: currentStep.value,
+    canProceed: canProceed.value
+  })
+})
 
-    await gqlRequest(mutation, {
-      input: inboxForm.value
-    })
-
-    router.push('/settings/inbox')
-  } catch (error) {
-    console.error('Erro ao criar caixa de entrada:', error)
-    showToast(error.message, 'error')
-  } finally {
-    loading.value = false
-  }
+// Função para finalizar o setup
+function finishSetup() {
+  showToast('Caixa de entrada criada com sucesso!')
+  router.push('/settings/inbox')
 }
 
 // Configuração da sidebar
@@ -617,6 +652,94 @@ onUnmounted(() => {
 function handleClickOutside(e) {
   if (agentsDropdownRef.value && !agentsDropdownRef.value.contains(e.target)) {
     showAgentsDropdown.value = false
+  }
+}
+
+// Computed para verificar se pode conectar Evolution API
+const canConnectEvolution = computed(() => {
+  console.log('Verificando canConnectEvolution:', {
+    serverUrl: inboxForm.value.evolutionApi?.serverUrl,
+    apiKey: inboxForm.value.evolutionApi?.apiKey,
+    instanceName: inboxForm.value.evolutionApi?.instanceName
+  })
+  
+  if (!inboxForm.value.evolutionApi) return false
+  const evolutionApi = inboxForm.value.evolutionApi
+  return (
+    evolutionApi.serverUrl &&
+    evolutionApi.apiKey &&
+    evolutionApi.instanceName
+  )
+})
+
+// Função para criar apenas a instância da Evolution API
+async function createEvolutionInstance() {
+  try {
+    loading.value = true
+    console.log('Iniciando createEvolutionInstance')
+    
+    const input = {
+      name: inboxForm.value.name,
+      description: inboxForm.value.description,
+      channelType: 'WHATSAPP_EVOLUTION',
+      organizationId: authStore.currentOrganization.id,
+      isEnabled: true,
+      settings: JSON.stringify({
+        provider: 'evolution_api',
+        evolutionApi: {
+          serverUrl: inboxForm.value.evolutionApi.serverUrl,
+          apiKey: inboxForm.value.evolutionApi.apiKey,
+          instanceName: inboxForm.value.evolutionApi.instanceName,
+          readMessages: inboxForm.value.evolutionApi.readMessages,
+          alwaysOnline: inboxForm.value.evolutionApi.alwaysOnline,
+          rejectCalls: inboxForm.value.evolutionApi.rejectCalls,
+          webhookEvents: ['messages', 'status', 'qrcode', 'connection', 'presence'],
+          syncFullHistory: inboxForm.value.evolutionApi.syncFullHistory
+        }
+      })
+    }
+
+    const mutation = `
+      mutation CreateInbox($input: InboxInput!) {
+        createInbox(input: $input) {
+          id name description channelType isEnabled settings
+          teams { team { id name } }
+          organization { id name }
+        }
+      }
+    `
+
+    const result = await gqlRequest(mutation, { input })
+    
+    if (result.data?.createInbox) {
+      const settings = JSON.parse(result.data.createInbox.settings)
+      console.log('Settings parseados:', settings)
+      
+      if (settings?.qrcode?.base64) {
+        qrCodeData.value = settings.qrcode.base64
+        showToast('Instância criada com sucesso! Escaneie o QR Code para conectar.')
+        return true
+      }
+      console.log('QR Code não encontrado nos settings')
+    }
+    return false
+  } catch (error) {
+    console.error('Erro ao criar instância:', error)
+    showToast(error.message, 'error')
+    return false
+  } finally {
+    loading.value = false
+  }
+}
+
+// Função para lidar com as ações de cada step
+function handleStepAction() {
+  console.log('handleStepAction chamado', {
+    canProceed: canProceed.value,
+    currentStep: currentStep.value
+  })
+  if (canProceed.value) {
+    nextStep()
   }
 }
 </script> 
