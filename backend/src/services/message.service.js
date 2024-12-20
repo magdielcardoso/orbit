@@ -1,4 +1,4 @@
-class MessageService {
+export default class MessageService {
   constructor(prisma, pubsub) {
     this.prisma = prisma
     this.pubsub = pubsub
@@ -43,5 +43,3 @@ class MessageService {
     })
   }
 }
-
-export default MessageService
