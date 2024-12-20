@@ -1,0 +1,50 @@
+type Mutation {
+  login(email: String!, password: String!): AuthPayload!
+  logout: LogoutResponse!
+  register(input: RegisterInput!): AuthPayload!
+  registerSuperAdmin(input: RegisterSuperAdminInput!): SuperAdminRegistrationResponse!
+  forgotPassword(email: String!): MessageResponse!
+  resetPassword(token: String!, password: String!): MessageResponse!
+  verifyEmail(token: String!): MessageResponse!
+}
+
+type SuperAdminRegistrationResponse {
+  token: String!
+  user: User!
+  systemConfig: SystemConfig!
+}
+
+type LogoutResponse {
+  success: Boolean!
+  message: String
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
+input RegisterInput {
+  name: String!
+  email: String!
+  password: String!
+}
+
+input RegisterSuperAdminInput {
+  name: String!
+  email: String!
+  password: String!
+  systemConfig: SystemConfigInput!
+}
+
+input SystemConfigInput {
+  systemName: String!
+  timezone: String!
+  locale: String
+  features: JSON
+}
+
+type MessageResponse {
+  success: Boolean!
+  message: String!
+} 

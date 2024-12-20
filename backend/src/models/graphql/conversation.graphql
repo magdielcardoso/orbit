@@ -1,19 +1,39 @@
-scalar JSON
 scalar DateTime
+
+type Query {
+  conversations(organizationId: ID!, filters: ConversationFilters): [Conversation!]!
+  conversation(id: ID!): Conversation
+}
+
+type Mutation {
+  changeConversationStatus(id: ID!, status: ConversationStatus!): Conversation!
+  assignConversation(id: ID!, assigneeId: ID): Conversation!
+}
+
+input ConversationFilters {
+  assigneeId: ID
+  status: ConversationStatus
+  priority: Priority
+  inboxId: ID
+  search: String
+}
 
 type Conversation {
   id: ID!
   status: ConversationStatus!
   priority: Priority!
   subject: String
-  inbox: Inbox!
-  messages(last: Int): [Message!]!
+  unreadCount: Int
+  messages(last: Int): [Message!]
+  contact: Contact
   assignee: User
-  labels: [ConversationLabel!]!
+  inbox: Inbox!
+  organization: Organization!
+  labels: [ConversationLabel!]
   channelData: JSON
   customFields: JSON
-  organization: Organization!
-  contact: Contact
+  createdAt: DateTime!
+  updatedAt: DateTime!
   firstResponseAt: DateTime
   resolvedAt: DateTime
   reopenedAt: DateTime
@@ -21,10 +41,7 @@ type Conversation {
   slaStatus: String
   rating: Int
   ratingComment: String
-  unreadCount: Int!
   lastMessageAt: DateTime
-  createdAt: DateTime!
-  updatedAt: DateTime!
 }
 
 enum ConversationStatus {
@@ -41,35 +58,21 @@ enum Priority {
   URGENT
 }
 
-input ConversationInput {
-  subject: String
-  inboxId: ID!
-  organizationId: ID!
-  priority: Priority
-  contactId: ID
-  customFields: JSON
+type Message {
+  id: ID!
+  content: String!
+  type: String!
+  isFromContact: Boolean!
+  createdAt: DateTime!
+  user: User
+  contact: Contact
 }
 
-input ConversationFilters {
-  status: ConversationStatus
-  priority: Priority
-  assigneeId: ID
-  inboxId: ID
-}
-
-type Query {
-  conversations(
-    organizationId: ID!
-    filters: ConversationFilters
-    limit: Int
-    offset: Int
-  ): [Conversation!]!
-  conversation(id: ID!): Conversation
-}
-
-type Mutation {
-  createConversation(input: ConversationInput!): Conversation!
-  updateConversation(id: ID!, input: ConversationInput!): Conversation!
-  assignConversation(id: ID!, assigneeId: ID): Conversation!
-  changeConversationStatus(id: ID!, status: ConversationStatus!): Conversation!
+type ConversationLabel {
+  id: ID!
+  name: String!
+  color: String!
+  conversation: Conversation!
+  createdAt: DateTime!
+  updatedAt: DateTime!
 }

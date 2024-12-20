@@ -5,6 +5,10 @@ import { loggerService } from './logger.service.js'
 import UserModel from '../models/user.model.js'
 
 export default class AuthService {
+  constructor(prisma) {
+    this.prisma = prisma
+  }
+
   /**
    * Registra um novo usuário.
    * 
@@ -69,47 +73,67 @@ export default class AuthService {
    * @returns {object}
    */
   static async registerSuperAdmin(args, app) {
-    const existingSuperAdmin = await UserModel.findUserIfExists('superadmin')
+    try {
+      const existingSuperAdmin = await UserModel.findUserIfExists('superadmin')
 
-    if (existingSuperAdmin) {
-      throw new Error('Já existe um superadmin registrado')
-    }
-
-    const superadminRole = await UserModel.findRole('superadmin')
-
-    if (!superadminRole) {
-      throw new Error('Role de superadmin não encontrada')
-    }
-
-    const hashedPassword = await bcrypt.hash(args.password, 10)
-    const user = await UserModel.createUser(args.name, args.email, hashedPassword, superadminRole)
-
-    const systemConfig = await UserModel.createSystemConfig(args.systemConfig)
-
-    await logActivity({
-      type: 'SYSTEM_EVENT',
-      level: 'INFO',
-      source: 'SYSTEM',
-      action: 'SYSTEM_SETUP',
-      description: 'Sistema configurado com sucesso',
-      userId: user.id,
-      metadata: {
-        systemName: args.systemConfig.systemName,
-        timezone: args.systemConfig.timezone
+      if (existingSuperAdmin) {
+        throw new Error('Já existe um superadmin registrado')
       }
-    })
 
-    const token = await app.jwt.sign({
-      id: user.id,
-      email: user.email,
-      role: user.role?.name,
-      permissions: user.role?.permissions.map(p => p.permission.name)
-    })
+      const superadminRole = await UserModel.findRole('superadmin')
 
-    return {
-      token,
-      user,
-      systemConfig
+      if (!superadminRole) {
+        throw new Error('Role de superadmin não encontrada')
+      }
+
+      const hashedPassword = await bcrypt.hash(args.input.password, 10)
+      const user = await UserModel.createUser(
+        args.input.name, 
+        args.input.email, 
+        hashedPassword, 
+        superadminRole
+      )
+
+      const systemConfig = await UserModel.createSystemConfig(args.input.systemConfig)
+
+      await logActivity({
+        type: 'SYSTEM_EVENT',
+        level: 'INFO',
+        source: 'SYSTEM',
+        action: 'SYSTEM_SETUP',
+        description: 'Sistema configurado com sucesso',
+        userId: user.id,
+        metadata: {
+          systemName: args.input.systemConfig.systemName,
+          timezone: args.input.systemConfig.timezone
+        }
+      })
+
+      const token = await app.jwt.sign({
+        id: user.id,
+        email: user.email,
+        role: user.role?.name,
+        permissions: user.role?.permissions.map(p => p.permission.name)
+      })
+
+      return {
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: {
+            name: user.role.name,
+            permissions: user.role.permissions.map(p => ({
+              name: p.permission.name
+            }))
+          }
+        },
+        systemConfig
+      }
+    } catch (error) {
+      console.error('Erro ao registrar superadmin:', error)
+      throw error
     }
   }
 
@@ -123,9 +147,20 @@ export default class AuthService {
    */
   async login({ email, password }) {
     try {
-      const user = await UserModel.findUserByEmail(email)
-
-      console.log('Found user:', JSON.stringify(user, null, 2))
+      const user = await this.prisma.user.findUnique({
+        where: { email },
+        include: {
+          role: {
+            include: {
+              permissions: {
+                include: {
+                  permission: true
+                }
+              }
+            }
+          }
+        }
+      })
 
       if (!user) {
         throw new Error('Usuário não encontrado')
@@ -139,13 +174,6 @@ export default class AuthService {
       const permissions = user.role.permissions.map(rp => ({
         name: rp.permission.name
       }))
-
-      loggerService.log('info', 'Login realizado com sucesso', {
-        service: 'auth',
-        action: 'login',
-        userId: user.id,
-        email: user.email
-      })
 
       return {
         token: jwt.sign(
@@ -162,21 +190,20 @@ export default class AuthService {
           id: user.id,
           email: user.email,
           name: user.name,
-          active: user.active,
           role: {
             name: user.role.name,
-            permissions: permissions
+            permissions
           }
         }
       }
     } catch (error) {
-      loggerService.log('error', 'Erro no login', {
-        service: 'auth',
-        action: 'login',
-        error: error.message,
-        stack: error.stack
-      })
+      console.error('Erro no login:', error)
       throw error
     }
+  }
+
+  async logout(user) {
+    // Implementação do logout (se necessário)
+    return true
   }
 }

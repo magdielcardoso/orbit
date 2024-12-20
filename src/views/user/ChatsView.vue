@@ -1,24 +1,38 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from '@/i18n/plugin'
+import { useChatStore } from '@/stores/chat.store'
+import { useAuthStore } from '@/stores/auth.store'
 import SecondarySidebar from '@/components/layout/SecondarySidebar.vue'
 import ChatSidebar from '@/components/chats/ChatSidebar.vue'
 import ChatView from '@/components/chats/ChatView.vue'
 import ChatEmptyState from '@/components/chats/ChatEmptyState.vue'
 
 const { t } = useI18n()
+const chatStore = useChatStore()
+const authStore = useAuthStore()
 
 // Estado
-const activeTab = ref('mine')
+const activeTab = ref('all')
 const selectedChat = ref(null)
 const showSecondarySidebar = ref(true)
 
-// Tabs
-const tabs = [
-  { id: 'mine', label: 'Minhas', count: 0 },
-  { id: 'unassigned', label: 'Não atribuídas', count: 2 },
-  { id: 'all', label: 'Todas', count: 2 }
-]
+// Computed para contagens
+const counts = computed(() => {
+  const conversations = chatStore.conversations
+  return {
+    mine: conversations.filter(c => c.assignee?.id === authStore.user?.id).length,
+    unassigned: conversations.filter(c => !c.assignee).length,
+    all: conversations.length
+  }
+})
+
+// Tabs com contagens dinâmicas
+const tabs = computed(() => [
+  { id: 'mine', label: t('chats.tabs.mine'), count: counts.value.mine },
+  { id: 'unassigned', label: t('chats.tabs.unassigned'), count: counts.value.unassigned },
+  { id: 'all', label: t('chats.tabs.all'), count: counts.value.all }
+])
 
 // Configuração da sidebar
 const sidebarSections = computed(() => [
@@ -84,26 +98,62 @@ const sidebarSections = computed(() => [
 
 const handleChatSelect = (chat) => {
   selectedChat.value = chat
+  chatStore.setSelectedConversation(chat)
 }
 
 const toggleSecondarySidebar = () => {
   showSecondarySidebar.value = !showSecondarySidebar.value
 }
+
+// Carrega as conversas ao montar o componente
+onMounted(async () => {
+  if (authStore.currentOrganization?.id) {
+    try {
+      await chatStore.fetchConversations(
+        authStore.currentOrganization.id,
+        getFiltersForTab(activeTab.value)
+      )
+    } catch (error) {
+      console.error('Erro ao carregar conversas:', error)
+    }
+  }
+})
+
+// Observa mudanças na tab ativa para atualizar filtros
+watch(activeTab, async (newTab) => {
+  if (!authStore.currentOrganization?.id) return
+  
+  try {
+    await chatStore.fetchConversations(
+      authStore.currentOrganization.id,
+      getFiltersForTab(newTab)
+    )
+  } catch (error) {
+    console.error('Erro ao atualizar conversas:', error)
+  }
+})
+
+// Função auxiliar para obter filtros baseado na tab
+function getFiltersForTab(tab) {
+  const filters = {
+    mine: { assigneeId: authStore.user?.id },
+    unassigned: { assigneeId: null },
+    all: {}
+  }
+  return filters[tab] || {}
+}
 </script>
 
 <template>
-  <div class="flex h-full overflow-hidden">
-    <Transition
-      enter-active-class="transition-all duration-300 ease-in-out"
-      leave-active-class="transition-all duration-300 ease-in-out"
-      enter-from-class="-ml-64 opacity-0"
-      enter-to-class="ml-0 opacity-100"
-      leave-from-class="ml-0 opacity-100"
-      leave-to-class="-ml-64 opacity-0"
-    >
-      <SecondarySidebar v-if="showSecondarySidebar" :sections="sidebarSections" class="w-64 shrink-0" />
-    </Transition>
-    <div class="flex-1 flex">
+  <div class="flex overflow-hidden">
+    <SecondarySidebar 
+      v-if="showSecondarySidebar" 
+      :sections="sidebarSections" 
+      :has-blocks="true"
+      class="w-64 shrink-0" 
+    />
+
+    <div class="flex-1 flex overflow-hidden">
       <ChatSidebar
         v-model:activeTab="activeTab"
         :tabs="tabs"
@@ -112,12 +162,20 @@ const toggleSecondarySidebar = () => {
         @toggle-sidebar="toggleSecondarySidebar"
       />
 
-      <template v-if="selectedChat">
-        <ChatView :chat="selectedChat" />
-      </template>
-      <template v-else>
-        <ChatEmptyState />
-      </template>
+      <div class="flex-1 flex overflow-hidden">
+        <template v-if="selectedChat">
+          <ChatView :chat="selectedChat" class="flex-1" />
+        </template>
+        <template v-else>
+          <ChatEmptyState class="flex-1" />
+        </template>
+      </div>
     </div>
   </div>
-</template> 
+</template>
+
+<style scoped>
+:deep(.flex) {
+  min-height: 0;
+}
+</style> 

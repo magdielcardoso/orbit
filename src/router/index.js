@@ -1,22 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth.store'
-import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import SystemSetup from '../views/SystemSetup.vue'
-import AdminLayout from '../views/admin/AdminLayout.vue'
-import DefaultLayout from '../layouts/DefaultLayout.vue'
-import SuperAdminPanel from '../views/SuperAdminPanel.vue'
-import UsersManagement from '../views/admin/UsersManagement.vue'
-import RolesManagement from '../views/admin/RolesManagement.vue'
-import SystemSettings from '../views/admin/SystemSettings.vue'
-import BrandingSettings from '../views/admin/settings/BrandingSettings.vue'
 import { checkSystemStatus } from '@/utils/system'
 import { formatAccountUrl } from '../utils/string'
-import UserSettings from '@/views/user/UserSettings.vue'
-import InboxSettings from '@/views/user/InboxSettings.vue'
-import InboxSetup from '@/views/user/InboxSetup.vue'
-import KanbanView from '../views/user/KanbanView.vue'
+import { dashboardRoutes } from './routes/dashboard.routes'
+import { adminRoutes } from './routes/admin.routes'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -33,52 +23,14 @@ const router = createRouter({
         return `/dashboard/${formatAccountUrl(authStore.user?.name)}`;
       }
     },
-    {
-      path: '/dashboard/:accountName',
-      component: DefaultLayout,
-      meta: { requiresAuth: true },
-      children: [
-        {
-          path: '',
-          name: 'dashboard',
-          component: HomeView
-        },
-        {
-          path: 'kanban',
-          name: 'kanban',
-          component: () => import('../views/user/KanbanView.vue'),
-          meta: { requiresAuth: true }
-        },
-        {
-          path: 'chats',
-          name: 'chats',
-          component: () => import('../views/user/ChatsView.vue')
-        },
-        {
-          path: 'contacts',
-          name: 'contacts',
-          component: () => import('../views/user/ContactsView.vue')
-        },
-        {
-          path: 'favorites',
-          name: 'favorites',
-          component: () => import('../views/user/FavoritesView.vue')
-        },
-        {
-          path: 'settings',
-          name: 'user-settings',
-          component: () => import('../views/user/UserSettings.vue')
-        },
-        {
-          path: 'settings/inbox',
-          name: 'inbox-settings',
-          component: InboxSettings,
-          meta: {
-            requiresAuth: true
-          }
-        }
-      ]
-    },
+
+    // Rotas do dashboard (User)  
+    dashboardRoutes,
+
+    // Rotas do admin
+    adminRoutes,
+
+    // Rotas de login e registro
     {
       path: '/login',
       name: 'login',
@@ -95,69 +47,7 @@ const router = createRouter({
       component: SystemSetup,
       meta: { requiresAuth: false }
     },
-    {
-      path: '/admin',
-      component: AdminLayout,
-      meta: { requiresAuth: true, requiresAdmin: true },
-      children: [
-        {
-          path: '',
-          name: 'admin',
-          component: SuperAdminPanel
-        },
-        {
-          path: 'organizations',
-          name: 'organizations-management',
-          component: () => import('../views/admin/OrganizationsManagement.vue')
-        },
-        {
-          path: 'users',
-          name: 'users-management',
-          component: UsersManagement
-        },
-        {
-          path: 'roles',
-          name: 'roles-management',
-          component: RolesManagement
-        },
-        {
-          path: 'settings',
-          children: [
-            {
-              path: '',
-              component: () => import('../views/admin/SystemSettings.vue'),
-              meta: { requiresAuth: true, requiresAdmin: true }
-            },
-            {
-              path: 'branding',
-              component: BrandingSettings,
-              meta: { 
-                requiresAuth: true, 
-                requiresAdmin: true,
-                title: 'Configurações de Marca'
-              }
-            },
-          ]
-        }
-      ]
-    },
-    {
-      path: '/settings',
-      component: DefaultLayout,
-      meta: { requiresAuth: true },
-      children: [
-        {
-          path: 'inbox',
-          component: InboxSettings,
-          name: 'inbox-settings'
-        },
-        {
-          path: 'inbox/new',
-          component: InboxSetup,
-          name: 'inbox-setup'
-        }
-      ]
-    }
+
   ]
 })
 
@@ -166,14 +56,13 @@ router.beforeEach(async (to, from, next) => {
   const isAuthenticated = authStore.isAuthenticated
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
-  const publicRoutes = ['/login', '/register', '/setup']
 
   try {
     // Se não estiver autenticado e não for uma rota pública, redireciona para login
-    if (!isAuthenticated && !publicRoutes.includes(to.path)) {
-      console.log('Usuário não autenticado, redirecionando para login')
-      return next('/login')
-    }
+    //if (!isAuthenticated) {
+    //  console.log('Usuário não autenticado, redirecionando para login')
+    //  return next('/login')
+    //}
 
     // Verifica o status do sistema usando GraphQL
     const systemStatus = await checkSystemStatus()
@@ -200,19 +89,9 @@ router.beforeEach(async (to, from, next) => {
     // Se já estiver autenticado, não permite acessar login/register
     if ((to.path === '/login' || to.path === '/register') && isAuthenticated) {
       const userName = formatAccountUrl(authStore.user?.name)
-      return next(`/dashboard/${userName}`)
+      return next(`/dashboard/`)
     }
 
-    // Verifica acesso à conta
-    if (to.path.startsWith('/dashboard/') && isAuthenticated) {
-      const accountName = to.params.accountName
-      const userName = formatAccountUrl(authStore.user?.name)
-      const parentName = formatAccountUrl(authStore.user?.parentUser?.name)
-
-      if (accountName !== userName && accountName !== parentName) {
-        return next(`/dashboard/${userName}`)
-      }
-    }
 
     // Apenas verifica permissão para rotas admin, sem redirecionamento automático
     if (requiresAdmin && !authStore.hasPermission('manage_system')) {

@@ -147,7 +147,7 @@
                 </div>
               </div>
             </div>
-            <!-- Fim dos logs como último card -->
+            <!-- Fim dos logs como ��ltimo card -->
             <div class="log-entry end-log-entry">
               <div class="flex items-center justify-center p-2">
                 <div class="flex items-center gap-4">
@@ -177,7 +177,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { io } from 'socket.io-client';
-import { logAnalyzer } from '@/services/logAnalyzer.service';
+import { logAnalyzer } from '../services/logAnalyzer.service.js';
 
 const logs = ref([]);
 const activeLevels = ref(new Set(['error', 'warn', 'info', 'debug', 'http', 'verbose']));

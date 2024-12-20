@@ -233,6 +233,7 @@ import LanguageSelector from '../components/LanguageSelector.vue';
 import { Eye, EyeOff } from 'lucide-vue-next';
 import { gqlRequest } from '../utils/graphql';
 import { Vue3Lottie } from 'vue3-lottie';
+import AuthService from '../services/auth.service';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -274,48 +275,24 @@ onMounted(async () => {
 
 async function handleLogin() {
   try {
-    loading.value = true;
-    error.value = null;
+    loading.value = true
+    error.value = null
 
-    const loginMutation = `
-      mutation Login($email: String!, $password: String!) {
-        login(email: $email, password: $password) {
-          token
-          user {
-            id
-            name
-            email
-            role {
-              name
-              permissions {
-                name
-              }
-            }
-          }
-        }
-      }
-    `;
+    const { token, user } = await AuthService.login(
+      form.value.email, 
+      form.value.password
+    )
 
-    const response = await gqlRequest(loginMutation, {
-      email: form.value.email,
-      password: form.value.password
-    });
+    // Atualiza o estado de autenticação
+    authStore.setAuth({ token, user })
 
-    // Atualiza o estado de autenticaço
-    authStore.setAuth({
-      token: response.login.token,
-      user: response.login.user
-    });
-
-    // Sempre redireciona para o dashboard do usuário, independente da role
-    const accountUrl = formatAccountUrl(response.login.user.name);
-    router.push(`/dashboard/${accountUrl}`);
-    
+    // Redireciona para a página inicial
+    router.push('/')
   } catch (err) {
-    console.error('Erro no login:', err);
-    error.value = err.message;
+    console.error('Erro no login:', err)
+    error.value = err.message
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 </script> 
