@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ConversationService } from '@/services'
+import { ChatService as ConversationService } from '@/services'
 
 export const useConversationStore = defineStore('conversation', {
   state: () => ({

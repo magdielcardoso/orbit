@@ -1,0 +1,54 @@
+# Tipos
+type Connector {
+  id: ID!
+  name: String!
+  type: ConnectorType!
+  config: JSONObject!
+  isEnabled: Boolean!
+  organizationId: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+# Enums
+enum ConnectorType {
+  WHATSAPP
+  TELEGRAM
+  EMAIL
+  API
+  WEBHOOK
+}
+
+# Inputs
+input ConnectorInput {
+  name: String!
+  type: ConnectorType!
+  config: JSONObject!
+  isEnabled: Boolean
+  organizationId: ID!
+}
+
+# Queries
+extend type Query {
+  connectors(organizationId: ID!): [Connector!]!
+  connector(id: ID!): Connector
+}
+
+# Mutations
+extend type Mutation {
+  createConnector(input: ConnectorInput!): Connector!
+  updateConnector(id: ID!, input: ConnectorInput!): Connector!
+  deleteConnector(id: ID!): Boolean!
+  toggleConnector(id: ID!, isEnabled: Boolean!): Connector!
+  testConnector(config: JSONObject!): TestResult!
+}
+
+# Tipos auxiliares
+type TestResult {
+  success: Boolean!
+  message: String
+}
+
+# Scalars
+scalar JSONObject
+scalar DateTime

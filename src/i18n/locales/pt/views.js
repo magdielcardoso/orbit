@@ -464,6 +464,48 @@ export default {
         professional: 'Profissional',
         enterprise: 'Empresarial'
       }
+    },
+    connectors: {
+      title: 'Conectores',
+      description: 'Gerencie os conectores e integrações do sistema',
+      addConnector: 'Adicionar Conector',
+      newConnector: 'Novo Conector',
+      editConnector: 'Editar Conector',
+      name: 'Nome',
+      type: 'Tipo',
+      status: 'Status',
+      config: 'Configuração',
+      test: 'Testar',
+      confirmDelete: 'Tem certeza que deseja excluir o conector {name}?',
+      testSuccess: 'Conexão testada com sucesso!',
+      testError: 'Erro ao testar conexão',
+      createSuccess: 'Conector criado com sucesso!',
+      updateSuccess: 'Conector atualizado com sucesso!',
+      deleteSuccess: 'Conector excluído com sucesso!',
+      form: {
+        name: 'Nome',
+        namePlaceholder: 'Digite o nome do conector',
+        type: 'Tipo',
+        typePlaceholder: 'Selecione o tipo do conector',
+        config: 'Configuração',
+        configPlaceholder: 'Cole a configuração curl aqui',
+        isEnabled: 'Ativo',
+        testConnection: 'Testar Conexão'
+      },
+      types: {
+        WHATSAPP: 'WhatsApp',
+        TELEGRAM: 'Telegram',
+        EMAIL: 'E-mail',
+        API: 'API',
+        WEBHOOK: 'Webhook'
+      },
+      errors: {
+        createError: 'Erro ao criar conector',
+        updateError: 'Erro ao atualizar conector',
+        deleteError: 'Erro ao excluir conector',
+        testError: 'Erro ao testar conexão',
+        configError: 'Configuração inválida'
+      }
     }
   },
   common: {

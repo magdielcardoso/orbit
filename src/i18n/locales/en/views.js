@@ -433,6 +433,48 @@ export default {
         professional: 'Professional',
         enterprise: 'Enterprise'
       }
+    },
+    connectors: {
+      title: 'Connectors',
+      description: 'Manage system connectors and integrations',
+      addConnector: 'Add Connector',
+      newConnector: 'New Connector',
+      editConnector: 'Edit Connector',
+      name: 'Name',
+      type: 'Type',
+      status: 'Status',
+      config: 'Configuration',
+      test: 'Test',
+      confirmDelete: 'Are you sure you want to delete connector {name}?',
+      testSuccess: 'Connection tested successfully!',
+      testError: 'Error testing connection',
+      createSuccess: 'Connector created successfully!',
+      updateSuccess: 'Connector updated successfully!',
+      deleteSuccess: 'Connector deleted successfully!',
+      form: {
+        name: 'Name',
+        namePlaceholder: 'Enter connector name',
+        type: 'Type',
+        typePlaceholder: 'Select connector type',
+        config: 'Configuration',
+        configPlaceholder: 'Paste curl configuration here',
+        isEnabled: 'Enabled',
+        testConnection: 'Test Connection'
+      },
+      types: {
+        WHATSAPP: 'WhatsApp',
+        TELEGRAM: 'Telegram',
+        EMAIL: 'Email',
+        API: 'API',
+        WEBHOOK: 'Webhook'
+      },
+      errors: {
+        createError: 'Error creating connector',
+        updateError: 'Error updating connector',
+        deleteError: 'Error deleting connector',
+        testError: 'Error testing connection',
+        configError: 'Invalid configuration'
+      }
     }
   },
   kanban: {

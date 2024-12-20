@@ -20,6 +20,16 @@ export const adminRoutes = {
       component: () => import('@/views/admin/RolesManagement.vue')
     },
     {
+      path: 'connectors',
+      name: 'connectors-management',
+      component: () => import('@/views/admin/ConnectorsManagement.vue'),
+      meta: { 
+        requiresAuth: true, 
+        requiresAdmin: true,
+        title: 'Gerenciamento de Conectores'
+      }
+    },
+    {
       path: 'settings',
       children: [
         {

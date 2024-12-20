@@ -5,13 +5,13 @@ import ContactService from './contact.service'
 import OrganizationService from './organization.service'
 import SystemService from './system.service'
 import LogService from './log.service'
-import LoggerService from './logger.service'
-import WebSocketService from './websocket.service'
+import ConversationService from './conversation.service'
 import InboxService from './inbox.service'
 import LabelService from './label.service'
 import MessageService from './message.service'
 import TeamService from './team.service'
 import AutomationService from './automation.service'
+import ConnectorService from './connector.service'
 
 export {
   AuthService,
@@ -20,11 +20,11 @@ export {
   OrganizationService,
   SystemService,
   LogService,
-  LoggerService,
-  WebSocketService,
+  ConversationService,
   InboxService,
   LabelService,
   MessageService,
   TeamService,
-  AutomationService
+  AutomationService,
+  ConnectorService
 } 

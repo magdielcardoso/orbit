@@ -87,7 +87,8 @@ import {
   LogOut,
   User,
   ArrowLeft,
-  Building
+  Building,
+  Link
 } from 'lucide-vue-next';
 
 const { t } = useI18n();
@@ -142,6 +143,11 @@ const menuItems = [
     path: '/admin/roles',
     icon: Shield,
     label: 'Papéis e Permissões'
+  },
+  {
+    path: '/admin/connectors',
+    icon: Link,
+    label: 'Conectores'
   },
   {
     path: '/admin/settings',
