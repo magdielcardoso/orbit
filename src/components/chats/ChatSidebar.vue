@@ -47,7 +47,7 @@ const filteredConversations = computed(() => {
 
 // Handler para seleção de chat
 const handleChatSelect = (chat) => {
-  chatStore.setSelectedConversation(chat)
+  chatStore.setCurrentConversation(chat)
   emit('select', chat)
 }
 </script>

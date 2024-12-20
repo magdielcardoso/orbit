@@ -15,10 +15,6 @@ const props = defineProps({
   chat: {
     type: Object,
     required: true
-  },
-  showSecondarySidebar: {
-    type: Boolean,
-    required: true
   }
 })
 
@@ -61,13 +57,13 @@ const isCurrentUser = (message) => {
 // Monitora mudanças na conversa selecionada
 watch(() => props.chat, async (newChat) => {
   if (newChat?.id) {
-    chatStore.setSelectedConversation(newChat)
+    chatStore.setCurrentConversation(newChat)
   }
 }, { immediate: true })
 
 onMounted(() => {
   if (props.chat?.id) {
-    chatStore.setSelectedConversation(props.chat)
+    chatStore.setCurrentConversation(props.chat)
   }
 })
 </script>

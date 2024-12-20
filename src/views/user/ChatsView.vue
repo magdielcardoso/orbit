@@ -98,7 +98,7 @@ const sidebarSections = computed(() => [
 
 const handleChatSelect = (chat) => {
   selectedChat.value = chat
-  chatStore.setSelectedConversation(chat)
+  chatStore.setCurrentConversation(chat)
 }
 
 const toggleSecondarySidebar = () => {
