@@ -190,6 +190,14 @@ async function main() {
     }
   })
 
+  // Limpa dados existentes na ordem correta (por causa das foreign keys)
+  await prisma.message.deleteMany()
+  await prisma.conversation.deleteMany()
+  await prisma.contact.deleteMany()
+  await prisma.organizationUser.deleteMany()
+  await prisma.inbox.deleteMany()
+  await prisma.organization.deleteMany()
+
   // Cria organizações de teste
   const organizations = [
     {
@@ -224,6 +232,41 @@ async function main() {
       create: {
         ...org,
         features: org.features
+      }
+    })
+
+    // Primeiro criamos um usuário agente para as mensagens
+    const agentUser = await prisma.user.upsert({
+      where: { email: 'agent@orbitchat.io' },
+      update: {},
+      create: {
+        email: 'agent@orbitchat.io',
+        password: await bcrypt.hash('123456', 10),
+        name: 'Agente de Suporte',
+        role: {
+          connect: { name: 'agent' }
+        },
+        active: true
+      }
+    })
+
+    // Criamos a relação entre o agente e a organização
+    await prisma.organizationUser.upsert({
+      where: {
+        organizationId_userId: {
+          organizationId: organization.id,
+          userId: agentUser.id
+        }
+      },
+      update: {
+        isAdmin: true,
+        status: 'active'
+      },
+      create: {
+        organizationId: organization.id,
+        userId: agentUser.id,
+        isAdmin: true,
+        status: 'active'
       }
     })
 
@@ -270,15 +313,97 @@ async function main() {
       }
     ]
 
+    const createdInboxes = []
     for (const inbox of inboxes) {
-      await prisma.inbox.upsert({
-        where: {
-          id: `${organization.id}-${inbox.channelType}`
-        },
-        update: {},
-        create: {
+      const createdInbox = await prisma.inbox.create({
+        data: {
           ...inbox,
           organizationId: organization.id
+        }
+      })
+      createdInboxes.push(createdInbox)
+    }
+
+    // Cria contatos novamente
+    const contacts = [
+      {
+        name: 'João Silva',
+        email: 'joao@teste.com',
+        phone: '+5511999999999',
+        organizationId: organization.id
+      },
+      {
+        name: 'Maria Santos',
+        email: 'maria@teste.com',
+        phone: '+5511988888888',
+        organizationId: organization.id
+      }
+    ]
+
+    const createdContacts = []
+    for (const contact of contacts) {
+      const createdContact = await prisma.contact.create({
+        data: contact
+      })
+      createdContacts.push(createdContact)
+    }
+
+    // Cria conversas com os novos contatos
+    const conversations = [
+      {
+        status: 'OPEN',
+        priority: 'HIGH',
+        subject: 'Dúvida sobre produto',
+        inboxId: createdInboxes[0].id,
+        organizationId: organization.id,
+        contactId: createdContacts[0].id,
+        assigneeId: agentUser.id,
+        messages: {
+          create: [
+            {
+              content: 'Olá, preciso de ajuda com meu pedido',
+              userId: agentUser.id,
+              isFromContact: true,
+              contactId: createdContacts[0].id,
+              type: 'text'
+            },
+            {
+              content: 'Claro! Em que posso ajudar?',
+              userId: agentUser.id,
+              isFromContact: false,
+              type: 'text'
+            }
+          ]
+        }
+      },
+      {
+        status: 'PENDING',
+        priority: 'MEDIUM',
+        subject: 'Problema com entrega',
+        inboxId: createdInboxes[0].id,
+        organizationId: organization.id,
+        contactId: createdContacts[1].id,
+        assigneeId: agentUser.id,
+        messages: {
+          create: [
+            {
+              content: 'Quando meu pedido será entregue?',
+              userId: agentUser.id,
+              isFromContact: true,
+              contactId: createdContacts[1].id,
+              type: 'text'
+            }
+          ]
+        }
+      }
+    ]
+
+    // Cria as conversas
+    for (const conversation of conversations) {
+      await prisma.conversation.create({
+        data: conversation,
+        include: {
+          messages: true
         }
       })
     }
