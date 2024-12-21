@@ -289,6 +289,7 @@ enum ChannelSource {
   WHATSAPP_EVOLUTION
   SMS
   TWILIO
+  WEBHOOK
 }
 
 // Nova enum para status de canal
@@ -305,6 +306,7 @@ enum ConnectorStatus {
   DISCONNECTED
   ERROR
   PENDING_SETUP
+  CONFIGURED
 }
 
 // Nova model para Inbox (caixas de entrada)
@@ -567,6 +569,7 @@ model Channel {
 model Connector {
   id              String          @id @default(uuid())
   name            String
+  description     String?         // Adicionando campo description opcional
   source          ChannelSource
   config          Json            // Store connector-specific configuration
   isEnabled       Boolean         @default(true)

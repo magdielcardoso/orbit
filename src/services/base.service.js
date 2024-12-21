@@ -8,7 +8,8 @@ export class BaseService {
 
   async request(query, variables = {}, options = {}) {
     try {
-      // Adiciona token automaticamente se existir
+      console.log('BaseService - Request iniciada:', { query, variables, options })
+      
       if (this.authStore?.token) {
         options.headers = {
           ...options.headers,
@@ -17,8 +18,10 @@ export class BaseService {
       }
 
       const response = await gqlRequest(query, variables, options)
+      console.log('BaseService - Resposta recebida:', response)
       return response
     } catch (error) {
+      console.error('BaseService - Erro na requisição:', error)
       this.handleError(error)
     }
   }

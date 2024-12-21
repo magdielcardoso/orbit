@@ -35,18 +35,18 @@
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow v-for="connector in connectors" :key="connector.id">
+          <TableRow v-for="connector in localConnectors" :key="connector.id">
             <TableCell>
               <div class="flex items-center">
                 <component 
-                  :is="getConnectorIcon(connector.type)"
+                  :is="getConnectorIcon(connector.source)"
                   class="h-5 w-5 mr-2"
                 />
                 <span>{{ connector.name }}</span>
               </div>
             </TableCell>
             <TableCell>
-              {{ t(`admin.connectors.types.${connector.type}`) }}
+              {{ t(`admin.connectors.types.${connector.source}`) }}
             </TableCell>
             <TableCell>
               <Badge
@@ -118,7 +118,7 @@
 
           <div class="space-y-2">
             <Label for="type">{{ t('admin.connectors.form.type') }}</Label>
-            <Select v-model="form.type">
+            <Select v-model="form.source">
               <option v-for="type in connectorTypes" :key="type" :value="type">
                 {{ t(`admin.connectors.types.${type}`) }}
               </option>
@@ -159,11 +159,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, toRefs } from 'vue'
 import { useI18n } from '@/i18n'
 import { useConnectorStore } from '@/stores'
 import { useAuthStore } from '@/stores'
 import { ConnectorService } from '@/services'
+import { storeToRefs } from 'pinia'
 
 // Componentes Shadcn
 import { Button } from '@/components/ui/button'
@@ -190,11 +191,12 @@ import {
 } from "@/components/ui/table"
 
 // Ícones do Lucide
-import { Plus, Pencil, Trash2, Power, Zap } from 'lucide-vue-next'
+import { Plus, Pencil, Trash2, Power, Zap, MessageSquare, Send, Mail, Globe, Webhook } from 'lucide-vue-next'
 
 const { t } = useI18n()
 const connectorStore = useConnectorStore()
 const authStore = useAuthStore()
+const { connectors } = storeToRefs(connectorStore)
 
 // Estado local
 const loading = ref(false)
@@ -202,22 +204,27 @@ const showConnectorModal = ref(false)
 const currentConnector = ref(null)
 const form = ref({
   name: '',
-  type: '',
+  source: '',
   config: '',
   isEnabled: true
 })
 
 // Computed
-const connectors = computed(() => connectorStore.connectors)
 const connectorTypes = ['WHATSAPP', 'TELEGRAM', 'EMAIL', 'API', 'WEBHOOK']
+
+const localConnectors = ref([])
 
 // Métodos
 const fetchConnectors = async () => {
+  console.log('ConnectorsManagement - Iniciando fetchConnectors')
   loading.value = true
   try {
-    await connectorStore.fetchConnectors(authStore.currentOrganizationId)
+    const connectors = await ConnectorService.listConnectors()
+    console.log('ConnectorsManagement - Connectors recebidos:', connectors)
+    localConnectors.value = [...(connectors || [])]
+    console.log('ConnectorsManagement - LocalConnectors atualizado:', localConnectors.value)
   } catch (error) {
-    console.error('Erro ao carregar conectores:', error)
+    console.error('ConnectorsManagement - Erro:', error)
   } finally {
     loading.value = false
   }
@@ -227,7 +234,8 @@ const editConnector = (connector) => {
   currentConnector.value = connector
   form.value = {
     name: connector.name,
-    type: connector.type,
+    source: connector.source,
+    description: connector.description,
     config: JSON.stringify(connector.config, null, 2),
     isEnabled: connector.isEnabled
   }
@@ -248,7 +256,7 @@ function showToast(message, type = 'success') {
   // Ícone
   const icon = document.createElement('span')
   icon.className = 'text-lg'
-  icon.textContent = type === 'success' ? '✓' : '✕'
+  icon.textContent = type === 'success' ? '✅' : '❌'
   
   // Texto
   const text = document.createElement('span')
@@ -316,6 +324,19 @@ const testConnector = async (connector) => {
     console.error('Erro ao testar conector:', error)
     showToast(t('admin.connectors.errors.testError'), 'error')
   }
+}
+
+// Função para retornar o ícone correto baseado no tipo
+const getConnectorIcon = (source) => {
+  const icons = {
+    WHATSAPP: MessageSquare,
+    WHATSAPP_API: MessageSquare,
+    TELEGRAM: Send,
+    EMAIL: Mail,
+    API: Globe,
+    WEBHOOK: Webhook
+  }
+  return icons[source] || Globe
 }
 
 // Lifecycle

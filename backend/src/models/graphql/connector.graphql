@@ -2,35 +2,43 @@
 type Connector {
   id: ID!
   name: String!
-  type: ConnectorType!
+  description: String
+  source: ChannelSource!
   config: JSONObject!
   isEnabled: Boolean!
-  organizationId: ID!
+  status: ConnectorStatus!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
 
 # Enums
-enum ConnectorType {
+enum ChannelSource {
   WHATSAPP
   TELEGRAM
   EMAIL
   API
   WEBHOOK
+  WHATSAPP_API
+}
+
+enum ConnectorStatus {
+  PENDING_SETUP
+  CONFIGURED
+  ERROR
 }
 
 # Inputs
 input ConnectorInput {
   name: String!
-  type: ConnectorType!
+  description: String
+  source: ChannelSource!
   config: JSONObject!
   isEnabled: Boolean
-  organizationId: ID!
 }
 
 # Queries
 extend type Query {
-  connectors(organizationId: ID!): [Connector!]!
+  connectors: [Connector!]!
   connector(id: ID!): Connector
 }
 

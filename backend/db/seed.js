@@ -197,6 +197,7 @@ async function main() {
   await prisma.organizationUser.deleteMany()
   await prisma.inbox.deleteMany()
   await prisma.organization.deleteMany()
+  await prisma.connector.deleteMany()
 
   // Cria organizações de teste
   const organizations = [
@@ -234,6 +235,54 @@ async function main() {
         features: org.features
       }
     })
+
+    // Cria conectores para a organização
+    const connectors = [
+      {
+        name: 'WhatsApp Cloud API',
+        description: 'Conector oficial do WhatsApp',
+        source: 'WHATSAPP_API',
+        config: {
+          apiKey: 'test_api_key',
+          phoneNumberId: '123456789',
+          webhookSecret: 'test_webhook_secret'
+        },
+        isEnabled: true,
+        organizations: {
+          create: {
+            organizationId: organization.id,
+            isEnabled: true
+          }
+        }
+      },
+      {
+        name: 'SMTP Email',
+        description: 'Conector de email via SMTP',
+        source: 'EMAIL',
+        config: {
+          host: 'smtp.gmail.com',
+          port: 587,
+          secure: true,
+          auth: {
+            user: 'test@gmail.com',
+            pass: 'app_password'
+          }
+        },
+        isEnabled: true,
+        organizations: {
+          create: {
+            organizationId: organization.id,
+            isEnabled: true
+          }
+        }
+      }
+    ]
+
+    for (const connector of connectors) {
+      await prisma.connector.create({
+        data: connector
+      })
+    }
 
     // Primeiro criamos um usuário agente para as mensagens
     const agentUser = await prisma.user.upsert({

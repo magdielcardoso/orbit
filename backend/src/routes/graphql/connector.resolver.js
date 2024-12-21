@@ -27,7 +27,8 @@ export const resolvers = {
 
   Query: {
     // Lista todos os conectores de uma organização
-    connectors: async (_, { organizationId }, { user, prisma }) => {
+    connectors: async (_, __, { user, prisma }) => {
+      console.log('Resolver - Iniciando query connectors')
       if (!user) throw new Error('Não autorizado')
 
       // Verifica permissões
@@ -52,7 +53,9 @@ export const resolvers = {
         throw new Error('Não autorizado')
       }
 
-      return await ConnectorModel.findConnectorsByOrganizationId(organizationId)
+      const result = await ConnectorModel.findConnectorsByOrganizationId()
+      console.log('Resolver - Resultado:', result)
+      return result
     },
 
     // Busca um conector específico

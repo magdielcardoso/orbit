@@ -9,11 +9,13 @@ export default class ConnectorModel {
    */
   static async findConnectorsByOrganizationId(organizationId) {
     return await prismaInstance.connector.findMany({
-      where: {
-        organizationId
-      },
       include: {
-        organization: true
+        organizations: {
+          include: {
+            organization: true
+          }
+        },
+        channels: true
       }
     })
   }
@@ -40,15 +42,24 @@ export default class ConnectorModel {
    * @returns {Promise<Object>}
    */
   static async createConnector(input) {
+    const { organizationId, ...connectorData } = input
+    
     return await prismaInstance.connector.create({
       data: {
-        name: input.name,
-        description: input.description,
-        type: input.type,
-        config: input.config,
-        isEnabled: input.isEnabled || false,
-        organization: {
-          connect: { id: input.organizationId }
+        ...connectorData,
+        source: input.source || 'OFFICIAL',
+        organizations: {
+          create: {
+            organizationId,
+            isEnabled: input.isEnabled || false
+          }
+        }
+      },
+      include: {
+        organizations: {
+          include: {
+            organization: true
+          }
         }
       }
     })

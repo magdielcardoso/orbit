@@ -4,8 +4,8 @@ export default class ConnectorService {
   /**
    * Lista todos os conectores de uma organização
    */
-  static async listConnectors(organizationId) {
-    return await ConnectorModel.findConnectorsByOrganizationId(organizationId)
+  static async listConnectors() {
+    return await ConnectorModel.findConnectorsByOrganizationId()
   }
 
   /**

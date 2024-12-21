@@ -2,32 +2,39 @@ import { BaseService } from './base.service'
 
 class ConnectorService extends BaseService {
   // Queries
-  async getConnectors(organizationId) {
+  async listConnectors() {
     const query = `
-      query GetConnectors($organizationId: ID!) {
-        connectors(organizationId: $organizationId) {
+      query ListConnectors {
+        connectors {
           id
           name
-          type
+          description
+          source
           config
           isEnabled
+          status
           createdAt
           updatedAt
         }
       }
     `
-    return this.request(query, { organizationId })
+    console.log('ConnectorService - Iniciando listConnectors')
+    const response = await this.request(query)
+    console.log('ConnectorService - Resposta bruta:', response)
+    return response.connectors || []
   }
 
-  async getConnectorById(id) {
+  async getConnector(id) {
     const query = `
       query GetConnector($id: ID!) {
         connector(id: $id) {
           id
           name
-          type
+          description
+          source
           config
           isEnabled
+          status
           createdAt
           updatedAt
         }
@@ -43,9 +50,11 @@ class ConnectorService extends BaseService {
         createConnector(input: $input) {
           id
           name
-          type
+          description
+          source
           config
           isEnabled
+          status
         }
       }
     `
@@ -58,9 +67,11 @@ class ConnectorService extends BaseService {
         updateConnector(id: $id, input: $input) {
           id
           name
-          type
+          description
+          source
           config
           isEnabled
+          status
         }
       }
     `
@@ -86,18 +97,6 @@ class ConnectorService extends BaseService {
       }
     `
     return this.request(mutation, { id, isEnabled })
-  }
-
-  async testConnector(config) {
-    const mutation = `
-      mutation TestConnector($config: JSONObject!) {
-        testConnector(config: $config) {
-          success
-          message
-        }
-      }
-    `
-    return this.request(mutation, { config })
   }
 }
 

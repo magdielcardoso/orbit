@@ -24,12 +24,18 @@ export const useConnectorStore = defineStore('connector', {
   },
 
   actions: {
-    async fetchConnectors(organizationId) {
+    async fetchConnectors() {
       try {
+        console.log('ConnectorStore - Iniciando fetchConnectors')
         this.loading = true
-        const response = await ConnectorService.getConnectors(organizationId)
-        this.connectors = response.connectors
+        const connectors = await ConnectorService.listConnectors()
+        console.log('ConnectorStore - Connectors recebidos:', connectors)
+        this.$patch({
+          connectors: Array.isArray(connectors) ? [...connectors] : []
+        })
+        console.log('ConnectorStore - Estado atualizado:', this.connectors)
       } catch (error) {
+        console.error('ConnectorStore - Erro:', error)
         this.error = error.message
         throw error
       } finally {
