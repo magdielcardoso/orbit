@@ -32,10 +32,45 @@ OrbitChat.io é uma plataforma de atendimento ao cliente omnichannel de código 
 
 ## 🛠️ Tecnologias
 
-- Frontend: Vue.js 3 + Vite
-- Backend: Node.js + Fastify
+- Frontend: Vue.js 3 + Nuxt.js + Vite
+- Backend: Node.js + Fastify + GraphQL
 - Banco de dados: PostgreSQL
-- ORM: Prisma
-- Realtime: Socket.io
-- UI: TailwindCSS
+- ORM: Prisma 5
+- Realtime: Socket.io + Redis
+- UI: TailwindCSS + Shadcn/UI
 - Internacionalização: vue-i18n
+- Autenticação: JWT
+
+## 🔏 Licença
+
+O **Orbit.io** é um software de código aberto licenciado sob a **GNU Affero General Public License Version 3 (AGPLv3)**.  
+Essa licença promove a liberdade do usuário e a colaboração no desenvolvimento de software de código aberto.  
+
+### **Direitos e Permissões**
+- **Uso Interno**:  
+  Você pode usar o Orbit.io livremente em sua infraestrutura, tanto para fins comerciais quanto não comerciais, sem a obrigação de compartilhar o código, **desde que o software não seja disponibilizado ao público**.  
+
+- **Modificação e Personalização**:  
+  Você pode modificar o Orbit.io e implementar novos recursos.  
+  - Caso distribua o software modificado ou o utilize em um serviço acessível remotamente (como SaaS), será necessário disponibilizar publicamente o código das suas alterações sob os mesmos termos da AGPLv3.
+
+### **Requisitos para Distribuição ou Uso Comercial**
+Se o Orbit.io for utilizado como parte de um serviço ou produto público ou comercial, você deve:  
+
+1. **Disponibilizar o Código-Fonte**  
+   Todas as modificações realizadas devem ser disponibilizadas publicamente, sob os mesmos termos da AGPLv3.  
+   - **Referência à AGPLv3**: "Você deve oferecer acesso ao código-fonte correspondente, sob os mesmos termos desta licença, para os usuários de sua aplicação." (Seção 13).  
+
+2. **Reconhecimento do Projeto Oficial**  
+   - Mencionar o projeto oficial **Orbit.io** de forma clara em sua interface, comunicações e materiais.  
+   - Informar os usuários de que estão utilizando uma versão alterada do software.  
+
+3. **Disponibilizar o Código Alterado**  
+   - Publicar um link para o repositório com suas modificações, permitindo que outros revisem o código.  
+   - **Referência à AGPLv3**: "As modificações devem ser identificadas claramente para os usuários indicando o código orginal da versão e a alterada" (Seção 5).  
+### **Por Que Escolhemos a AGPLv3?**
+A licença AGPLv3 garante que o **Orbit.io** e todas as suas melhorias permaneçam acessíveis à comunidade de código aberto. Ela também assegura que o uso comercial respeite os princípios de transparência, colaboração e que todos se beneficiem igualmente das melhorias feitas. Ela também impedem que empresas utilizem o software em ambientes comerciais sem contribuir com a comunidade.
+
+### **Mais Informações**
+- Para detalhes completos sobre a licença, veja o arquivo [LICENSE](./LICENSE).  
+- Para uma versão em ***English***, consulte [README_EN](./README_EN.md).
