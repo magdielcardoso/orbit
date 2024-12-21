@@ -34,6 +34,7 @@ export async function gqlRequest(query, variables = null, options = {}) {
       }),
       credentials: 'include'
     })
+    console.log('Response:', response)
 
     if (!response.ok) {
       const errorText = await response.text()

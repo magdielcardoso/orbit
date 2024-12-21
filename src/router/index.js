@@ -58,11 +58,6 @@ router.beforeEach(async (to, from, next) => {
   const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
 
   try {
-    // Se não estiver autenticado e não for uma rota pública, redireciona para login
-    //if (!isAuthenticated) {
-    //  console.log('Usuário não autenticado, redirecionando para login')
-    //  return next('/login')
-    //}
 
     // Verifica o status do sistema usando GraphQL
     const systemStatus = await checkSystemStatus()
@@ -84,19 +79,6 @@ router.beforeEach(async (to, from, next) => {
     // Se o sistema estiver configurado, atualiza o localStorage
     if (systemStatus.configured) {
       localStorage.setItem('systemConfigured', 'true')
-    }
-
-    // Se já estiver autenticado, não permite acessar login/register
-    if ((to.path === '/login' || to.path === '/register') && isAuthenticated) {
-      const userName = formatAccountUrl(authStore.user?.name)
-      return next(`/dashboard/`)
-    }
-
-
-    // Apenas verifica permissão para rotas admin, sem redirecionamento automático
-    if (requiresAdmin && !authStore.hasPermission('manage_system')) {
-      console.log('Acesso negado: requer permissão manage_system')
-      return next('/dashboard')
     }
 
     next()

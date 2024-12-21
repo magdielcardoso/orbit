@@ -165,22 +165,8 @@ async function handleSubmit() {
     error.value = null
     
     const setupMutation = `
-      mutation RegisterSuperAdmin(
-        $name: String!
-        $email: String!
-        $password: String!
-        $systemName: String!
-        $timezone: String!
-      ) {
-        registerSuperAdmin(
-          name: $name
-          email: $email
-          password: $password
-          systemConfig: {
-            systemName: $systemName
-            timezone: $timezone
-          }
-        ) {
+      mutation RegisterSuperAdmin($input: RegisterSuperAdminInput!) {
+        registerSuperAdmin(input: $input) {
           token
           user {
             id
@@ -204,11 +190,15 @@ async function handleSubmit() {
     `
     
     const response = await gqlRequest(setupMutation, {
-      name: form.value.name,
-      email: form.value.email,
-      password: form.value.password,
-      systemName: form.value.systemName,
-      timezone: form.value.timezone
+      input: {
+        name: form.value.name,
+        email: form.value.email,
+        password: form.value.password,
+        systemConfig: {
+          systemName: form.value.systemName,
+          timezone: form.value.timezone
+        }
+      }
     })
 
     // Atualiza o estado de autenticação

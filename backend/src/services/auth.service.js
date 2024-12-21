@@ -67,11 +67,11 @@ export default class AuthService {
   /**
    * Registra um superadministrador.
    *
-   * @param {object} args
+   * @param {object} input
    * @param {object} app
    * @returns {object}
    */
-  static async registerSuperAdmin(args, app) {
+  static async registerSuperAdmin(input, app) {
     try {
       const existingSuperAdmin = await UserModel.findUserIfExists('superadmin')
 
@@ -85,15 +85,15 @@ export default class AuthService {
         throw new Error('Role de superadmin não encontrada')
       }
 
-      const hashedPassword = await bcrypt.hash(args.input.password, 10)
+      const hashedPassword = await bcrypt.hash(input.password, 10)
       const user = await UserModel.createUser(
-        args.input.name,
-        args.input.email,
+        input.name,
+        input.email,
         hashedPassword,
         superadminRole,
       )
 
-      const systemConfig = await UserModel.createSystemConfig(args.input.systemConfig)
+      const systemConfig = await UserModel.createSystemConfig(input.systemConfig)
 
       await logActivity({
         type: 'SYSTEM_EVENT',
@@ -103,8 +103,8 @@ export default class AuthService {
         description: 'Sistema configurado com sucesso',
         userId: user.id,
         metadata: {
-          systemName: args.input.systemConfig.systemName,
-          timezone: args.input.systemConfig.timezone,
+          systemName: input.systemConfig.systemName,
+          timezone: input.systemConfig.timezone,
         },
       })
 
@@ -121,6 +121,7 @@ export default class AuthService {
           id: user.id,
           email: user.email,
           name: user.name,
+          active: user.active,
           role: {
             name: user.role.name,
             permissions: user.role.permissions.map(p => ({
