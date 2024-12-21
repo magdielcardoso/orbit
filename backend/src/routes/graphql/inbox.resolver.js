@@ -38,7 +38,21 @@ export const resolvers = {
     },
   },
 
-  Query: {},
+  Query: {
+    inbox: async (_, { id }, { prisma }) => {
+      const inbox = await prisma.inbox.findUnique({
+        where: { id }
+      })
+
+      console.log('Inbox encontrada:', {
+        id,
+        settings: inbox?.settings,
+        channelType: inbox?.channelType
+      })
+
+      return inbox
+    }
+  },
 
   Mutation: {
     createInbox: async (_, { input }, { user }) => {

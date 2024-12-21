@@ -32,7 +32,7 @@ export default class InboxService {
         const evolutionInstance = await EvolutionService.createInstance({
           serverUrl: input.settings.evolution.serverUrl,
           apiKey: input.settings.evolution.apiKey,
-          instanceName: input.settings.evolution.instanceName,
+          instanceName: input.settings.evolution.instanceName || input.settings.evolution.phoneNumber,
           phoneNumber: input.settings.evolution.phoneNumber,
           webhookUrl: input.settings.evolution.webhookUrl
         })
@@ -40,7 +40,21 @@ export default class InboxService {
         console.log('3. Resposta da Evolution API:', evolutionInstance)
 
         // Adiciona os dados retornados da Evolution à configuração
-        input.settings.evolution.instanceId = evolutionInstance.instance.instanceId
+        const evolutionSettings = {
+          ...input.settings.evolution,
+          instanceId: evolutionInstance.instance.instanceId,
+          instanceName: input.settings.evolution.instanceName || input.settings.evolution.phoneNumber
+        }
+
+        // Garante que settings seja uma string JSON
+        input.settings = JSON.stringify({
+          evolution: evolutionSettings
+        })
+
+        console.log('4. Configurações finais:', {
+          settings: input.settings,
+          parsed: JSON.parse(input.settings)
+        })
       }
 
       const result = await InboxModel.createInbox(input)

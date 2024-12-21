@@ -5,8 +5,20 @@ services:
     image: stacklabdigital/orbitchat:develop
     working_dir: /app
     environment:
-      - VITE_GRAPHQL_URL=https://api.orbitchat.io/graphql
-      - NODE_ENV=production
+      - PORT=4000
+      - VITE_API_URL=http://api.orbitchat.io
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - VITE_WS_URL=wss://api.orbitchat.io
+      - VITE_GRAPHQL_URL=http://api.orbitchat.io/graphql
+      - DATABASE_URL=postgresql://postgres:PT99874166@postgres:5432/orbitchatv2?schema=public
+      - DB_HOST=postgres
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=PT99874166
+      - DB_PORT=5432
+      - DB_SCHEMA=public
+      - JWT_SECRET=1234
+      - FRONTEND_URL=https://app.orbitchat.io
       - HOST=0.0.0.0
     depends_on:
       - backend
@@ -22,7 +34,7 @@ services:
           - node.role == manager
       labels:
         - traefik.enable=true
-        - traefik.http.routers.orbitchat_frontend.rule=Host(`orbit.stacklab.digital`)
+        - traefik.http.routers.orbitchat_frontend.rule=Host(`app.orbitchat.io`)
         - traefik.http.routers.orbitchat_frontend.entrypoints=websecure
         - traefik.http.routers.orbitchat_frontend.tls.certresolver=letsencryptresolver
         - traefik.http.routers.orbitchat_frontend.service=orbitchat_frontend
@@ -35,16 +47,27 @@ services:
     image: stacklabdigital/orbitchat:develop
     working_dir: /app/backend
     environment:
-      - NODE_ENV=production
-      - DATABASE_URL=postgresql://orbitchat:orbitchat@postgres:5432/orbitchat?schema=public
+      - PORT=4000
+      - VITE_API_URL=http://api.orbitchat.io
+      - NODE_ENV=postgres
+      - REDIS_URL=redis://redis:6379
+      - VITE_WS_URL=wss://api.orbitchat.io
+      - VITE_GRAPHQL_URL=http://api.orbitchat.io/graphql
+      - DATABASE_URL=postgresql://postgres:PT99874166@postgres:5432/orbitchatv2?schema=public
+      - DB_HOST=postgres
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=PT99874166
+      - DB_PORT=5432
+      - DB_SCHEMA=public
       - JWT_SECRET=1234
       - FRONTEND_URL=https://app.orbitchat.io
       - HOST=0.0.0.0
-    depends_on:
-      postgres:
-        condition: service_healthy
     restart: unless-stopped
-    command: sh -c "npx prisma migrate deploy && npm run start"
+    command: >
+      sh -c "
+        chmod +x ./init.sh &&
+        ./init.sh
+      "
     networks:
       - pedetudo
     deploy:
@@ -55,7 +78,7 @@ services:
           - node.role == manager
       labels:
         - traefik.enable=true
-        - traefik.http.routers.orbitchat_backend.rule=Host(`orbit-api.stacklab.digital`)
+        - traefik.http.routers.orbitchat_backend.rule=Host(`api.orbitchat.io`)
         - traefik.http.routers.orbitchat_backend.entrypoints=websecure
         - traefik.http.routers.orbitchat_backend.tls.certresolver=letsencryptresolver
         - traefik.http.routers.orbitchat_backend.service=orbitchat_backend
@@ -63,29 +86,8 @@ services:
         - traefik.http.services.orbitchat_backend.loadbalancer.passHostHeader=true
         - traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https
         - traefik.http.routers.orbitchat_backend.middlewares=sslheader@docker
-
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      - POSTGRES_USER=orbitchat
-      - POSTGRES_PASSWORD=orbitchat
-      - POSTGRES_DB=orbitchat
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - pedetudo
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U orbitchat"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    deploy:
-      placement:
-        constraints:
-          - node.role == manager
-
-volumes:
-  postgres_data:
+        - "traefik.http.middlewares.cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+        - "traefik.http.middlewares.cors.headers.accesscontrolalloworiginlist=*"
 
 networks:
   pedetudo:

@@ -9,7 +9,7 @@ export $(shell sed s/=.*// .env)
 DB_NAME = $(if $(filter production,$(NODE_ENV)),orbitchat,orbitchat_dev)
 
 # Comandos principais
-.PHONY: install dev build start clean migrate reinstall test test-watch test-coverage test-ui test-component test-component-watch kill-ports
+.PHONY: install dev build start clean migrate reinstall test test-watch test-coverage test-ui test-component test-component-watch kill-ports serve
 
 install:
 	$(NPM) install
@@ -47,6 +47,9 @@ kill-ports:
 		fi \
 	done
 	@echo "Processos encerrados."
+
+serve:
+	$(NPM) run serve
 
 # Comandos do Prisma
 .PHONY: migrate-dev migrate-deploy studio generate

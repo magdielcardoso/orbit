@@ -50,6 +50,14 @@ export const dashboardRoutes = {
       meta: {
         requiresAuth: true
       }
-    }
+    },
+    {
+      path: '/settings/inbox/:id/connect',
+      name: 'whatsapp-connect',
+      component: () => import('@/views/user/WhatsappConnect.vue'),
+      meta: {
+        requiresAuth: true,
+      }
+    },
   ]
 } 

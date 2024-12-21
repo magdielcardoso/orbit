@@ -643,9 +643,14 @@ async function handleSubmit() {
         }
       }
     `
-
-    await gqlRequest(mutation, { input })
-    router.push('/settings/inbox')
+    const response = await gqlRequest(mutation, { input })
+    
+    // Se for WhatsApp, redireciona para a página de conexão
+    if (inboxForm.value.channelType === 'WHATSAPP') {
+      router.push(`/settings/inbox/${response.createInbox.id}/connect`)
+    } else {
+      router.push('/settings/inbox')
+    }
   } catch (error) {
     console.error('Erro ao criar caixa de entrada:', error)
     showToast(error.message, 'error')

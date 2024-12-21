@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "serve": "concurrently \"vite --host 0.0.0.0\" \"npm run dev:backend\"",
     "dev:frontend": "vite",
     "dev:backend": "cd backend && node --watch src/app.js",
     "build": "vite build",
