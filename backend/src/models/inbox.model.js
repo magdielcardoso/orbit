@@ -8,16 +8,45 @@ export default class InboxModel {
    * @returns {Promise<Object>}
    */
   static async createInbox(input) {
+    console.log('InboxModel createInbox input:', {
+      input,
+      settings: input.settings,
+      settingsType: typeof input.settings
+    })
+
+    const data = {
+      name: input.name,
+      description: input.description,
+      channelType: input.channelType,
+      isEnabled: input.isEnabled ?? true,
+      organization: {
+        connect: { id: input.organizationId }
+      }
+    }
+
+    if (input.settings) {
+      try {
+        console.log('Processando settings:', {
+          original: input.settings,
+          type: typeof input.settings
+        })
+        
+        data.settings = typeof input.settings === 'string' 
+          ? JSON.parse(input.settings)
+          : input.settings
+
+        console.log('Settings processado:', {
+          result: data.settings,
+          type: typeof data.settings
+        })
+      } catch (error) {
+        console.error('Erro ao processar settings:', error)
+        throw new Error('Configurações inválidas')
+      }
+    }
+
     return await prismaInstance.inbox.create({
-      data: {
-        name: input.name,
-        description: input.description,
-        channelType: input.channelType,
-        isEnabled: input.isEnabled,
-        organization: {
-          connect: { id: input.organizationId }
-        }
-      },
+      data,
       include: {
         teams: {
           include: {

@@ -1,5 +1,6 @@
 import InboxModel from '../models/inbox.model.js'
 import OrganizationModel from '../models/organization.model.js'
+import EvolutionService from './integrations/evolution.service.js'
 
 export default class InboxService {
   /**
@@ -11,15 +12,42 @@ export default class InboxService {
    */
   static async createInbox(user, input) {
     try {
+      console.log('1. InboxService.createInbox recebeu:', {
+        input,
+        settings: input.settings,
+        settingsType: typeof input.settings
+      })
+
       const orgUser = await OrganizationModel.findOrganizationUser(user.id, input.organizationId)
 
       if (!orgUser) {
         throw new Error('Não autorizado: usuário não pertence a esta organização')
       }
 
-      return await InboxModel.createInbox(input)
+      // Se for um canal WhatsApp e tiver configurações da Evolution
+      if (input.channelType === 'WHATSAPP' && input.settings?.evolution) {
+        console.log('2. Configurações Evolution detectadas:', input.settings.evolution)
+
+        // Cria a instância na Evolution API
+        const evolutionInstance = await EvolutionService.createInstance({
+          serverUrl: input.settings.evolution.serverUrl,
+          apiKey: input.settings.evolution.apiKey,
+          instanceName: input.settings.evolution.instanceName,
+          phoneNumber: input.settings.evolution.phoneNumber,
+          webhookUrl: input.settings.evolution.webhookUrl
+        })
+
+        console.log('3. Resposta da Evolution API:', evolutionInstance)
+
+        // Adiciona os dados retornados da Evolution à configuração
+        input.settings.evolution.instanceId = evolutionInstance.instance.instanceId
+      }
+
+      const result = await InboxModel.createInbox(input)
+      console.log('4. Resultado final do createInbox:', result)
+      return result
     } catch (error) {
-      console.error('Erro ao criar caixa de entrada:', error)
+      console.error('5. Erro no InboxService:', error)
       throw error
     }
   }
@@ -72,6 +100,15 @@ export default class InboxService {
 
       if (!orgUser) {
         throw new Error('Não autorizado: usuário não pertence a esta organização')
+      }
+
+      // Se for um canal WhatsApp com Evolution configurada, deleta a instância
+      if (inbox.channelType === 'WHATSAPP' && inbox.settings?.evolution) {
+        await EvolutionService.deleteInstance({
+          serverUrl: inbox.settings.evolution.serverUrl,
+          apiKey: inbox.settings.evolution.apiKey,
+          instanceName: inbox.settings.evolution.instanceName
+        })
       }
 
       return await InboxModel.deleteInbox(id)

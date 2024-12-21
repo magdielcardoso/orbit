@@ -4,12 +4,26 @@ import InboxService from '../../services/inbox.service.js';
 export const resolvers = {
   JSON: {
     __parseValue(value) {
-      return JSON.parse(value);
+      console.log('GraphQL JSON parseValue:', {
+        value,
+        type: typeof value,
+        isString: typeof value === 'string'
+      })
+      return typeof value === 'string' ? JSON.parse(value) : value;
     },
     __serialize(value) {
-      return JSON.stringify(value);
+      console.log('GraphQL JSON serialize:', {
+        value,
+        type: typeof value,
+        isString: typeof value === 'string'
+      })
+      return typeof value === 'string' ? value : JSON.stringify(value);
     },
     __parseLiteral(ast) {
+      console.log('GraphQL JSON parseLiteral:', {
+        kind: ast.kind,
+        value: ast.value
+      })
       switch (ast.kind) {
         case Kind.STRING:
           return JSON.parse(ast.value);
@@ -28,7 +42,21 @@ export const resolvers = {
 
   Mutation: {
     createInbox: async (_, { input }, { user }) => {
-      return await InboxService.createInbox(user, input);
+      try {
+        console.log('1. Mutation createInbox recebeu:', {
+          input,
+          settings: input.settings,
+          settingsType: typeof input.settings
+        })
+
+        const result = await InboxService.createInbox(user, input)
+        
+        console.log('2. Resultado do createInbox:', result)
+        return result
+      } catch (error) {
+        console.error('3. Erro no resolver:', error)
+        throw error
+      }
     },
     updateInbox: async (_, { id, input }, { user }) => {
       return await InboxService.updateInbox(user, id, input);

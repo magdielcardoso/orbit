@@ -262,50 +262,107 @@
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
               >
                 <option value="">Selecione um provedor</option>
-                <option value="whatsapp_cloud">WhatsApp Cloud</option>
-                <option value="360dialog">360dialog</option>
+                <option value="evolution">Evolution API</option>
+                <option value="facebook">Facebook Business</option>
+                <!-- Adicione outros provedores conforme necessário -->
               </select>
             </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Número de telefone</label>
-              <input
-                v-model="inboxForm.phoneNumber"
-                type="text"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
-                placeholder="Por favor, insira o número de telefone do qual a mensagem será enviada."
-              />
-            </div>
+            <!-- Campos específicos da Evolution API -->
+            <template v-if="inboxForm.provider === 'evolution'">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">URL do Servidor</label>
+                <input
+                  v-model="inboxForm.settings.evolution.serverUrl"
+                  type="url"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+                  placeholder="Ex: https://seu-servidor-evolution.com"
+                />
+              </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700">ID do número de telefone</label>
-              <input
-                v-model="inboxForm.phoneNumberId"
-                type="text"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
-                placeholder="Por favor, insira o ID do número de telefone obtido no painel de desenvolvedores do Facebook."
-              />
-            </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Chave API</label>
+                <input
+                  v-model="inboxForm.settings.evolution.apiKey"
+                  type="password"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+                  placeholder="Chave API da Evolution"
+                />
+              </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700">ID da conta comercial</label>
-              <input
-                v-model="inboxForm.businessAccountId"
-                type="text"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
-                placeholder="Por favor, insira o ID da conta comercial obtido no painel de desenvolvedores do Facebook."
-              />
-            </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Nome da Instância</label>
+                <input
+                  v-model="inboxForm.settings.evolution.instanceName"
+                  type="text"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+                  placeholder="Ex: whatsapp1"
+                />
+              </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Chave API</label>
-              <input
-                v-model="inboxForm.apiKey"
-                type="password"
-                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
-                placeholder="Chave API"
-              />
-            </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Número do WhatsApp</label>
+                <input
+                  v-model="inboxForm.settings.evolution.phoneNumber"
+                  type="text"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+                  placeholder="Ex: 5511999999999"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700">URL do Webhook</label>
+                <input
+                  v-model="inboxForm.settings.evolution.webhookUrl"
+                  type="url"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+                  placeholder="Ex: https://seu-site.com/api/webhook/evolution"
+                />
+              </div>
+            </template>
+
+            <!-- Campos específicos do Facebook Business -->
+            <template v-else-if="inboxForm.provider === 'facebook'">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Número de telefone</label>
+                <input
+                  v-model="inboxForm.phoneNumber"
+                  type="text"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+                  placeholder="Por favor, insira o número de telefone do qual a mensagem será enviada."
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700">ID do número de telefone</label>
+                <input
+                  v-model="inboxForm.phoneNumberId"
+                  type="text"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+                  placeholder="Por favor, insira o ID do número de telefone obtido no painel de desenvolvedores do Facebook."
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700">ID da conta comercial</label>
+                <input
+                  v-model="inboxForm.businessAccountId"
+                  type="text"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+                  placeholder="Por favor, insira o ID da conta comercial obtido no painel de desenvolvedores do Facebook."
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Chave API</label>
+                <input
+                  v-model="inboxForm.apiKey"
+                  type="password"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orbit-500 focus:ring-orbit-500 sm:text-sm"
+                  placeholder="Chave API"
+                />
+              </div>
+            </template>
           </template>
         </div>
       </div>
@@ -350,6 +407,8 @@ import { gqlRequest } from '@/utils/graphql'
 import channels from '@/../config/channels.yml'
 import SecondarySidebar from '@/components/layout/SecondarySidebar.vue'
 import { PanelLeftClose, PanelLeft } from 'lucide-vue-next'
+import { ConnectorService } from '@/services'
+import { Badge } from '@/components/ui/badge'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -384,10 +443,21 @@ const inboxForm = ref({
   emailProvider: '',
   // Campos específicos do WhatsApp
   provider: '',
+  // Campos do Facebook Business
   phoneNumber: '',
   phoneNumberId: '',
   businessAccountId: '',
-  apiKey: ''
+  apiKey: '',
+  // Configurações da Evolution API
+  settings: {
+    evolution: {
+      serverUrl: '',
+      apiKey: '',
+      instanceName: '',
+      phoneNumber: '',
+      webhookUrl: ''
+    }
+  }
 })
 
 const selectedChannelConfig = computed(() => {
@@ -397,6 +467,12 @@ const selectedChannelConfig = computed(() => {
 
 const users = ref([])
 const selectedAgents = ref([])
+
+// Adicionar ref para os conectores
+const whatsappConnectors = ref([])
+
+// Adicionar ref para loading dos conectores
+const loadingConnectors = ref(false)
 
 // Função para buscar usuários
 async function fetchUsers() {
@@ -423,9 +499,33 @@ async function fetchUsers() {
   }
 }
 
+// Função para buscar conectores
+async function fetchWhatsappConnectors() {
+  loadingConnectors.value = true
+  try {
+    const connectors = await ConnectorService.listConnectors()
+    console.log('Conectores recebidos:', connectors) // Debug
+    whatsappConnectors.value = connectors.filter(
+      connector => connector.source.includes('WHATSAPP') && connector.isEnabled
+    )
+    console.log('Conectores WhatsApp filtrados:', whatsappConnectors.value) // Debug
+  } catch (error) {
+    console.error('Erro ao buscar conectores do WhatsApp:', error)
+  } finally {
+    loadingConnectors.value = false
+  }
+}
+
 // Chama a função ao montar o componente
 onMounted(async () => {
-  await fetchUsers()
+  try {
+    await Promise.all([
+      fetchUsers(),
+      fetchWhatsappConnectors()
+    ])
+  } catch (error) {
+    console.error('Erro ao carregar dados iniciais:', error)
+  }
 })
 
 const canProceed = computed(() => {
@@ -486,8 +586,44 @@ async function handleSubmit() {
   try {
     loading.value = true
     
-    // Atualiza o inboxForm com os agentes selecionados
-    inboxForm.value.agents = selectedAgents.value
+    // Prepara o input para a mutation
+    const input = {
+      name: inboxForm.value.name,
+      description: inboxForm.value.description,
+      channelType: inboxForm.value.channelType,
+      organizationId: inboxForm.value.organizationId,
+      agents: selectedAgents.value
+    }
+
+    // Adiciona configurações específicas do WhatsApp
+    if (inboxForm.value.channelType === 'WHATSAPP') {
+      
+
+      if (inboxForm.value.provider === 'evolution') {
+        const evolutionConfig = {
+          serverUrl: inboxForm.value.settings.evolution.serverUrl,
+          apiKey: inboxForm.value.settings.evolution.apiKey,
+          instanceName: inboxForm.value.settings.evolution.instanceName || inboxForm.value.settings.evolution.phoneNumber,
+          phoneNumber: inboxForm.value.settings.evolution.phoneNumber,
+          webhookUrl: inboxForm.value.settings.evolution.webhookUrl
+        }
+
+        // Converte para JSON string antes de enviar
+        input.settings = JSON.stringify({
+          evolution: evolutionConfig
+        })
+
+      } else if (inboxForm.value.provider === 'facebook') {
+        input.settings = {
+          facebook: {
+            phoneNumber: inboxForm.value.phoneNumber,
+            phoneNumberId: inboxForm.value.phoneNumberId,
+            businessAccountId: inboxForm.value.businessAccountId,
+            apiKey: inboxForm.value.apiKey
+          }
+        }
+      }
+    }
 
     const mutation = `
       mutation CreateInbox($input: InboxInput!) {
@@ -497,6 +633,7 @@ async function handleSubmit() {
           description
           channelType
           isEnabled
+          settings
           teams {
             id
             team {
@@ -507,10 +644,7 @@ async function handleSubmit() {
       }
     `
 
-    await gqlRequest(mutation, {
-      input: inboxForm.value
-    })
-
+    await gqlRequest(mutation, { input })
     router.push('/settings/inbox')
   } catch (error) {
     console.error('Erro ao criar caixa de entrada:', error)
@@ -617,6 +751,28 @@ onUnmounted(() => {
 function handleClickOutside(e) {
   if (agentsDropdownRef.value && !agentsDropdownRef.value.contains(e.target)) {
     showAgentsDropdown.value = false
+  }
+}
+
+// Função para selecionar um conector
+function selectConnector(connector) {
+  console.log('Conector selecionado:', connector) // Debug
+  inboxForm.value.provider = connector.id
+  if (connector.config) {
+    try {
+      const config = typeof connector.config === 'string' 
+        ? JSON.parse(connector.config) 
+        : connector.config
+      
+      console.log('Configuração do conector:', config) // Debug
+      
+      inboxForm.value.phoneNumber = config.phoneNumber || ''
+      inboxForm.value.phoneNumberId = config.phoneNumberId || ''
+      inboxForm.value.businessAccountId = config.businessAccountId || ''
+      inboxForm.value.apiKey = config.apiKey || ''
+    } catch (error) {
+      console.error('Erro ao parsear configuração do conector:', error)
+    }
   }
 }
 </script> 
