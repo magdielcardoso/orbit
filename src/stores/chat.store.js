@@ -60,6 +60,30 @@ export const useChatStore = defineStore('chat', {
       }
     },
 
+    async sendMessage(conversationId, content) {
+      try {
+        this.loading = true
+        const message = await ChatService.sendMessage(conversationId, content)
+        
+        // Atualiza a conversa com a nova mensagem
+        const conversation = this.conversations.find(c => c.id === conversationId)
+        if (conversation) {
+          if (!conversation.messages) {
+            conversation.messages = []
+          }
+          conversation.messages.push(message)
+          conversation.updatedAt = new Date().toISOString()
+        }
+        
+        return message
+      } catch (error) {
+        this.error = error.message
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
     async createConversation(input) {
       try {
         const response = await ChatService.createConversation(input)

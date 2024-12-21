@@ -1,7 +1,6 @@
 import bcrypt from 'bcrypt'
 import { logActivity } from '../utils/activity.js'
 import jwt from 'jsonwebtoken'
-import { loggerService } from './logger.service.js'
 import UserModel from '../models/user.model.js'
 
 export default class AuthService {
@@ -11,7 +10,7 @@ export default class AuthService {
 
   /**
    * Registra um novo usuário.
-   * 
+   *
    * @param {object}
    * @param {string} email
    * @param {string} password.
@@ -43,10 +42,10 @@ export default class AuthService {
           id: user.id,
           email: user.email,
           role: user.role?.name,
-          permissions: user.role?.permissions.map(p => p.permission.name)
+          permissions: user.role?.permissions.map(p => p.permission.name),
         },
         process.env.JWT_SECRET,
-        { expiresIn: '7d' }
+        { expiresIn: '7d' },
       )
 
       return {
@@ -55,9 +54,9 @@ export default class AuthService {
           ...user,
           role: {
             ...user.role,
-            permissions: user.role?.permissions.map(p => p.permission)
-          }
-        }
+            permissions: user.role?.permissions.map(p => p.permission),
+          },
+        },
       }
     } catch (error) {
       console.error('Erro no registro:', error)
@@ -67,7 +66,7 @@ export default class AuthService {
 
   /**
    * Registra um superadministrador.
-   * 
+   *
    * @param {object} args
    * @param {object} app
    * @returns {object}
@@ -88,10 +87,10 @@ export default class AuthService {
 
       const hashedPassword = await bcrypt.hash(args.input.password, 10)
       const user = await UserModel.createUser(
-        args.input.name, 
-        args.input.email, 
-        hashedPassword, 
-        superadminRole
+        args.input.name,
+        args.input.email,
+        hashedPassword,
+        superadminRole,
       )
 
       const systemConfig = await UserModel.createSystemConfig(args.input.systemConfig)
@@ -105,15 +104,15 @@ export default class AuthService {
         userId: user.id,
         metadata: {
           systemName: args.input.systemConfig.systemName,
-          timezone: args.input.systemConfig.timezone
-        }
+          timezone: args.input.systemConfig.timezone,
+        },
       })
 
       const token = await app.jwt.sign({
         id: user.id,
         email: user.email,
         role: user.role?.name,
-        permissions: user.role?.permissions.map(p => p.permission.name)
+        permissions: user.role?.permissions.map(p => p.permission.name),
       })
 
       return {
@@ -125,11 +124,11 @@ export default class AuthService {
           role: {
             name: user.role.name,
             permissions: user.role.permissions.map(p => ({
-              name: p.permission.name
-            }))
-          }
+              name: p.permission.name,
+            })),
+          },
         },
-        systemConfig
+        systemConfig,
       }
     } catch (error) {
       console.error('Erro ao registrar superadmin:', error)
@@ -139,7 +138,7 @@ export default class AuthService {
 
   /**
    * Realiza o login de um usuário.
-   * 
+   *
    * @param {object}
    * @param {string} email
    * @param {string} password
@@ -154,12 +153,12 @@ export default class AuthService {
             include: {
               permissions: {
                 include: {
-                  permission: true
-                }
-              }
-            }
-          }
-        }
+                  permission: true,
+                },
+              },
+            },
+          },
+        },
       })
 
       if (!user) {
@@ -172,7 +171,7 @@ export default class AuthService {
       }
 
       const permissions = user.role.permissions.map(rp => ({
-        name: rp.permission.name
+        name: rp.permission.name,
       }))
 
       return {
@@ -181,10 +180,10 @@ export default class AuthService {
             id: user.id,
             email: user.email,
             role: user.role.name,
-            permissions: permissions.map(p => p.name)
+            permissions: permissions.map(p => p.name),
           },
           process.env.JWT_SECRET,
-          { expiresIn: '7d' }
+          { expiresIn: '7d' },
         ),
         user: {
           id: user.id,
@@ -192,9 +191,9 @@ export default class AuthService {
           name: user.name,
           role: {
             name: user.role.name,
-            permissions
-          }
-        }
+            permissions,
+          },
+        },
       }
     } catch (error) {
       console.error('Erro no login:', error)
@@ -202,7 +201,7 @@ export default class AuthService {
     }
   }
 
-  async logout(user) {
+  async logout() {
     // Implementação do logout (se necessário)
     return true
   }

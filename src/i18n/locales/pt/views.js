@@ -136,6 +136,13 @@ export default {
         sort: 'Ordenar',
         newContact: 'Novo Contato'
       }
+    },
+    quickContacts: 'Contatos Rápidos',
+    searchPlaceholder: 'Buscar contato...',
+    actions: {
+      meeting: 'Reunião',
+      schedule: 'Agendar',
+      chat: 'Chat'
     }
   },
   favorites: {
@@ -169,20 +176,82 @@ export default {
         general: 'Geral',
         notifications: 'Notificações'
       },
+      preferences: {
+        title: 'Preferências',
+        general: {
+          title: 'Configurações Gerais'
+        },
+        profile: {
+          title: 'Configurações de Perfil'
+        }
+      },
+      notifications: {
+        title: 'Notificações',
+        preferences: {
+          title: 'Preferências de Notificação'
+        },
+        description: 'Gerencie como e quando você recebe notificações'
+      },
       security: {
         title: 'Segurança',
-        settings: 'Configurações de Segurança',
-        apiTokens: 'Tokens de API'
+        settings: {
+          title: 'Configurações de Segurança'
+        },
+        apiTokens: {
+          title: 'Tokens de API'
+        }
       },
       communication: {
         title: 'Comunicação',
         signature: 'Assinatura de Mensagem',
         email: 'Configurações de E-mail'
       },
-      preferences: {
-        profile: {
-          title: 'Configurações de Perfil'
-        }
+      inbox: {
+        title: 'Caixas de Entrada',
+        description: 'Gerencie seus canais de comunicação com clientes',
+        inboxes: 'Caixas de Entrada',
+        addInbox: 'Adicionar Caixa',
+        noInboxes: 'Nenhuma caixa de entrada encontrada',
+        addInboxHelp: 'Adicione sua primeira caixa de entrada para começar a se comunicar com seus clientes',
+        channelTypes: {
+          WEBCHAT: 'Chat do Site',
+          WHATSAPP: 'WhatsApp',
+          TELEGRAM: 'Telegram',
+          EMAIL: 'E-mail',
+          API: 'API'
+        },
+        form: {
+          name: 'Nome',
+          namePlaceholder: 'Ex: Chat do Site',
+          description: 'Descrição',
+          descriptionPlaceholder: 'Uma breve descrição desta caixa de entrada',
+          channelType: 'Tipo de Canal',
+          isEnabled: 'Ativo',
+          teams: 'Times'
+        },
+        table: {
+          name: 'Nome',
+          channelType: 'Tipo de Canal',
+          status: 'Status',
+          teams: 'Times',
+          actions: 'Ações'
+        },
+        status: {
+          active: 'Ativo',
+          inactive: 'Inativo'
+        },
+        actions: {
+          edit: 'Editar',
+          delete: 'Excluir'
+        },
+        modal: {
+          editTitle: 'Editar Caixa de Entrada',
+          newTitle: 'Nova Caixa de Entrada',
+          cancel: 'Cancelar',
+          save: 'Salvar',
+          saving: 'Salvando...'
+        },
+        description: 'Um canal é o modo de comunicação que seu cliente escolhe para interagir com você'
       }
     }
   },

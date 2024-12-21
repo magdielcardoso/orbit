@@ -135,6 +135,13 @@ export default {
         sort: 'Sort',
         newContact: 'New Contact'
       }
+    },
+    quickContacts: 'Quick Contacts',
+    searchPlaceholder: 'Search contact...',
+    actions: {
+      meeting: 'Meeting',
+      schedule: 'Schedule',
+      chat: 'Chat'
     }
   },
   favorites: {

@@ -42,6 +42,14 @@ export const dashboardRoutes = {
       meta: {
         requiresAuth: true
       }
+    },
+    {
+      path: 'settings/inbox/new',
+      name: 'inbox-setup',
+      component: () => import('@/views/user/InboxSetup.vue'),
+      meta: {
+        requiresAuth: true
+      }
     }
   ]
 } 

@@ -1,11 +1,13 @@
-# OrbitChat.io 💬
-
 <p align="center">
-  <img src="public/logo.png" alt="OrbitChat.io Logo" width="200"/>
+  <img src="public/orbit_light.svg" alt="OrbitChat.io Logo" width="512"/>
 </p>
 
 <p align="center">
   Plataforma open source de atendimento omnichannel para empresas modernas
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/magdielcardoso/orbitchat.io/refs/heads/develop/public/assets/github/dashboard.png" alt="OrbitChat.io Superadmin Panel" width="1280"/>
 </p>
 
 ## 🚀 Sobre
@@ -24,6 +26,10 @@ OrbitChat.io é uma plataforma de atendimento ao cliente omnichannel de código 
 - 📝 Base de conhecimento integrada
 - 🔒 Auto-hospedável e seguro
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/magdielcardoso/orbitchat.io/refs/heads/develop/public/assets/github/login.png" alt="OrbitChat.io Login" width="1280"/>
+</p>
+
 ## 🛠️ Tecnologias
 
 - Frontend: Vue.js 3 + Vite
@@ -33,4 +39,3 @@ OrbitChat.io é uma plataforma de atendimento ao cliente omnichannel de código 
 - Realtime: Socket.io
 - UI: TailwindCSS
 - Internacionalização: vue-i18n
-

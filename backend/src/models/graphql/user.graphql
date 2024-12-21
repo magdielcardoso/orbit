@@ -69,12 +69,6 @@ type Mutation {
     organizationHashId: String
   ): AuthPayload!
   login(email: String!, password: String!): AuthPayload!
-  registerSuperAdmin(
-    name: String!
-    email: String!
-    password: String!
-    systemConfig: SystemConfigInput!
-  ): SuperAdminRegistrationResponse!
   createUser(
     email: String!
     password: String!

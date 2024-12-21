@@ -1,25 +1,25 @@
-import { Kind } from 'graphql';
-import AuthService from '../../services/auth.service.js';
+import { Kind } from 'graphql'
+import AuthService from '../../services/auth.service.js'
 
 export const resolvers = {
   JSON: {
     __parseValue(value) {
-      return JSON.parse(value);
+      return JSON.parse(value)
     },
     __serialize(value) {
-      return JSON.stringify(value);
+      return JSON.stringify(value)
     },
     __parseLiteral(ast) {
       switch (ast.kind) {
         case Kind.STRING:
-          return JSON.parse(ast.value);
+          return JSON.parse(ast.value)
         case Kind.OBJECT:
           return ast.fields.reduce((acc, field) => {
-            acc[field.name.value] = this.__parseLiteral(field.value);
-            return acc;
-          }, {});
+            acc[field.name.value] = this.__parseLiteral(field.value)
+            return acc
+          }, {})
         default:
-          return null;
+          return null
       }
     },
   },
@@ -27,8 +27,8 @@ export const resolvers = {
   Query: {},
 
   Mutation: {
-    registerSuperAdmin: async (_, args, { app }) => {
-      return AuthService.registerSuperAdmin(args, app);
+    registerSuperAdmin: async (_, { input }, { app }) => {
+      return AuthService.registerSuperAdmin(input, app)
     },
     login: async (_, { email, password }, { app }) => {
       try {
@@ -45,15 +45,15 @@ export const resolvers = {
         await app.auth.logout(user)
         return {
           success: true,
-          message: 'Logout realizado com sucesso'
+          message: 'Logout realizado com sucesso',
         }
       } catch (error) {
         console.error('Erro no logout:', error)
         return {
           success: false,
-          message: error.message
+          message: error.message,
         }
       }
     },
   },
-};
+}
