@@ -34,6 +34,19 @@ export default class EvolutionHandler {
         })
       }
 
+      if (body.event === 'messages.upsert') {
+
+        console.log('Emitindo evento messages.upsert:', {
+          instance: body.instance,
+          message: body.data
+        })
+
+        io.emit('whatsapp:message', {
+          instance: body.instance,
+          message: body.data.message
+        })
+      }
+
       return reply.code(200).send({ status: 'OK' })
     } catch (error) {
       console.error('Erro no webhook Evolution:', error)

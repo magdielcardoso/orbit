@@ -45,6 +45,9 @@ export default {
         title: 'Equipes',
         myTeam: 'Minha equipe',
         assignedToMe: 'Atribuídas a mim'
+      },
+      inboxes: {
+        title: 'Caixas de Entrada'
       }
     }
   },
@@ -86,7 +89,7 @@ export default {
       editDescription: 'Edite as informações do contato abaixo.'
     },
     confirmDelete: 'Excluir {name}?',
-    confirmDeleteDescription: 'Esta ação não pode ser desfeita.',
+    confirmDeleteDescription: 'Esta aç��o não pode ser desfeita.',
     createSuccess: 'Contato criado com sucesso!',
     updateSuccess: 'Contato atualizado com sucesso!',
     deleteSuccess: 'Contato excluído com sucesso!',

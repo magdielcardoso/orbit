@@ -116,7 +116,7 @@ const connectionStatus = ref('Aguardando conexão...')
 const connectionStatusText = ref('Desconectado')
 const statusColorClass = ref('bg-gray-400')
 
-// Conecta ao WebSocket com o namespace do WhatsApp
+// Conecta ao WebSocket
 const ws = useWebSocket()
 
 // Monitora eventos do WebSocket

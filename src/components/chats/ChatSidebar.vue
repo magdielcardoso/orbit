@@ -26,23 +26,28 @@ const props = defineProps({
   showSecondarySidebar: {
     type: Boolean,
     required: true
+  },
+  selectedInbox: {
+    type: String,
+    required: false
   }
 })
 
 const emit = defineEmits(['select', 'update:activeTab', 'toggle-sidebar'])
 
-// Computed para filtrar conversas baseado na tab ativa
+// Computed para filtrar conversas baseado na tab ativa e inbox selecionado
 const filteredConversations = computed(() => {
   const conversations = chatStore.conversations || []
-  
-  switch (props.activeTab) {
-    case 'mine':
-      return conversations.filter(c => c.assignee?.id === authStore.user?.id)
-    case 'unassigned':
-      return conversations.filter(c => !c.assignee)
-    default:
-      return conversations
-  }
+  const inboxId = props.selectedInbox
+
+  return conversations.filter(c => {
+    const matchesTab = props.activeTab === 'mine' ? c.assignee?.id === authStore.user?.id
+                      : props.activeTab === 'unassigned' ? !c.assignee
+                      : true
+    const matchesInbox = inboxId ? c.inboxId === inboxId : true
+
+    return matchesTab && matchesInbox
+  })
 })
 
 // Handler para seleção de chat

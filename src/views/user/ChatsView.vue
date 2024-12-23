@@ -7,15 +7,58 @@ import SecondarySidebar from '@/components/layout/SecondarySidebar.vue'
 import ChatSidebar from '@/components/chats/ChatSidebar.vue'
 import ChatView from '@/components/chats/ChatView.vue'
 import ChatEmptyState from '@/components/chats/ChatEmptyState.vue'
+import { useWebSocket } from '@/composables/useWebSocket'
+import { gqlRequest } from '@/utils/graphql'
+
 
 const { t } = useI18n()
 const chatStore = useChatStore()
 const authStore = useAuthStore()
 
+// Conecta ao WebSocket
+const ws = useWebSocket()
+
+ws.onEvent('whatsapp:message', (data) => {
+  console.log('Recebido evento whatsapp:message:', data)
+})
+
 // Estado
 const activeTab = ref('all')
 const selectedChat = ref(null)
 const showSecondarySidebar = ref(true)
+
+// Adicione este novo ref para armazenar as inboxes
+const inboxes = ref([])
+const selectedInbox = ref(null)
+
+// Adicione esta função para buscar as inboxes
+async function fetchInboxes() {
+  try {
+    if (!authStore.currentOrganization?.id) return
+    
+    const query = `
+      query GetOrganization($id: ID!) {
+        organization(id: $id) {
+          id
+          inboxes {
+            id
+            name
+            isEnabled
+            channelType
+          }
+        }
+      }
+    `
+
+    const response = await gqlRequest(query, {
+      id: authStore.currentOrganization.id
+    })
+
+    inboxes.value = response.organization?.inboxes || []
+  } catch (error) {
+    console.error('Erro ao carregar caixas de entrada:', error)
+  }
+}
 
 // Computed para contagens
 const counts = computed(() => {
@@ -93,6 +136,23 @@ const sidebarSections = computed(() => [
         icon: 'UserCheck'
       }
     ]
+  },
+  {
+    id: 'chat-inboxes',
+    label: t('chats.sidebar.inboxes.title'),
+    items: inboxes.value.map(inbox => ({
+      id: `inbox-${inbox.id}`,
+      label: inbox.name,
+      icon: getInboxIcon(inbox.channelType),
+      onClick: () => handleInboxSelect(inbox.id),
+      active: selectedInbox.value === inbox.id,
+      navigate: false,
+      to: null,
+      badge: {
+        type: selectedInbox.value === inbox.id ? 'enabled' : 'disabled',
+        label: selectedInbox.value === inbox.id ? 'ativo' : 'inativo'
+      }
+    }))
   }
 ])
 
@@ -109,12 +169,15 @@ const toggleSecondarySidebar = () => {
 onMounted(async () => {
   if (authStore.currentOrganization?.id) {
     try {
-      await chatStore.fetchConversations(
-        authStore.currentOrganization.id,
-        getFiltersForTab(activeTab.value)
-      )
+      await Promise.all([
+        chatStore.fetchConversations(
+          authStore.currentOrganization.id,
+          getFiltersForTab(activeTab.value)
+        ),
+        fetchInboxes()
+      ])
     } catch (error) {
-      console.error('Erro ao carregar conversas:', error)
+      console.error('Erro ao carregar dados:', error)
     }
   }
 })
@@ -135,13 +198,74 @@ watch(activeTab, async (newTab) => {
 
 // Função auxiliar para obter filtros baseado na tab
 function getFiltersForTab(tab) {
-  const filters = {
+  const baseFilters = {
     mine: { assigneeId: authStore.user?.id },
     unassigned: { assigneeId: null },
     all: {}
   }
-  return filters[tab] || {}
+
+  // Adiciona o filtro de inbox se houver uma selecionada
+  if (selectedInbox.value) {
+    return {
+      ...baseFilters[tab],
+      inboxId: selectedInbox.value
+    }
+  }
+
+  return baseFilters[tab] || {}
 }
+
+// Adicione esta função auxiliar para mapear os ícones
+function getInboxIcon(channelType) {
+  const iconMap = {
+    WEBCHAT: 'MessageSquare',
+    WHATSAPP: 'MessageCircle',
+    TELEGRAM: 'Send',
+    EMAIL: 'Mail',
+    API: 'Terminal'
+  }
+  return iconMap[channelType] || 'Inbox'
+}
+
+// Modifique a função handleInboxSelect
+async function handleInboxSelect(inboxId) {
+  try {
+    if (selectedInbox.value === inboxId) {
+      selectedInbox.value = null
+    } else {
+      selectedInbox.value = inboxId
+    }
+    
+    // Atualiza as conversas com o novo filtro
+    await chatStore.fetchConversations(
+      authStore.currentOrganization.id,
+      getFiltersForTab(activeTab.value)
+    )
+  } catch (error) {
+    console.error('Erro ao filtrar conversas por inbox:', error)
+  }
+}
+
+// Adicione um watch para atualizar as conversas quando mudar a seleção da inbox
+watch(selectedInbox, async () => {
+  if (!authStore.currentOrganization?.id) return
+  
+  try {
+    await chatStore.fetchConversations(
+      authStore.currentOrganization.id,
+      getFiltersForTab(activeTab.value)
+    )
+  } catch (error) {
+    console.error('Erro ao atualizar conversas:', error)
+  }
+})
+
+// Adicione um watch para limpar a seleção quando a sidebar for fechada
+watch(showSecondarySidebar, (newValue) => {
+  if (!newValue) {
+    selectedInbox.value = null
+  }
+})
 </script>
 
 <template>

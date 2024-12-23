@@ -171,6 +171,26 @@ const isItemActive = (itemId) => {
 const navigate = (itemId) => {
   router.push({ name: itemId })
 }
+
+function handleItemClick(item) {
+  // Se o item tiver um handler onClick, use-o e não tente navegar
+  if (item.onClick) {
+    item.onClick()
+    return
+  }
+
+  // Se o item tiver navigate: false, não tente navegar
+  if (item.navigate === false) {
+    return
+  }
+
+  // Caso contrário, continue com a navegação normal
+  if (item.to) {
+    router.push(item.to)
+  } else if (item.name && !item.id.startsWith('inbox-')) {
+    navigate(item)
+  }
+}
 </script>
 
 <template>
@@ -204,16 +224,30 @@ const navigate = (itemId) => {
               <template v-for="item in section.items" :key="item.id">
                 <!-- Regular Item -->
                 <button
-                  @click="navigate(item.id)"
+                  @click="handleItemClick(item)"
                   :class="[
-                    'flex w-full items-start gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
-                    isItemActive(item.id)
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-base-content hover:bg-base-200'
+                    'flex w-full items-start gap-2 rounded-lg px-3 py-2 text-sm transition-colors relative',
+                    {
+                      'bg-primary/10 text-primary': item.active,
+                      'text-base-content hover:bg-base-200': !item.active
+                    }
                   ]"
                 >
                   <component :is="item.icon" class="h-4 w-4 shrink-0 mt-0.5" />
                   <span class="leading-tight text-left">{{ item.label }}</span>
+                  
+                  <span 
+                    v-if="item.badge" 
+                    :class="[
+                      'ml-auto text-xs px-1.5 py-0.5 rounded',
+                      {
+                        'bg-success/20 text-success': item.badge.type === 'enabled',
+                        'bg-base-300 text-base-content/60': item.badge.type === 'disabled'
+                      }
+                    ]"
+                  >
+                    {{ item.badge.label }}
+                  </span>
                 </button>
               </template>
             </div>

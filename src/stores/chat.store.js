@@ -7,6 +7,7 @@ export const useChatStore = defineStore('chat', {
     currentConversation: null,
     loading: false,
     error: null,
+    selectedInbox: null,
     filters: {
       status: 'all',
       assignee: 'all',
@@ -46,10 +47,10 @@ export const useChatStore = defineStore('chat', {
   },
 
   actions: {
-    async fetchConversations(organizationId) {
+    async fetchConversations(organizationId, filters) {
       try {
         this.loading = true
-        const conversations = await ChatService.getConversations(organizationId)
+        const conversations = await ChatService.getConversations(organizationId, filters)
         this.conversations = conversations || []
       } catch (error) {
         this.error = error.message
