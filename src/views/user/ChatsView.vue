@@ -20,6 +20,17 @@ const ws = useWebSocket()
 
 ws.onEvent('whatsapp:message', (data) => {
   console.log('Recebido evento whatsapp:message:', data)
+  
+  try {
+    // Cria uma nova conversa a partir da mensagem
+    const newConversation = chatStore.createConversationFromWhatsApp(data)
+    
+    // Opcionalmente, seleciona a nova conversa
+    selectedChat.value = newConversation
+    chatStore.setCurrentConversation(newConversation)
+  } catch (error) {
+    console.error('Erro ao processar mensagem do WhatsApp:', error)
+  }
 })
 
 // Estado

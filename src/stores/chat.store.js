@@ -135,6 +135,36 @@ export const useChatStore = defineStore('chat', {
       if (conversation) {
         conversation.assigneeId = assigneeId
       }
+    },
+
+    // Novo método para criar conversa a partir de mensagem do WhatsApp
+    createConversationFromWhatsApp(data) {
+      try {
+        // Cria uma nova conversa com os dados básicos
+        const newConversation = {
+          id: `temp-${Date.now()}`, // ID temporário até sincronizar com backend
+          status: 'PENDING',
+          messages: [{
+            id: `temp-msg-${Date.now()}`,
+            content: data.message,
+            createdAt: new Date().toISOString(),
+            isFromContact: true
+          }],
+          contact: {
+            name: data.instance, // Usa o nome da instância temporariamente
+          },
+          updatedAt: new Date().toISOString(),
+          channelType: 'WHATSAPP'
+        }
+
+        // Adiciona a nova conversa no início do array
+        this.conversations.unshift(newConversation)
+        
+        return newConversation
+      } catch (error) {
+        this.error = error.message
+        throw error
+      }
     }
   }
 }) 
