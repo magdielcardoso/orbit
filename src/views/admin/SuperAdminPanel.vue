@@ -160,10 +160,10 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { Users, Shield, Settings, User, Clock } from 'lucide-vue-next';
-import { useAuthStore } from '../stores/auth.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useRouter } from 'vue-router';
-import { gqlRequest } from '../utils/graphql';
-import { checkSystemStatus } from '../utils/system';
+import { gqlRequest } from '@/utils/graphql';
+import { checkSystemStatus } from '@/utils/system';
 import SystemLogs from '@/components/SystemLogs.vue';
 
 const router = useRouter();

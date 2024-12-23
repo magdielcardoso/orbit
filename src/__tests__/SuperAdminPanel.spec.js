@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router'
 import SuperAdminPanel from '../SuperAdminPanel.vue'
-import { useAuthStore } from '../../stores/auth.store'
+import { useAuthStore } from '../stores/auth.store'
 import { createPinia, setActivePinia } from 'pinia'
 
 // Mock do módulo de i18n
@@ -72,8 +72,8 @@ describe('SuperAdminPanel', () => {
 
   beforeEach(async () => {
     // Importa as funções mockadas
-    const graphqlModule = await import('../../utils/graphql')
-    const systemModule = await import('../../utils/system')
+    const graphqlModule = await import('../utils/graphql')
+    const systemModule = await import('../utils/system')
     gqlRequest = graphqlModule.gqlRequest
     checkSystemStatus = systemModule.checkSystemStatus
 

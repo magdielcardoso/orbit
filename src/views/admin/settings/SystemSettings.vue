@@ -308,14 +308,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useAuthStore } from '../../stores/auth.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useRouter } from 'vue-router';
 import { 
   Settings, MessageSquare, Plug, Bell, Shield, 
   HardDrive, ChevronRight, Clock, Database, Save,
   Power, Activity, Palette
 } from 'lucide-vue-next';
-import { gqlRequest } from '../../utils/graphql';
+import { gqlRequest } from '@/utils/graphql';
 import SystemLogs from '@/components/SystemLogs.vue';
 
 const router = useRouter();

@@ -1,4 +1,3 @@
-import { createApp } from 'vue'
 import { setupInterceptors } from '@/utils/interceptors'
 import { setupWebSocket } from '@/utils/websocket'
 

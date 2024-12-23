@@ -7,7 +7,12 @@ export const adminRoutes = {
     {
       path: '',
       name: 'admin',
-      component: () => import('@/views/SuperAdminPanel.vue')
+      component: () => import('@/views/admin/SuperAdminPanel.vue')
+    },
+    {
+      path: 'organizations',
+      name: 'organizations-management',
+      component: () => import('@/views/admin/OrganizationsManagement.vue')
     },
     {
       path: 'users',
@@ -34,7 +39,7 @@ export const adminRoutes = {
       children: [
         {
           path: '',
-          component: () => import('@/views/admin/SystemSettings.vue'),
+          component: () => import('@/views/admin/settings/SystemSettings.vue'),
           meta: { requiresAuth: true, requiresAdmin: true }
         },
         {

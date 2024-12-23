@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createRouter, createWebHistory } from 'vue-router'
-import LoginView from '../LoginView.vue'
-import { useAuthStore } from '../../stores/auth.store'
+import RegisterView from '../RegisterView.vue'
+import { useAuthStore } from '../stores/auth.store'
 import { createPinia, setActivePinia } from 'pinia'
 
 // Mock do módulo de i18n
@@ -26,7 +26,7 @@ vi.mock('../../utils/string', () => ({
     .replace(/\s+/g, '-') // Substitui espaços por hífens
 }))
 
-describe('LoginView', () => {
+describe('RegisterView', () => {
   let wrapper
   let router
   let pinia
@@ -42,9 +42,9 @@ describe('LoginView', () => {
           component: { template: '<div>Dashboard</div>' }
         },
         { 
-          path: '/register',
-          name: 'register',
-          component: { template: '<div>Register</div>' }
+          path: '/login',
+          name: 'login',
+          component: { template: '<div>Login</div>' }
         },
         {
           path: '/',
@@ -59,7 +59,7 @@ describe('LoginView', () => {
     setActivePinia(pinia)
 
     // Monta o componente com as dependências necessárias
-    wrapper = mount(LoginView, {
+    wrapper = mount(RegisterView, {
       global: {
         plugins: [router, pinia],
         stubs: {
@@ -74,15 +74,21 @@ describe('LoginView', () => {
 
   it('deve renderizar corretamente', () => {
     expect(wrapper.find('form').exists()).toBe(true)
+    expect(wrapper.find('#name').exists()).toBe(true)
     expect(wrapper.find('#email').exists()).toBe(true)
     expect(wrapper.find('#password').exists()).toBe(true)
-    expect(wrapper.find('#remember-me').exists()).toBe(true)
+  })
+
+  it('deve atualizar o v-model do nome quando digitado', async () => {
+    const nameInput = wrapper.find('#name')
+    await nameInput.setValue('João Silva')
+    expect(wrapper.vm.form.name).toBe('João Silva')
   })
 
   it('deve atualizar o v-model do email quando digitado', async () => {
     const emailInput = wrapper.find('#email')
-    await emailInput.setValue('teste@exemplo.com')
-    expect(wrapper.vm.form.email).toBe('teste@exemplo.com')
+    await emailInput.setValue('joao@exemplo.com')
+    expect(wrapper.vm.form.email).toBe('joao@exemplo.com')
   })
 
   it('deve atualizar o v-model da senha quando digitada', async () => {
@@ -100,15 +106,16 @@ describe('LoginView', () => {
     expect(passwordInput.attributes('type')).toBe('text')
   })
 
-  it('deve chamar handleLogin quando o formulário é submetido', async () => {
+  it('deve chamar handleRegister quando o formulário é submetido', async () => {
     // Mock da resposta do GraphQL
-    const mockLoginResponse = {
-      login: {
+    const mockRegisterResponse = {
+      register: {
         token: 'fake-token',
         user: {
           id: '1',
-          name: 'Test User',
-          email: 'teste@exemplo.com',
+          name: 'João Silva',
+          email: 'joao@exemplo.com',
+          active: true,
           role: {
             name: 'user',
             permissions: []
@@ -118,12 +125,13 @@ describe('LoginView', () => {
     }
 
     // Configura os valores do formulário
-    await wrapper.find('#email').setValue('teste@exemplo.com')
+    await wrapper.find('#name').setValue('João Silva')
+    await wrapper.find('#email').setValue('joao@exemplo.com')
     await wrapper.find('#password').setValue('senha123')
 
     // Mock da função gqlRequest
-    const { gqlRequest } = await import('../../utils/graphql')
-    vi.mocked(gqlRequest).mockResolvedValueOnce(mockLoginResponse)
+    const { gqlRequest } = await import('../utils/graphql')
+    vi.mocked(gqlRequest).mockResolvedValueOnce(mockRegisterResponse)
 
     // Submete o formulário
     await wrapper.find('form').trigger('submit')
@@ -132,22 +140,67 @@ describe('LoginView', () => {
     expect(gqlRequest).toHaveBeenCalledWith(
       expect.any(String),
       {
-        email: 'teste@exemplo.com',
+        name: 'João Silva',
+        email: 'joao@exemplo.com',
         password: 'senha123'
       }
     )
   })
 
-  it('deve exibir mensagem de erro quando o login falha', async () => {
-    const errorMessage = 'Credenciais inválidas'
-    const { gqlRequest } = await import('../../utils/graphql')
+  it('deve exibir mensagem de erro quando o registro falha', async () => {
+    const errorMessage = 'Email já cadastrado'
+    const { gqlRequest } = await import('../utils/graphql')
     vi.mocked(gqlRequest).mockRejectedValueOnce(new Error(errorMessage))
 
-    await wrapper.find('#email').setValue('teste@exemplo.com')
-    await wrapper.find('#password').setValue('senha-errada')
+    await wrapper.find('#name').setValue('João Silva')
+    await wrapper.find('#email').setValue('joao@exemplo.com')
+    await wrapper.find('#password').setValue('senha123')
     await wrapper.find('form').trigger('submit')
 
     await wrapper.vm.$nextTick()
     expect(wrapper.text()).toContain(errorMessage)
+  })
+
+  it('deve redirecionar para o dashboard após registro bem-sucedido', async () => {
+    const mockRegisterResponse = {
+      register: {
+        token: 'fake-token',
+        user: {
+          id: '1',
+          name: 'João Silva',
+          email: 'joao@exemplo.com',
+          active: true,
+          role: {
+            name: 'user',
+            permissions: []
+          }
+        }
+      }
+    }
+
+    const { gqlRequest } = await import('../utils/graphql')
+    vi.mocked(gqlRequest).mockResolvedValueOnce(mockRegisterResponse)
+
+    await wrapper.find('#name').setValue('João Silva')
+    await wrapper.find('#email').setValue('joao@exemplo.com')
+    await wrapper.find('#password').setValue('senha123')
+    await wrapper.find('form').trigger('submit')
+
+    // Verifica se o store foi atualizado
+    const authStore = useAuthStore()
+    expect(authStore.token).toBe('fake-token')
+    expect(authStore.user).toEqual(mockRegisterResponse.register.user)
+
+    // Aguarda a navegação ser concluída
+    await router.isReady()
+    
+    // Verifica se houve redirecionamento para o dashboard
+    expect(router.currentRoute.value.path).toBe('/dashboard/joao-silva')
+  })
+
+  it('deve ter um link para a página de login', () => {
+    const loginLink = wrapper.find('a[href="/login"]')
+    expect(loginLink.exists()).toBe(true)
+    expect(loginLink.text()).toBe('auth.register.hasAccount')
   })
 })
