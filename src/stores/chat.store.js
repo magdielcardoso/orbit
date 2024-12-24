@@ -138,30 +138,39 @@ export const useChatStore = defineStore('chat', {
     },
 
     // Método para criar conversa a partir de mensagem do WhatsApp
-    createConversationFromWhatsApp(data) {
+    createConversationFromWhatsApp(socketData) {
       try {
-        const whatsappData = data.data.data
-        const isGroup = whatsappData.remoteJid?.includes('@g.us')
+        // Debug inicial
+        console.log('Dados recebidos socket:', socketData)
 
+        const data = socketData.data // Dados do webhook
+        
         // Extrai os dados relevantes da mensagem
         const messageData = {
-          id: whatsappData.id,
-          remoteJid: whatsappData.remoteJid,
-          fromMe: whatsappData.fromMe,
-          sender: whatsappData.sender,
-          pushName: whatsappData.pushName,
-          status: whatsappData.status,
-          content: whatsappData.message?.conversation || '',
-          timestamp: new Date().toISOString(),
-          messageType: whatsappData.messageType,
-          instanceId: whatsappData.instanceId,
-          participant: whatsappData.participant // Importante para grupos
+          id: data.data?.key?.id,
+          remoteJid: data.data?.key?.remoteJid,
+          fromMe: data.data?.key?.fromMe,
+          sender: data.sender,
+          pushName: data.data?.pushName,
+          status: data.data?.status,
+          content: data.data?.message?.conversation || '',
+          timestamp: data.date_time || new Date().toISOString(),
+          messageType: data.data?.messageType,
+          instanceId: data.data?.instanceId,
+          participant: data.data?.participant
         }
 
+        // Verifica se temos um remoteJid válido
         if (!messageData.remoteJid) {
-          console.error('RemoteJid não encontrado:', data)
+          console.error('RemoteJid não encontrado. Dados:', {
+            socketData,
+            messageData,
+            dataKey: data.data?.key
+          })
           throw new Error('RemoteJid não encontrado na mensagem')
         }
+
+        const isGroup = messageData.remoteJid?.includes('@g.us')
 
         // Cria uma nova mensagem
         const newMessage = {
@@ -185,13 +194,11 @@ export const useChatStore = defineStore('chat', {
         )
 
         if (existingConversation) {
-          // Adiciona a nova mensagem à conversa existente
           existingConversation.messages.push(newMessage)
           existingConversation.updatedAt = messageData.timestamp
           existingConversation.lastMessage = messageData.content
           return existingConversation
         } else {
-          // Cria uma nova conversa
           const newConversation = {
             id: `whatsapp-${messageData.remoteJid}`,
             status: 'PENDING',
@@ -205,24 +212,23 @@ export const useChatStore = defineStore('chat', {
             lastMessage: messageData.content,
             channelType: 'WHATSAPP',
             metadata: {
-              instanceName: data.instance,
+              instanceName: socketData.instance,
               instanceId: messageData.instanceId,
               remoteJid: messageData.remoteJid,
               isGroup: isGroup,
               groupInfo: isGroup ? {
-                participantCount: 0, // Será atualizado quando implementarmos a busca de info do grupo
-                participants: [messageData.participant], // Lista inicial com o remetente
+                participantCount: 0,
+                participants: [messageData.participant],
                 name: messageData.pushName || 'Grupo WhatsApp'
               } : undefined
             }
           }
 
-          // Adiciona a nova conversa no início do array
           this.conversations.unshift(newConversation)
           return newConversation
         }
       } catch (error) {
-        console.error('Erro ao criar conversa do WhatsApp:', error, data)
+        console.error('Erro ao criar conversa do WhatsApp:', error, socketData)
         this.error = error.message
         throw error
       }
