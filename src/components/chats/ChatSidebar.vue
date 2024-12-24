@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useI18n } from '@/i18n/plugin'
 import { Search, Command, Keyboard, PanelLeftClose, PanelLeft } from 'lucide-vue-next'
 import UserAvatar from './UserAvatar.vue'
@@ -37,16 +37,24 @@ const emit = defineEmits(['select', 'update:activeTab', 'toggle-sidebar'])
 
 // Computed para filtrar conversas baseado na tab ativa e inbox selecionado
 const filteredConversations = computed(() => {
-  const conversations = chatStore.conversations || []
   const inboxId = props.selectedInbox
+  const conversations = chatStore.conversations
 
   return conversations.filter(c => {
+    // Filtro por tab
     const matchesTab = props.activeTab === 'mine' ? c.assignee?.id === authStore.user?.id
-                      : props.activeTab === 'unassigned' ? !c.assignee
-                      : true
+                    : props.activeTab === 'unassigned' ? !c.assignee
+                    : true
+                    
+    // Filtro por inbox
     const matchesInbox = inboxId ? c.inboxId === inboxId : true
+    
+    // Filtro por busca
+    const matchesSearch = !searchQuery.value || 
+                       c.contact?.name?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+                       c.lastMessage?.toLowerCase().includes(searchQuery.value.toLowerCase())
 
-    return matchesTab && matchesInbox
+    return matchesTab && matchesInbox && matchesSearch
   })
 })
 
@@ -55,6 +63,12 @@ const handleChatSelect = (chat) => {
   chatStore.setCurrentConversation(chat)
   emit('select', chat)
 }
+
+// Debug: monitora mudanças nas conversas
+watch(() => chatStore.conversations, (newConversations) => {
+  console.log('[ChatSidebar] Conversas no store:', newConversations)
+  console.log('[ChatSidebar] Conversas filtradas:', filteredConversations.value)
+}, { deep: true })
 </script>
 
 <template>

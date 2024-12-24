@@ -27,16 +27,16 @@ class WebSocketService {
 
   setupListeners() {
     this.socket.on('connect', () => {
-      console.log('WebSocket conectado')
+      console.log('[WebSocket] Conectado')
       this.joinUserRooms()
     })
 
     this.socket.on('disconnect', () => {
-      console.log('WebSocket desconectado')
+      console.log('[WebSocket] Desconectado')
     })
 
     this.socket.on('error', (error) => {
-      console.error('Erro no WebSocket:', error)
+      console.error('[WebSocket] Erro:', error)
     })
   }
 
@@ -48,6 +48,17 @@ class WebSocketService {
     if (this.authStore.user?.id) {
       this.socket.emit('join:user', this.authStore.user.id)
     }
+  }
+
+  // Inscreve no canal de mensagens recentes
+  subscribeToRecentMessages(callback) {
+    const handler = (message) => {
+      console.log('[WebSocket] Mensagem recebida:', message)
+      callback(message)
+    }
+
+    this.on('recent_messages', handler)
+    return () => this.off('recent_messages', handler)
   }
 
   // Métodos para gerenciar eventos

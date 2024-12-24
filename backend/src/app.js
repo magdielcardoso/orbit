@@ -8,6 +8,7 @@ import websocketPlugin from './plugins/websocket.plugin.js'
 import Auth from './services/auth.service.js'
 import { loggerService } from './services/logger.service.js'
 import EvolutionHandler from './websocket/handlers/evolution.handler.js'
+import redisPlugin from './plugins/redis.plugin.js'
 
 const envToLogger = {
   development: {
@@ -60,6 +61,8 @@ async function registerPlugins() {
 
   fastify.log.info('[MAIN] Registrando GraphQL e Altair...')
   await graphqlPlugin(fastify);
+
+  fastify.register(redisPlugin)
 }
 
 async function setup() {

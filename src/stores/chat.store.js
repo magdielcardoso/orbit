@@ -140,98 +140,113 @@ export const useChatStore = defineStore('chat', {
     // Método para criar conversa a partir de mensagem do WhatsApp
     createConversationFromWhatsApp(socketData) {
       try {
-        // Debug inicial
-        console.log('Dados recebidos socket:', socketData)
+        console.log('[ChatStore] Dados recebidos socket:', socketData)
 
-        const data = socketData.data // Dados do webhook
+        const data = socketData.data
         
         // Extrai os dados relevantes da mensagem
         const messageData = {
           id: data.data?.key?.id,
           remoteJid: data.data?.key?.remoteJid,
           fromMe: data.data?.key?.fromMe,
-          sender: data.sender,
+          sender: data.data?.sender || data.data?.key?.participant,
           pushName: data.data?.pushName,
           status: data.data?.status,
           content: data.data?.message?.conversation || '',
-          timestamp: data.date_time || new Date().toISOString(),
-          messageType: data.data?.messageType,
+          timestamp: data.data?.date_time || data.data?.messageTimestamp,
+          messageType: data.data?.messageType || 'conversation',
           instanceId: data.data?.instanceId,
-          participant: data.data?.participant
+          participant: data.data?.key?.participant
         }
 
-        // Verifica se temos um remoteJid válido
-        if (!messageData.remoteJid) {
-          console.error('RemoteJid não encontrado. Dados:', {
-            socketData,
-            messageData,
-            dataKey: data.data?.key
-          })
-          throw new Error('RemoteJid não encontrado na mensagem')
+        console.log('[ChatStore] Dados extraídos:', messageData)
+
+        // Verifica dados obrigatórios
+        if (!messageData.remoteJid || !messageData.id) {
+          console.error('[ChatStore] Dados inválidos:', { messageData, socketData })
+          throw new Error('Dados obrigatórios não encontrados na mensagem')
         }
 
         const isGroup = messageData.remoteJid?.includes('@g.us')
-
-        // Cria uma nova mensagem
-        const newMessage = {
-          id: messageData.id,
-          content: messageData.content,
-          createdAt: messageData.timestamp,
-          isFromContact: !messageData.fromMe,
-          status: messageData.status,
-          metadata: {
-            messageType: messageData.messageType,
-            instanceId: messageData.instanceId,
-            remoteJid: messageData.remoteJid,
-            participant: messageData.participant,
-            senderName: isGroup ? messageData.pushName : undefined
-          }
-        }
 
         // Verifica se já existe uma conversa com este remoteJid
         const existingConversation = this.conversations.find(
           c => c.metadata?.remoteJid === messageData.remoteJid
         )
 
+        // Cria o objeto da mensagem
+        const newMessage = {
+          id: messageData.id,
+          content: messageData.content,
+          timestamp: messageData.timestamp,
+          sender: messageData.sender,
+          metadata: {
+            pushName: messageData.pushName,
+            status: messageData.status,
+            messageType: messageData.messageType,
+            senderName: messageData.pushName
+          }
+        }
+
         if (existingConversation) {
-          existingConversation.messages.push(newMessage)
-          existingConversation.updatedAt = messageData.timestamp
-          existingConversation.lastMessage = messageData.content
-          return existingConversation
-        } else {
-          const newConversation = {
-            id: `whatsapp-${messageData.remoteJid}`,
-            status: 'PENDING',
-            messages: [newMessage],
-            contact: {
-              name: isGroup ? 'Grupo WhatsApp' : (messageData.pushName || 'Contato WhatsApp'),
-              phone: messageData.sender?.split('@')[0],
-              whatsappId: messageData.sender
-            },
+          // Atualiza a conversa existente
+          const updatedConversation = {
+            ...existingConversation,
+            messages: [...existingConversation.messages, newMessage],
             updatedAt: messageData.timestamp,
-            lastMessage: messageData.content,
-            channelType: 'WHATSAPP',
-            metadata: {
-              instanceName: socketData.instance,
-              instanceId: messageData.instanceId,
-              remoteJid: messageData.remoteJid,
-              isGroup: isGroup,
-              groupInfo: isGroup ? {
-                participantCount: 0,
-                participants: [messageData.participant],
-                name: messageData.pushName || 'Grupo WhatsApp'
-              } : undefined
-            }
+            lastMessage: messageData.content
           }
 
-          this.conversations.unshift(newConversation)
-          return newConversation
+          // Atualiza o array de conversas mantendo a reatividade
+          const index = this.conversations.findIndex(c => c.metadata?.remoteJid === messageData.remoteJid)
+          if (index !== -1) {
+            // Atualiza a conversa no mesmo índice para manter a ordem
+            this.conversations.splice(index, 1)
+            this.conversations.unshift(updatedConversation)
+            console.log('[ChatStore] Conversa atualizada e reordenada:', updatedConversation)
+            return updatedConversation
+          }
         }
+
+        // Cria uma nova conversa
+        const newConversation = {
+          id: `whatsapp-${messageData.remoteJid}`,
+          status: 'PENDING',
+          messages: [newMessage],
+          contact: {
+            name: isGroup ? 'Grupo WhatsApp' : (messageData.pushName || 'Contato WhatsApp'),
+            phone: messageData.sender?.split('@')[0],
+            whatsappId: messageData.sender
+          },
+          updatedAt: messageData.timestamp,
+          lastMessage: messageData.content,
+          channelType: 'WHATSAPP',
+          metadata: {
+            instanceId: messageData.instanceId,
+            remoteJid: messageData.remoteJid,
+            isGroup: isGroup,
+            groupInfo: isGroup ? {
+              participantCount: 0,
+              participants: [messageData.participant],
+              name: messageData.pushName || 'Grupo WhatsApp'
+            } : undefined
+          }
+        }
+
+        // Adiciona a nova conversa no início do array
+        this.conversations = [newConversation, ...this.conversations]
+        console.log('[ChatStore] Nova conversa adicionada:', newConversation)
+        return newConversation
       } catch (error) {
-        console.error('Erro ao criar conversa do WhatsApp:', error, socketData)
-        this.error = error.message
+        console.error('[ChatStore] Erro ao criar conversa:', error)
         throw error
       }
+    },
+
+    // Método para atualizar manualmente a lista de conversas
+    updateConversationsList(conversations) {
+      this.conversations = conversations
+      console.log('[ChatStore] Lista de conversas atualizada:', this.conversations)
     }
   }
 }) 

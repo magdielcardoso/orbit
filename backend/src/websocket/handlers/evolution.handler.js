@@ -1,55 +1,39 @@
 import { getWebSocketServer } from '../../plugins/websocket.plugin.js'
+import MessagingService from '../../services/redis/messaging.service.js'
 
 export default class EvolutionHandler {
   static async handleWebhook(req, reply) {
     try {
-      console.log('Webhook recebido:', {
-        event: req.body.event,
-        instance: req.body.instance,
-        state: req.body.data.state
-      })
-
       const io = getWebSocketServer()
       const { body } = req
-
-      if (body.event === 'connection.update') {
-        const stateMap = {
-          'close': 'disconnected',
-          'connecting': 'connecting',
-          'open': 'connected'
-        }
-
-        const mappedState = stateMap[body.data.state] || body.data.state
-
-        console.log('Emitindo evento connection.update:', {
-          instance: body.instance,
-          state: mappedState,
-          originalState: body.data.state
-        })
-
-        io.emit('whatsapp:connection', {
-          instance: body.instance,
-          state: mappedState,
-          statusReason: body.data.statusReason
-        })
-      }
+      const messagingService = new MessagingService(req.server)
 
       if (body.event === 'messages.upsert') {
-
-        console.log('Emitindo evento messages.upsert:', {
+        console.log('[Evolution] Nova mensagem recebida:', {
           instance: body.instance,
-          message: body.data
+          messageId: body.data?.key?.id,
+          remoteJid: body.data?.key?.remoteJid
         })
 
+        // Envia para o Redis e WebSocket
+        await messagingService.queueWhatsAppMessage({
+          instance: body.instance,
+          data: body.data,
+          event: body.event
+        })
+
+        // Emite via WebSocket também para compatibilidade
         io.emit('whatsapp:message', {
           instance: body.instance,
           data: body
         })
+
+        console.log('[Evolution] Mensagem processada e enviada')
       }
 
       return reply.code(200).send({ status: 'OK' })
     } catch (error) {
-      console.error('Erro no webhook Evolution:', error)
+      console.error('[Evolution] Erro no webhook:', error)
       return reply.code(500).send({ error: error.message })
     }
   }
