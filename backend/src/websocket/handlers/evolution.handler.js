@@ -43,7 +43,7 @@ export default class EvolutionHandler {
 
         io.emit('whatsapp:message', {
           instance: body.instance,
-          message: body.data.message
+          data: body
         })
       }
 

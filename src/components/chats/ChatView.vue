@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useI18n } from '@/i18n/plugin'
 import { Send, Paperclip, MoreVertical } from 'lucide-vue-next'
 import UserAvatar from './UserAvatar.vue'
@@ -54,6 +54,28 @@ const isCurrentUser = (message) => {
   return !message.isFromContact && message.user?.id === authStore.user?.id
 }
 
+// Computed para obter o nome do contato/grupo
+const contactName = computed(() => {
+  if (props.chat.metadata?.isGroup) {
+    return props.chat.metadata.remoteJid || 'Grupo WhatsApp'
+  }
+  return props.chat.contact?.name || 'Contato WhatsApp'
+})
+
+// Computed para obter o nome do remetente da mensagem
+const getMessageSenderName = (message) => {
+  if (isCurrentUser(message)) {
+    return authStore.user?.name
+  }
+  
+  // Se for grupo, usa o nome do remetente da mensagem
+  if (props.chat.metadata?.isGroup) {
+    return message.metadata?.senderName || 'Usuário WhatsApp'
+  }
+  
+  return props.chat.contact?.name || 'Contato WhatsApp'
+}
+
 // Monitora mudanças na conversa selecionada
 watch(() => props.chat, async (newChat) => {
   if (newChat?.id) {
@@ -74,11 +96,11 @@ onMounted(() => {
     <div class="shrink-0 p-4 border-b border-base-300 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <UserAvatar 
-          :name="chat.contact?.name"
+          :name="contactName"
           :avatar="chat.contact?.avatar"
         />
         <div>
-          <h2 class="font-medium">{{ chat.contact?.name }}</h2>
+          <h2 class="font-medium">{{ contactName }}</h2>
           <span class="text-sm text-success">{{ chat.status }}</span>
         </div>
       </div>
@@ -98,7 +120,7 @@ onMounted(() => {
         ]"
       >
         <div class="chat-header opacity-50 text-sm">
-          {{ isCurrentUser(message) ? authStore.user?.name : chat.contact?.name }}
+          {{ getMessageSenderName(message) }}
           <time class="text-xs opacity-50 ml-1">{{ formatTime(message.createdAt) }}</time>
         </div>
         <div 
